@@ -17,14 +17,22 @@ void advecu(double *ut, double *u, double *v, double *w,
   const int jend   = 1;
   const int kstart = 0;
   const int kend   = 1;
-  const int jj = 0;
-  const int kk = 0;
+
+  const int ii1 = 1;
+  const int ii2 = 1;
+  const int ii3 = 1;
+  const int jj1 = 1;
+  const int jj2 = 1;
+  const int jj3 = 1;
+  const int kk1 = 1;
+  const int kk2 = 1;
+  const int kk3 = 1;
 
   for (int k=kstart; k<kend; ++k)
     for (int j=jstart; j<jend; ++j)
       for (int i=istart; i<iend; ++i)
       {
-        const int ijk = i + j*jj + k*kk;
+        const int ijk = i + j*jj1 + k*kk1;
         //$ SBStart ut
         u = Field("u", uloc)
         v = Field("v", vloc)
@@ -51,14 +59,22 @@ void advecv(double *vt, double *u, double *v, double *w,
   const int jend   = 1;
   const int kstart = 0;
   const int kend   = 1;
-  const int jj = 1;
-  const int kk = 1;
+
+  const int ii1 = 1;
+  const int ii2 = 1;
+  const int ii3 = 1;
+  const int jj1 = 1;
+  const int jj2 = 1;
+  const int jj3 = 1;
+  const int kk1 = 1;
+  const int kk2 = 1;
+  const int kk3 = 1;
 
   for (int k=kstart; k<kend; ++k)
     for (int j=jstart; j<jend; ++j)
       for (int i=istart; i<iend; ++i)
       {
-        const int ijk = i + j*jj + k*kk;
+        const int ijk = i + j*jj1 + k*kk1;
         //$ SBStart vt
         u = Field("u", uloc)
         v = Field("v", vloc)

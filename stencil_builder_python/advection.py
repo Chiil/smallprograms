@@ -14,4 +14,4 @@ ut = gradx( interpx(u) * interpx(u) ) * dxi \
    + grady( interpx(v) * interpy(u) ) * dyi \
    + gradz( interpx(w) * interpz(u) ) * dzi4
 
-print("ut[i,j,k] = {0};\n".format(ut.getString(0,0,0,12)))
+print("ut[ijk] = {0};\n".format(ut.getString(0,0,0,10)))

@@ -60,9 +60,9 @@ for n in blocks:
   test = []
   for v in n[3]:
     #indent = ''.rjust(n[4])
-    indent = len(v) + 10
+    indent = len(v) + 8
     evalstring = v + ".getString(0,0,0,{0})".format(indent)
-    tmplist = (v + "[i,j,k] = " + eval(evalstring) + ";").split('\n')
+    tmplist = (v + "[ijk] = " + eval(evalstring) + ";").split('\n')
     # Indent each line to make it fit properly aligned into the code
     for t in range(len(tmplist)):
       tmplist[t] = ''.rjust(n[4]) + tmplist[t]

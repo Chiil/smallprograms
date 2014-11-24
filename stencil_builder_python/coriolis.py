@@ -11,5 +11,5 @@ fc = Scalar("fc")
 ut = fc * interpx( interpy( v ) )
 vt = fc * interpx( interpy( u ) )
 
-print("ut[i,j,k] = {0};\n".format(ut.getString(0,0,0,12)))
-print("vt[i,j,k] = {0};\n".format(vt.getString(0,0,0,12)))
+print("ut[ijk] = {0};\n".format(ut.getString(0,0,0,10)))
+print("vt[ijk] = {0};\n".format(vt.getString(0,0,0,10)))
