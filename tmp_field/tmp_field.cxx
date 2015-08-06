@@ -23,6 +23,11 @@ class Tmp_ptr
         ~Tmp_ptr() { tmp_.release(); }
         Tmp* operator->() { return &tmp_; }
 
+        Tmp_ptr(const Tmp_ptr&) = delete;
+        Tmp_ptr operator=(const Tmp_ptr&) = delete;
+
+        Tmp_ptr(Tmp_ptr&&) = default;
+
     private:
         Tmp& tmp_;
 };
