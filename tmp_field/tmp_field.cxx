@@ -19,7 +19,7 @@ class Tmp
 class Tmp_ref
 {
     public:
-        Tmp_ref(Tmp& tmp) : tmp_(tmp) {}
+        Tmp_ref(Tmp& tmp) : tmp_(tmp) { tmp_.use(); }
         ~Tmp_ref() { tmp_.release(); }
         double get_value() const { return tmp_.get_value(); }
         bool get_in_use() const { return tmp_.get_in_use(); }
@@ -39,13 +39,9 @@ class Tmps
         Tmp_ref get_tmp()
         {
             for (Tmp& tmp : tmp_list)
-            {
                 if (!tmp.get_in_use())
-                {
-                    tmp.use();
                     return Tmp_ref(tmp);
-                }
-            }
+
             throw std::runtime_error("No free tmp field");
         }
 
