@@ -16,15 +16,12 @@ class Tmp
         bool in_use_;
 };
 
-class Tmp_ref
+class Tmp_ptr
 {
     public:
-        Tmp_ref(Tmp& tmp) : tmp_(tmp) { tmp_.use(); }
-        ~Tmp_ref() { tmp_.release(); }
-        double get_value() const { return tmp_.get_value(); }
-        bool get_in_use() const { return tmp_.get_in_use(); }
-        void use() const { tmp_.use(); }
-        void release() const { tmp_.release(); }
+        Tmp_ptr(Tmp& tmp) : tmp_(tmp) { tmp_.use(); }
+        ~Tmp_ptr() { tmp_.release(); }
+        Tmp* operator->() { return &tmp_; }
 
     private:
         Tmp& tmp_;
@@ -36,11 +33,11 @@ class Tmps
         Tmps() : tmp_list({1., 2., 3.})
         {}
 
-        Tmp_ref get_tmp()
+        Tmp_ptr get_tmp()
         {
             for (Tmp& tmp : tmp_list)
                 if (!tmp.get_in_use())
-                    return Tmp_ref(tmp);
+                    return Tmp_ptr(tmp);
 
             throw std::runtime_error("No free tmp field");
         }
@@ -51,10 +48,10 @@ class Tmps
 
 void test(Tmps& tmps)
 {
-    Tmp_ref tmp1 = tmps.get_tmp();
-    Tmp_ref tmp2 = tmps.get_tmp();
+    Tmp_ptr tmp1 = tmps.get_tmp();
+    Tmp_ptr tmp2 = tmps.get_tmp();
 
-    std::cout << "(test) tmp1, tmp2 = " << tmp1.get_value() << ", " << tmp2.get_value() << std::endl;
+    std::cout << "(test) tmp1, tmp2 = " << tmp1->get_value() << ", " << tmp2->get_value() << std::endl;
 }
 
 int main()
@@ -62,18 +59,18 @@ int main()
     Tmps tmps;
     try
     {
-        Tmp_ref tmp1 = tmps.get_tmp();
+        Tmp_ptr tmp1 = tmps.get_tmp();
 
         test(tmps);
 
-        Tmp_ref tmp2 = tmps.get_tmp();
-        Tmp_ref tmp3 = tmps.get_tmp();
+        Tmp_ptr tmp2 = tmps.get_tmp();
+        Tmp_ptr tmp3 = tmps.get_tmp();
 
-        std::cout << "(main) tmp1, tmp2, tmp3 = " << tmp1.get_value() << ", " 
-                                                  << tmp2.get_value() << ", " 
-                                                  << tmp3.get_value() << std::endl;
+        std::cout << "(main) tmp1, tmp2, tmp3 = " << tmp1->get_value() << ", "
+                                                  << tmp2->get_value() << ", "
+                                                  << tmp3->get_value() << std::endl;
 
-        Tmp_ref tmp4 = tmps.get_tmp();
+        Tmp_ptr tmp4 = tmps.get_tmp();
     }
     catch (std::exception& e)
     {
