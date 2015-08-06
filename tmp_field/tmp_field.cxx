@@ -51,13 +51,19 @@ class Tmps
         std::vector<Tmp> tmp_list;
 };
 
-void test(Tmps& tmps)
+void test1(Tmps& tmps)
 {
     Tmp_ptr tmp1 = tmps.get_tmp();
     Tmp_ptr tmp2 = tmps.get_tmp();
 
-    std::cout << "(test) tmp1, tmp2 = " << tmp1->get_value() << ", " << tmp2->get_value() << std::endl;
+    std::cout << "(test1) tmp1, tmp2 = " << tmp1->get_value() << ", " << tmp2->get_value() << std::endl;
 }
+
+void test2(Tmp_ptr tmp1, Tmp_ptr tmp2)
+{
+    std::cout << "(test2) tmp1, tmp2 = " << tmp1->get_value() << ", " << tmp2->get_value() << std::endl;
+}
+
 
 int main()
 {
@@ -66,14 +72,15 @@ int main()
     {
         Tmp_ptr tmp1 = tmps.get_tmp();
 
-        test(tmps);
+        test1(tmps);
+        test2(tmps.get_tmp(), tmps.get_tmp());
 
         Tmp_ptr tmp2 = tmps.get_tmp();
         Tmp_ptr tmp3 = tmps.get_tmp();
 
-        std::cout << "(main) tmp1, tmp2, tmp3 = " << tmp1->get_value() << ", "
-                                                  << tmp2->get_value() << ", "
-                                                  << tmp3->get_value() << std::endl;
+        std::cout << "(main)  tmp1, tmp2, tmp3 = " << tmp1->get_value() << ", "
+                                                   << tmp2->get_value() << ", "
+                                                   << tmp3->get_value() << std::endl;
 
         Tmp_ptr tmp4 = tmps.get_tmp();
     }
