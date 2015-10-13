@@ -1,6 +1,6 @@
 #include <string>
 
-void print_message(std::string&);
+extern void print_message(const std::string&);
 
 int main()
 {

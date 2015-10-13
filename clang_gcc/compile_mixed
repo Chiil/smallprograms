@@ -1,0 +1,2 @@
+clang++ -stdlib=libstdc++ -c print.cxx
+g++-5 test.cxx print.a
