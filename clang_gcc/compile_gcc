@@ -1,0 +1,4 @@
+rm -f print.a print.o a.out
+clang++ -c print.cxx
+ar rcs print.a print.o
+clang++ test.cxx print.a
