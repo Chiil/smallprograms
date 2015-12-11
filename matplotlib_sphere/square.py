@@ -3,8 +3,8 @@ import matplotlib.pyplot as pl
 #from mpl_toolkits.mplot3d import Axes3D
 pl.ioff()
 
-nx = 512
-ny = 512
+nx = 256
+ny = 256
 
 Lx = 2.e6
 Ly = 2.e6
@@ -12,10 +12,10 @@ Ly = 2.e6
 H = 1.e2
 dh = 1.
 g = 9.81
-f = 2.e-4
+f = 1.2e-4
 
 dt = 10.
-nt = 3000
+nt = 5000
 
 x = np.linspace(0., Lx, nx)
 y = np.linspace(0., Ly, ny)
@@ -69,13 +69,13 @@ for n in range(nt):
 
     zeta = (v[2::,1:-1] - v[0:-2,1:-1])/dx + (u[1:-1,2::] - u[1:-1,0:-2])/dy
     PV = (zeta+f)/(H+h[1:-1,1:-1])
-    #print("sum(PV) = {0}, nonlinear ratio = {1}".format(np.sum(PV), np.max(abs(uadv/dudt))))
+    print("sum(PV) = {0}, nonlinear ratio = {1}".format(np.sum(PV), np.max(abs(uadv/dudt))))
 
     if (n%10 == 0):
         pl.figure(1)
         pl.pcolormesh(x/1000., y/1000., h[1:-1, 1:-1], cmap=pl.cm.RdYlBu_r, vmin=-0.2, vmax=0.2)
         pl.colorbar()
-        #pl.quiver(xx[::10,::10], yy[::10,::10], u[::10,::10], v[::10,::10])
+        #pl.quiver(xx[::5,::5]/1000., yy[::5,::5]/1000., u[1:-1:5,1:-1:5], v[1:-1:5,1:-1:5])
         pl.xlim(0, Lx/1000.)
         pl.ylim(0, Ly/1000.)
         pl.xlabel('x (km)')
