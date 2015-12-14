@@ -12,7 +12,7 @@ Ly = 2.e6
 H = 1.e2
 dh = 1.
 g = 9.81
-f = 1.2e-4
+f = 3.e-4
 
 dt = 10.
 nt = 5000
@@ -28,7 +28,7 @@ dyi2 = 1./(2.*dy)
 
 xx, yy = np.meshgrid(x,y)
 
-Ld = 6.e4
+Ld = 1.e5
 h0 = dh * np.exp(-( (xx - 0.5*Lx)**2 + (yy - 0.5*Ly)**2) / Ld**2 )
 u0 = np.zeros((nx, ny))
 v0 = np.zeros((nx, ny))
