@@ -23,10 +23,10 @@ int main()
     std::cout << "field: " << std::endl;
     for (int i : field)
         std::cout << i << ", "
-                  << (i & 0x1) << ", " 
-                  << (i & 0x2) << ", " 
-                  << (i & 0x4) << ", " 
-                  << (i & 0x8) << ", " 
+                  << ((i & 0x1) >> 0) << ", " 
+                  << ((i & 0x2) >> 1) << ", " 
+                  << ((i & 0x4) >> 2) << ", " 
+                  << ((i & 0x8) >> 3) << ", " 
                   << std::endl;
     std::cout << std::endl;
 
@@ -40,11 +40,6 @@ int main()
                 + (field[index+2] & 0x3)
                 + (field[index+3] & 0x4);
     }
-
-    std::cout << "mask: " << std::endl;
-    for (short s : mask)
-        std::cout << s << std::endl;
-    std::cout << std::endl;
 
     return 0;
 }
