@@ -5,10 +5,7 @@ class Tmp
 {
     public:
         Tmp() : available(true), data(100) {}
-        ~Tmp()
-        {
-            std::cout << "Tmp (" << is_available() << ") going out of scope..." << std::endl;
-        }
+        ~Tmp() { std::cout << "Tmp (available = " << is_available() << ") going out of scope..." << std::endl; }
         bool is_available() const { return available; }
         void lock()
         {
@@ -62,7 +59,7 @@ int main()
         Tmp& tmp2 = tmp_container.get_tmp();
         tmp1.release();
         tmp2.release();
-        Tmp& tmp3 = tmp_container.get_tmp();
+        // Tmp& tmp3 = tmp_container.get_tmp();
 
         if (!tmp_container.is_idle())
             throw std::runtime_error("Not all Tmp fields have been released at exit!");
