@@ -5,7 +5,7 @@ a = np.arange(3,5)
 b = a
 c = a[:]
 d = a.copy()
-    
+
 print(a is b) # True
 print(a is c) # False
 print(a is d) # False
