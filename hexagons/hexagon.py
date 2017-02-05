@@ -2,13 +2,15 @@ import numpy as np
 import pylab as pl
 from scipy import interpolate
 
-nx = 50
+nx = 100
 Lx = 1.
 dx = Lx / nx
 dy = (.75)**.5 * dx
 
 ny = int(Lx / dy)
 Ly = Lx - Lx % dy
+
+print(nx, ny)
 
 points = []
 
@@ -25,22 +27,19 @@ y = points[:,1]
 
 xm = 0.5
 ym = 0.5
-sigma = 0.1
+sigma = 0.05
 
 z = np.exp( - ((x-xm)**2) / (2.*sigma**2) ) \
   * np.exp( - ((y-ym)**2) / (2.*sigma**2) )
-
 
 x_plot, y_plot = np.meshgrid(np.linspace(0, Lx, 1000), np.linspace(0, Ly, 1000))
 #z_plot = interpolate.griddata(points, z, (x_plot, y_plot), method='nearest')
 z_plot = interpolate.griddata(points, z, (x_plot, y_plot), method='cubic')
 
-print(z_plot.shape)
-
 pl.figure()
 pl.subplot(111, aspect='equal')
 pl.plot(x, y, 'k.', markersize=0.5)
-pl.contour(x_plot, y_plot, z_plot, 30)
+pl.pcolormesh(x_plot, y_plot, z_plot, vmin=0., vmax=1.)
 pl.colorbar()
 pl.xlim(0, Lx)
 pl.ylim(0, Ly)
