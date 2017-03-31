@@ -66,7 +66,7 @@ def eval_bd(L):
 def eval_w(L):
   return zsl/L * fmw(L)**2 / fhw(L)
 
-zL = np.linspace(-100., 10., 1e5)
+zL = np.linspace(-100., 10., 10000)
 L  = zsl / zL
 
 # Evaluate the function (this has to be done only once for a range of Ri).
@@ -102,7 +102,9 @@ print("ustar_neutral = {0}".format(ustar_n))
 pl.close('all')
 
 pl.figure()
-pl.plot(zL, eval0_bd)
-pl.plot(zL, eval0_w )
+pl.plot(zL, eval0_bd, '-', label='Businger-Dyer')
+pl.plot(zL, eval0_w , '-', label='Wilson')
 pl.xlabel('z/L')
 pl.ylabel('eval')
+pl.legend(loc=0, frameon=False)
+pl.show()

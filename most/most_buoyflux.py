@@ -74,7 +74,7 @@ def create_zL(nzL):
   dzL = 20. / (9*nzL/10-1)
   zL_tmp[0] = -10.
 
-  for n in range(1, 9*nzL/10):
+  for n in range(1, 9*nzL//10):
     zL_tmp[n] = zL_tmp[n-1] + dzL
 
   # Stretch the remainder of the z/L values far down for free convection.
@@ -88,7 +88,7 @@ def create_zL(nzL):
     r  = ( 1. - (zLend/dzL)*(1.-r) )**(10./nzL)
   print("Calculated stretching: {0}".format(r))
 
-  for n in range(9*nzL/10, nzL):
+  for n in range(9*nzL//10, nzL):
     zL_tmp[n] = zL_tmp[n-1] + dzL
     dzL *= r
 
@@ -133,11 +133,12 @@ print("ustar_neutral = {0}".format(ustar_n))
 
 pl.close('all')
 pl.figure()
-pl.plot(zL, eval0_bd, 'b-')
-pl.plot(zL, eval0_w , 'g-')
-pl.plot(zL, Ri*np.ones(zL.size), 'k-')
+pl.plot(zL, eval0_bd, '-')
+pl.plot(zL, eval0_w , '-')
+pl.plot(zL, Ri*np.ones(zL.size), 'k:')
 pl.xlabel('z/L')
 pl.ylabel('eval')
+pl.show()
 
 """
 dzL = zL[1] - zL[0]
