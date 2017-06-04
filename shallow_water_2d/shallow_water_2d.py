@@ -2,16 +2,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pyfftw.interfaces.numpy_fft as fft
 
-nx = 32
-ny = 32
+nx = 96
+ny = 96
 
 Lx = 1e6
 Ly = 1e6
 
 h0 = 100.
 g = 9.81
-nu = 100.
-f0 = 0.e-4
+nu = 20.
+f0 = 0.
 
 x = np.arange(0., Lx, Lx/nx)
 y = np.arange(0., Ly, Ly/ny)
@@ -40,7 +40,7 @@ v = np.zeros((ny, nx))
 ## RANDOM FIELD
 def generate_random_field(a_std):
     # the mean wavenumber of perturbation 1
-    k1 = 6.
+    k1 = 24.
     
     # the variance in wave number of perturbation
     ks2 = 2.**2.
@@ -84,14 +84,6 @@ nt = 100*864
 dt = 100.
 t = 0.
 
-plt.close('all')
-
-#plt.figure()
-#plt.pcolormesh(x_km, y_km, q, vmin=-2, vmax=2)
-#plt.colorbar()
-#plt.title('{0}'.format(t))
-#plt.tight_layout()
-
 # Set all variables in Fourier space.
 u = fft.rfft2(u)
 v = fft.rfft2(v)
@@ -102,13 +94,13 @@ def pad(a):
     a_pad = np.zeros((3*ny//2, 3*nx//4+1), dtype=np.complex)
     a_pad[:ny//2,:nx//2+1] = a[:ny//2,:]
     a_pad[ny:3*ny//2,:nx//2+1] = a[ny//2:,:]
-    return (9/4)*a_pad
+    return a_pad
 
 def unpad(a_pad):
     a = np.zeros((ny, nx//2+1), dtype=complex)
     a[:ny//2,:] = a_pad[:ny//2,:nx//2+1]
     a[ny//2:,:] = a_pad[ny:3*ny//2,:nx//2+1]
-    return (4/9)*a
+    return a
 
 def calc_prod(a, b):
     a_pad = pad(a)
@@ -139,12 +131,9 @@ def calc_rhs(u, v, h, q):
     d2qdx2 = -kx[np.newaxis,:]**2 * q
     d2qdy2 = -ky[:,np.newaxis]**2 * q
 
-    #q_tmp = fft.irfft2(q)
-    #dh_q = fft.rfft2(np.where(q_tmp < 0, -10./86400, 0))
-
     u_tend = - calc_prod(u, dudx) - calc_prod(v, dudy) - g*dhdx + nu*(d2udx2 + d2udy2) + f0*v
     v_tend = - calc_prod(u, dvdx) - calc_prod(v, dvdy) - g*dhdy + nu*(d2vdx2 + d2vdy2) - f0*u
-    h_tend = - calc_prod(u, dhdx) - calc_prod(v, dhdy) - calc_prod(h, dudx + dvdy) + nu*(d2hdx2 + d2hdy2) - (10./86400)*q
+    h_tend = - calc_prod(u, dhdx) - calc_prod(v, dhdy) - calc_prod(h, dudx + dvdy) + nu*(d2hdx2 + d2hdy2) - fft.rfft2((10./86400)*np.tanh(fft.irfft2(q)))
     q_tend = - calc_prod(u, dqdx) - calc_prod(v, dqdy) + nu*(d2qdx2 + d2qdy2)
 
     return u_tend, v_tend, h_tend, q_tend
@@ -152,7 +141,7 @@ def calc_rhs(u, v, h, q):
 output = True
 for n in range(nt):
     if (output and n%864 == 0):
-        print('q[0,0] = {0}'.format(q[0,0]))
+        print('{0}'.format(n//864))
         plt.figure()
         plt.pcolormesh(x_km, y_km, fft.irfft2(q))
         plt.colorbar()
@@ -170,17 +159,4 @@ for n in range(nt):
     h += dt * (h_tend1 + 2.*h_tend2 + 2.*h_tend3 + h_tend4) / 6.
     q += dt * (q_tend1 + 2.*q_tend2 + 2.*q_tend3 + q_tend4) / 6.
 
-    t += dt
-
-# Set the variables back to physical space.
-u = fft.irfft2(u)
-v = fft.irfft2(v)
-h = fft.irfft2(h)
-q = fft.irfft2(q)
-
-plt.figure()
-plt.pcolormesh(x_km, y_km, q, vmin=-2., vmax=2.)
-plt.colorbar()
-plt.title('{0}'.format(t))
-plt.show()
 
