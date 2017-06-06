@@ -1,17 +1,21 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gs
 import pyfftw.interfaces.numpy_fft as fft
 
-nx = 96
-ny = 96
+nx = 256
+ny = 256
 
-Lx = 1e6
-Ly = 1e6
+Lx = 4e6
+Ly = 4e6
 
 h0 = 100.
 g = 9.81
-nu = 20.
-f0 = 0.
+nu = 0.
+f0 = 5e-4
+
+if (f0 > 0.):
+    print('Rossby radius = {0} km'.format(1.e-3*(g*h0)**.5/f0))
 
 x = np.arange(0., Lx, Lx/nx)
 y = np.arange(0., Ly, Ly/ny)
@@ -27,6 +31,7 @@ for j in range(1, ny//2+1):
 
 u = np.zeros((ny, nx))
 v = np.zeros((ny, nx))
+h = np.zeros((ny, nx)) + h0
 
 #nx_waves = 2.
 #ny_waves = 2.
@@ -34,13 +39,15 @@ v = np.zeros((ny, nx))
 #h = np.sin(nx_waves*2.*np.pi*x[np.newaxis,:]/Lx) \
 #  * np.sin(ny_waves*2.*np.pi*y[:,np.newaxis]/Ly)
 
-#sigma = 5e4
-#h = np.exp( - (x[np.newaxis,:]-Lx/2)**2 / (2.*sigma**2) - (y[:,np.newaxis]-Ly/2)**2 / (2.*sigma**2) )
+radius = .5e6
+sigma = radius/6
+h = np.exp( - (x[np.newaxis,:]-Lx/2)**2 / (2.*sigma**2) - (y[:,np.newaxis]-Ly/2)**2 / (2.*sigma**2) )
+h += h0
 
 ## RANDOM FIELD
 def generate_random_field(a_std):
-    # the mean wavenumber of perturbation 1
-    k1 = 24.
+    # the mean size of the perturbation.
+    k1 = nx//16
     
     # the variance in wave number of perturbation
     ks2 = 2.**2.
@@ -77,10 +84,10 @@ def generate_random_field(a_std):
     a *= a_std/np.std(a)
     return a
 
-h = generate_random_field(1.) + h0
+#h = generate_random_field(1.) + h0
 q = generate_random_field(1.)
 
-nt = 100*864
+nt = 172800
 dt = 100.
 t = 0.
 
@@ -94,13 +101,13 @@ def pad(a):
     a_pad = np.zeros((3*ny//2, 3*nx//4+1), dtype=np.complex)
     a_pad[:ny//2,:nx//2+1] = a[:ny//2,:]
     a_pad[ny:3*ny//2,:nx//2+1] = a[ny//2:,:]
-    return a_pad
+    return (9/4)*a_pad
 
 def unpad(a_pad):
     a = np.zeros((ny, nx//2+1), dtype=complex)
     a[:ny//2,:] = a_pad[:ny//2,:nx//2+1]
     a[ny//2:,:] = a_pad[ny:3*ny//2,:nx//2+1]
-    return a
+    return (4/9)*a
 
 def calc_prod(a, b):
     a_pad = pad(a)
@@ -113,40 +120,54 @@ def calc_prod(a, b):
 #    return fft.rfft2( fft.irfft2(a) * fft.irfft2(b) )
 
 def calc_rhs(u, v, h, q):
-    dudx = 1j * kx[np.newaxis,:] * u
-    dudy = 1j * ky[:,np.newaxis] * u
-    dvdx = 1j * kx[np.newaxis,:] * v
-    dvdy = 1j * ky[:,np.newaxis] * v
-    dhdx = 1j * kx[np.newaxis,:] * h
-    dhdy = 1j * ky[:,np.newaxis] * h
-    dqdx = 1j * kx[np.newaxis,:] * q
-    dqdy = 1j * ky[:,np.newaxis] * q
+    u_tend = - 1j * kx[np.newaxis,:] * calc_prod(u, u) \
+             - 1j * ky[:,np.newaxis] * calc_prod(v, u) \
+             - g * 1j * kx[np.newaxis,:] * h \
+             + f0 * v \
+             #- nu * (kx[np.newaxis,:]**2 + ky[:,np.newaxis]**2) * u
+    v_tend = - 1j * kx[np.newaxis,:] * calc_prod(u, v) \
+             - 1j * ky[:,np.newaxis] * calc_prod(v, v) \
+             - g * 1j * ky[:,np.newaxis] * h \
+             - f0 * u \
+             #- nu * (kx[np.newaxis,:]**2 + ky[:,np.newaxis]**2) * v
+    h_tend = - 1j * kx[np.newaxis,:] * calc_prod(u, h) \
+             - 1j * ky[:,np.newaxis] * calc_prod(v, h) \
+             - calc_prod(h, 1j * kx[np.newaxis,:] * u + 1j * ky[:,np.newaxis] * v) \
+             #- nu * (kx[np.newaxis,:]**2 + ky[:,np.newaxis]**2) * h
+             #+ fft.rfft2((200./86400)*fft.irfft2(q)) \
 
-    d2udx2 = -kx[np.newaxis,:]**2 * u
-    d2udy2 = -ky[:,np.newaxis]**2 * u
-    d2vdx2 = -kx[np.newaxis,:]**2 * v
-    d2vdy2 = -ky[:,np.newaxis]**2 * v
-    d2hdx2 = -kx[np.newaxis,:]**2 * h
-    d2hdy2 = -ky[:,np.newaxis]**2 * h
-    d2qdx2 = -kx[np.newaxis,:]**2 * q
-    d2qdy2 = -ky[:,np.newaxis]**2 * q
-
-    u_tend = - calc_prod(u, dudx) - calc_prod(v, dudy) - g*dhdx + nu*(d2udx2 + d2udy2) + f0*v
-    v_tend = - calc_prod(u, dvdx) - calc_prod(v, dvdy) - g*dhdy + nu*(d2vdx2 + d2vdy2) - f0*u
-    h_tend = - calc_prod(u, dhdx) - calc_prod(v, dhdy) - calc_prod(h, dudx + dvdy) + nu*(d2hdx2 + d2hdy2) - fft.rfft2((10./86400)*np.tanh(fft.irfft2(q)))
-    q_tend = - calc_prod(u, dqdx) - calc_prod(v, dqdy) + nu*(d2qdx2 + d2qdy2)
+    q_tend = - 1j * kx[np.newaxis,:] * calc_prod(u, q) \
+             - 1j * ky[:,np.newaxis] * calc_prod(v, q) \
+             #- nu * (kx[np.newaxis,:]**2 + ky[:,np.newaxis]**2) * q
 
     return u_tend, v_tend, h_tend, q_tend
 
 output = True
+n_out = 1
 for n in range(nt):
-    if (output and n%864 == 0):
-        print('{0}'.format(n//864))
-        plt.figure()
-        plt.pcolormesh(x_km, y_km, fft.irfft2(q))
-        plt.colorbar()
-        plt.title('{0}'.format(n//864))
-        plt.savefig('figs/{0:08d}.png'.format(n//864), dpi=100)
+    if (output and n%n_out == 0):
+        h_plot = fft.irfft2(h)-h0
+        q_plot = fft.irfft2(q)
+
+        print('{0}'.format(n//n_out))
+
+        plot_grid = gs.GridSpec(3,1)
+        plt.figure(figsize = (6,9))
+        plt.subplot(plot_grid[0:2])
+        plt.pcolormesh(x_km, y_km, h_plot, vmin=-0.3, vmax=0.6)
+        xx, yy = np.meshgrid(x/1000., y/1000)
+        nq=4
+        plt.quiver(xx[::nq, ::nq], yy[::nq, ::nq], fft.irfft2(u)[::nq, ::nq], fft.irfft2(v)[::nq, ::nq], scale=2., pivot='mid')
+        #plt.pcolormesh(x_km, y_km, q_plot, vmin=-2, vmax=2)
+        #plt.pcolormesh(x_km, y_km, q_plot)
+        #plt.colorbar()
+        plt.title('{0} d'.format(n*dt/86400))
+        plt.subplot(plot_grid[2])
+        plt.plot(x_km, h_plot[ny//2,:], label='{0}'.format(n//n_out))
+        plt.ylim(-0.3, 1.1)
+        plt.grid()
+        plt.tight_layout()
+        plt.savefig('figs/{0:08d}.png'.format(n//n_out), dpi=100)
         plt.close()
 
     u_tend1, v_tend1, h_tend1, q_tend1 = calc_rhs(u, v, h, q)
@@ -158,5 +179,4 @@ for n in range(nt):
     v += dt * (v_tend1 + 2.*v_tend2 + 2.*v_tend3 + v_tend4) / 6.
     h += dt * (h_tend1 + 2.*h_tend2 + 2.*h_tend3 + h_tend4) / 6.
     q += dt * (q_tend1 + 2.*q_tend2 + 2.*q_tend3 + q_tend4) / 6.
-
 
