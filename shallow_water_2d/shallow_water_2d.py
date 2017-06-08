@@ -12,7 +12,7 @@ Ly = 4e6
 h0 = 100.
 g = 9.81
 nu = 0.
-f0 = 5e-4
+f0 = 0.
 
 if (f0 > 0.):
     print('Rossby radius = {0} km'.format(1.e-3*(g*h0)**.5/f0))
