@@ -87,8 +87,18 @@ Data_block::Data_block(const std::string& file_name)
             throw std::runtime_error(error_string);
         }
 
+        auto it_s = strings.begin();
+        for (auto& v : data_series)
+        {
+            v.second.push_back(*it_s);
+            ++it_s;
+        }
     }
 
     for (const auto& v : data_series)
+    {
         std::cout << "label: " << v.first << std::endl;
+        for (const auto& s : v.second)
+            std::cout << s << std::endl;
+    }
 }
