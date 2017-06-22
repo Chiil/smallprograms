@@ -49,11 +49,17 @@ Data_block::Data_block(const std::string& file_name)
 
     std::string line;
 
+    // First, read the header.
+    int number_of_vectors;
+    int line_number = 0;
     while (std::getline(infile, line))
     {
+        ++line_number;
         std::vector<std::string> strings = split_line(line, " \t");
         if (strings.size() == 0)
             continue;
+
+        number_of_vectors = strings.size();
 
         for (const std::string& s : strings)
         {
@@ -64,6 +70,23 @@ Data_block::Data_block(const std::string& file_name)
                 data_series[s] = std::vector<std::string>();
         }
         break;
+    }
+
+    // Second, read the data.
+    while (std::getline(infile, line))
+    {
+        ++line_number;
+        std::vector<std::string> strings = split_line(line, " \t");
+        if (strings.size() == 0)
+            continue;
+
+        if (strings.size() != number_of_vectors)
+        {
+            std::string error_string = "Illegal number of items on line ";
+            error_string += std::to_string(line_number);
+            throw std::runtime_error(error_string);
+        }
+
     }
 
     for (const auto& v : data_series)
