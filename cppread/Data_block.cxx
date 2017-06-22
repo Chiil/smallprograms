@@ -106,3 +106,13 @@ Data_block::Data_block(const std::string& file_name)
             std::cout << s << std::endl;
     }
 }
+
+template <typename T>
+std::vector<T> Data_block::get_vector(const std::string& name, const int length)
+{
+    std::cout << "get_vector" << std::endl;
+
+    return std::vector<T>();
+}
+
+template std::vector<double> Data_block::get_vector(const std::string&, const int);

@@ -47,6 +47,8 @@ int main(int argc, char *argv[])
 
         // Read data block.
         Data_block data_block(data_file_name);
+
+        std::vector<double> a = data_block.get_vector<double>("a", 4);
         
     }
     catch (std::exception &e)

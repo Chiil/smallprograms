@@ -5,7 +5,7 @@ class Data_block
 {
     public:
         Data_block(const std::string&);
-        // template<typename T> T get_column(const std::string&);
+        template<typename T> std::vector<T> get_vector(const std::string&, const int);
 };
 #endif
 
