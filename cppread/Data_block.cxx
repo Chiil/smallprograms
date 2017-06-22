@@ -3,8 +3,10 @@
 #include <map>
 #include <string>
 #include <fstream>
+#include <sstream>
 #include <boost/algorithm/string.hpp>
 #include "Data_block.h"
+#include "Convert.h"
 
 namespace
 {
@@ -102,11 +104,18 @@ Data_block::Data_block(const std::string& file_name)
 
 namespace
 {
-    template<typename T>
-    T convert_from_string(const std::string& s) { return s; }
+    using namespace Convert;
 
-    template<>
-    double convert_from_string(const std::string& s) { return std::stod(s); }
+    template<typename T>
+    T convert_from_string(const std::string& value)
+    {
+        std::istringstream ss(value);
+
+        T item = get_item_from_stream<T>(ss);
+        check_item<T>(item);
+
+        return item;
+    }
 }
 
 template <typename T>
