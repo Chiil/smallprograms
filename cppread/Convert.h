@@ -2,10 +2,10 @@
 namespace Convert
 {
     template<typename T>
-    void check_item(const T& t) {}
+    inline void check_item(const T& t) {}
     
     template<>
-    void check_item(const std::string& s)
+    inline void check_item(const std::string& s)
     {
         // Check whether string is empty or whether the first character is not alpha.
         if (s.empty())
@@ -21,7 +21,7 @@ namespace Convert
     }
 
     template<typename T>
-    T get_item_from_stream(std::istringstream& ss)
+    inline T get_item_from_stream(std::istringstream& ss)
     {
         // Read the item from the stringstream, operator >> trims automatically.
         T item;

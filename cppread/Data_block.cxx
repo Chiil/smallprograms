@@ -104,15 +104,13 @@ Data_block::Data_block(const std::string& file_name)
 
 namespace
 {
-    using namespace Convert;
-
     template<typename T>
     T convert_from_string(const std::string& value)
     {
         std::istringstream ss(value);
 
-        T item = get_item_from_stream<T>(ss);
-        check_item<T>(item);
+        T item = Convert::get_item_from_stream<T>(ss);
+        Convert::check_item<T>(item);
 
         return item;
     }
