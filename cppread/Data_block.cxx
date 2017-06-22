@@ -52,6 +52,8 @@ Data_block::Data_block(const std::string& file_name)
     // First, read the header.
     int number_of_vectors;
     int line_number = 0;
+    std::vector<std::string> header_items;
+
     while (std::getline(infile, line))
     {
         ++line_number;
@@ -63,11 +65,11 @@ Data_block::Data_block(const std::string& file_name)
 
         for (const std::string& s : strings)
         {
-            auto it = data_series.find(s);
-            if (it != data_series.end())
+            auto it = std::find(header_items.begin(), header_items.end(), s);
+            if (it != header_items.end())
                 throw std::runtime_error("Duplicate name in header");
             else
-                data_series[s] = std::vector<std::string>();
+                header_items.push_back(s);
         }
         break;
     }
@@ -80,6 +82,7 @@ Data_block::Data_block(const std::string& file_name)
         if (strings.size() == 0)
             continue;
 
+        // Check if the number if items match with the header.
         if (strings.size() != number_of_vectors)
         {
             std::string error_string = "Illegal number of items on line ";
@@ -87,10 +90,11 @@ Data_block::Data_block(const std::string& file_name)
             throw std::runtime_error(error_string);
         }
 
+        // Insert data into the vectors.
         auto it_s = strings.begin();
-        for (auto& v : data_series)
+        for (auto& h : header_items)
         {
-            v.second.push_back(*it_s);
+            data_series[h].push_back(*it_s);
             ++it_s;
         }
     }
