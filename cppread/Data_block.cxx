@@ -99,20 +99,21 @@ Data_block::Data_block(const std::string& file_name)
         }
     }
 
+    /*
     for (const auto& v : data_series)
     {
         std::cout << "label: " << v.first << std::endl;
         for (const auto& s : v.second)
             std::cout << s << std::endl;
     }
+    */
 }
 
 template <typename T>
 std::vector<T> Data_block::get_vector(const std::string& name, const int length)
 {
-    std::cout << "get_vector" << std::endl;
-
-    return std::vector<T>();
+    return std::vector<T>(data_series[name].begin(), data_series[name].end());
 }
 
-template std::vector<double> Data_block::get_vector(const std::string&, const int);
+template std::vector<std::string> Data_block::get_vector(const std::string&, const int);
+// template std::vector<double> Data_block::get_vector(const std::string&, const int);

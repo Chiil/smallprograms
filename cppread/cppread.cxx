@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
         std::cout << std::endl;
 
         std::cout << "xy = ";
-        for (double &i : xy)
+        for (const double &i : xy)
             std::cout << i << " ";
         std::cout << std::endl;
 
@@ -48,8 +48,11 @@ int main(int argc, char *argv[])
         // Read data block.
         Data_block data_block(data_file_name);
 
-        std::vector<double> a = data_block.get_vector<double>("a", 4);
-        
+        std::vector<std::string> a = data_block.get_vector<std::string>("a", 4);
+        for (const std::string& s : a)
+            std::cout << s << " ";
+        std::cout << std::endl;
+
     }
     catch (std::exception &e)
     {
