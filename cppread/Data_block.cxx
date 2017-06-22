@@ -129,3 +129,4 @@ std::vector<T> Data_block::get_vector(const std::string& name, const int length)
 
 template std::vector<std::string> Data_block::get_vector(const std::string&, const int);
 template std::vector<double> Data_block::get_vector(const std::string&, const int);
+template std::vector<int> Data_block::get_vector(const std::string&, const int);

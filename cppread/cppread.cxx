@@ -59,6 +59,12 @@ int main(int argc, char *argv[])
         for (const double d : c)
             std::cout << d << " ";
         std::cout << std::endl;
+
+        std::cout << "vector d:" << std::endl;
+        std::vector<int> d = data_block.get_vector<int>("d", 4);
+        for (const int i : d)
+            std::cout << i << " ";
+        std::cout << std::endl;
     }
     catch (std::exception &e)
     {
