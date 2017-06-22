@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <map>
 #include <string>
 #include <fstream>
 #include <boost/algorithm/string.hpp>
@@ -7,22 +8,30 @@
 
 namespace
 {
-    std::vector<std::string> split_string(std::string& line, const std::string splitter)
+    std::map< std::string, std::vector<std::string> > data_series;
+
+    std::vector<std::string> split_line(std::string& line, const std::string splitter)
     {
+        std::vector<std::string> strings;
+
         // Strip of the comments.
         boost::trim(line);
-        std::vector<std::string> strings;
         boost::split(strings, line, boost::is_any_of("#"));
 
-        // Keep part that is not comment.
+        // Keep part that is not comment and clear strings.
         if (strings.size() >= 2)
             line = strings[0];
+        strings.clear();
+
+        // Return if line is empty.
+        if (line.empty())
+            return strings;
 
         // Strip of all the whitespace.
         boost::trim(line);
 
+
         // Split string on the given splitter.
-        strings.clear();
         boost::split(strings, line, boost::is_any_of(splitter));
 
         return strings;
@@ -31,8 +40,6 @@ namespace
 
 Data_block::Data_block(const std::string& file_name)
 {
-    std::string blockname;
-
     // Read file and throw exception on error.
     std::ifstream infile;
 
@@ -44,12 +51,21 @@ Data_block::Data_block(const std::string& file_name)
 
     while (std::getline(infile, line))
     {
-        std::vector<std::string> strings = split_string(line, " ");
+        std::vector<std::string> strings = split_line(line, " \t");
+        if (strings.size() == 0)
+            continue;
 
-        std::cout << "Number of items: " << strings.size() << std::endl;
         for (const std::string& s : strings)
-            std::cout << s << ", ";
-
-        std::cout << std::endl;
+        {
+            auto it = data_series.find(s);
+            if (it != data_series.end())
+                throw std::runtime_error("Duplicate name in header");
+            else
+                data_series[s] = std::vector<std::string>();
+        }
+        break;
     }
+
+    for (const auto& v : data_series)
+        std::cout << "label: " << v.first << std::endl;
 }
