@@ -48,11 +48,17 @@ int main(int argc, char *argv[])
         // Read data block.
         Data_block data_block(data_file_name);
 
+        std::cout << "vector a:" << std::endl;
         std::vector<std::string> a = data_block.get_vector<std::string>("a", 4);
         for (const std::string& s : a)
             std::cout << s << " ";
         std::cout << std::endl;
 
+        std::cout << "vector c:" << std::endl;
+        std::vector<double> c = data_block.get_vector<double>("c", 4);
+        for (const double d : c)
+            std::cout << d << " ";
+        std::cout << std::endl;
     }
     catch (std::exception &e)
     {

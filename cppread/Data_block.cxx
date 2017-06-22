@@ -98,22 +98,27 @@ Data_block::Data_block(const std::string& file_name)
             ++it_s;
         }
     }
+}
 
-    /*
-    for (const auto& v : data_series)
-    {
-        std::cout << "label: " << v.first << std::endl;
-        for (const auto& s : v.second)
-            std::cout << s << std::endl;
-    }
-    */
+namespace
+{
+    template<typename T>
+    T convert_from_string(const std::string& s) { return s; }
+
+    template<>
+    double convert_from_string(const std::string& s) { return std::stod(s); }
 }
 
 template <typename T>
 std::vector<T> Data_block::get_vector(const std::string& name, const int length)
 {
-    return std::vector<T>(data_series[name].begin(), data_series[name].end());
+    std::vector<T> v(length);
+    std::transform(data_series[name].begin(), data_series[name].end(),
+            std::back_inserter(v),
+            [](std::string value) { return convert_from_string<T>(value); });
+
+    return v;
 }
 
 template std::vector<std::string> Data_block::get_vector(const std::string&, const int);
-// template std::vector<double> Data_block::get_vector(const std::string&, const int);
+template std::vector<double> Data_block::get_vector(const std::string&, const int);
