@@ -1,7 +1,9 @@
 #include <vector>
 #include <iostream>
 #include <stdexcept>
+
 #include "Input.h"
+#include "Data_block.h"
 
 int main(int argc, char *argv[])
 {
@@ -10,8 +12,11 @@ int main(int argc, char *argv[])
         if (argc != 2)
             throw std::runtime_error("Illegal number or arguments");
 
-        std::string file_name = std::string(argv[1]);
-        Input input(file_name);
+        std::string case_name = std::string(argv[1]);
+        std::string ini_file_name = case_name + ".ini";
+        std::string data_file_name = case_name + ".data";
+
+        Input input(ini_file_name);
         // input.printItemList();
 
         int itot = input.get_item<int>("grid", "itot");
@@ -39,6 +44,10 @@ int main(int argc, char *argv[])
 
         std::cout << "rndamp = " << rndamp << std::endl;
         std::cout << "rndamp[b] = " << rndampb << std::endl;
+
+        // Read data block.
+        Data_block data_block(data_file_name);
+        
     }
     catch (std::exception &e)
     {
