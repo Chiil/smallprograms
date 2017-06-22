@@ -10,6 +10,7 @@ namespace
     std::vector<std::string> split_string(std::string& line, const std::string splitter)
     {
         // Strip of the comments.
+        boost::trim(line);
         std::vector<std::string> strings;
         boost::split(strings, line, boost::is_any_of("#"));
 
@@ -20,7 +21,7 @@ namespace
         // Strip of all the whitespace.
         boost::trim(line);
 
-        // Split string on whitespace.
+        // Split string on the given splitter.
         strings.clear();
         boost::split(strings, line, boost::is_any_of(splitter));
 
@@ -40,8 +41,6 @@ Data_block::Data_block(const std::string& file_name)
         throw std::runtime_error("Illegal file name");
 
     std::string line;
-
-    int number_of_items;
 
     while (std::getline(infile, line))
     {
