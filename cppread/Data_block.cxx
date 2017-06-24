@@ -123,10 +123,19 @@ void Data_block::get_vector(std::vector<T>& destination,
                             const size_t source_start_index,
                             const size_t destination_start_index)
 {
-    std::transform(data_series.at(name).begin()+source_start_index,
-            data_series.at(name).begin()+source_start_index+length,
-            destination.begin()+destination_start_index,
-            [](std::string value) { return convert_from_string<T>(value); });
+    try
+    {
+        std::transform(data_series.at(name).begin()+source_start_index,
+                data_series.at(name).begin()+source_start_index+length,
+                destination.begin()+destination_start_index,
+                [](std::string value) { return convert_from_string<T>(value); });
+    }
+    catch (std::exception& e)
+    {
+        std::string error_string = "Error in retrieval of vector ";
+        error_string += name;
+        throw std::runtime_error(error_string);
+    }
 }
 
 template void Data_block::get_vector(std::vector<std::string>&, const std::string&, const size_t, const size_t, const size_t);
