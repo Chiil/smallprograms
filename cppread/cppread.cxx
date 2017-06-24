@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
         print_vector(d2, "d2");
 
         std::vector<double> too_short(4);
-        data_block.get_vector(too_short, "d", 4, 0, 2);
+        data_block.get_vector(too_short, "d", 4, 0, 1);
         print_vector(too_short, "too_short");
     }
     catch (std::exception &e)
