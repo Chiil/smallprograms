@@ -121,15 +121,33 @@ std::vector<T> Data_block::get_vector(const std::string& name,
                                       const int length,
                                       const int start_index)
 {
-    std::vector<T> v;
-    std::transform(data_series[name].begin(),
-            data_series[name].begin()+length,
-            std::back_inserter(v),
+    std::vector<T> v(start_index + length);
+    std::transform(data_series.at(name).begin(),
+            data_series.at(name).begin()+length,
+            v.begin()+start_index,
             [](std::string value) { return convert_from_string<T>(value); });
 
     return v;
 }
 
+template <typename T>
+void Data_block::get_vector_range(std::vector<T>& destination,
+                                  const std::string& name,
+                                  const int length,
+                                  const int source_start_index,
+                                  const int destination_start_index)
+{
+    std::transform(data_series.at(name).begin()+source_start_index,
+            data_series.at(name).begin()+source_start_index+length,
+            destination.begin()+destination_start_index,
+            [](std::string value) { return convert_from_string<T>(value); });
+}
+
 template std::vector<std::string> Data_block::get_vector(const std::string&, const int, const int);
 template std::vector<double> Data_block::get_vector(const std::string&, const int, const int);
 template std::vector<int> Data_block::get_vector(const std::string&, const int, const int);
+
+template void Data_block::get_vector_range(std::vector<std::string>&, const std::string&, const int, const int, const int);
+template void Data_block::get_vector_range(std::vector<double>&, const std::string&, const int, const int, const int);
+template void Data_block::get_vector_range(std::vector<int>&, const std::string&, const int, const int, const int);
+

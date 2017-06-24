@@ -60,16 +60,19 @@ int main(int argc, char *argv[])
         std::vector<std::string> a = data_block.get_vector<std::string>("a", 4);
         std::vector<double> b = data_block.get_vector<double>("b", 1);
         std::vector<int> c = data_block.get_vector<int>("c", 4);
-        std::vector<double> d;
-        d = data_block.get_vector<double>("d", 2);
-        std::vector<double> e;
-        d = data_block.get_vector<double>("e", 2, 2);
+        std::vector<double> d1;
+        d1 = data_block.get_vector<double>("d", 2);
+        std::vector<double> d2;
+        d2 = data_block.get_vector<double>("d", 2, 2);
 
         print_vector(a, "a");
         print_vector(b, "b");
         print_vector(c, "c");
-        print_vector(d, "d");
-        print_vector(e, "e");
+        print_vector(d1, "d1");
+        print_vector(d2, "d2");
+
+        data_block.get_vector_range(d2, "d", 2, 2, 0);
+        print_vector(d2, "d2");
     }
     catch (std::exception &e)
     {
