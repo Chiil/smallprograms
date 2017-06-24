@@ -57,21 +57,26 @@ int main(int argc, char *argv[])
         // Read data block.
         Data_block data_block(data_file_name);
 
-        std::vector<std::string> a = data_block.get_vector<std::string>("a", 4);
-        std::vector<double> b = data_block.get_vector<double>("b", 1);
-        std::vector<int> c = data_block.get_vector<int>("c", 4);
-        std::vector<double> d1;
-        d1 = data_block.get_vector<double>("d", 2);
-        std::vector<double> d2;
-        d2 = data_block.get_vector<double>("d", 2, 2);
+        std::vector<std::string> a(4);
+        data_block.get_vector<std::string>(a, "a", 4, 0, 0);
+
+        std::vector<double> b(4);
+        data_block.get_vector<double>(b, "b", 1, 0, 0);
+
+        std::vector<int> c(6);
+        data_block.get_vector<int>(c, "c", 4, 0, 1);
+
+        std::vector<double> d1(6);
+        data_block.get_vector<double>(d1, "d", 4, 0, 1);
+
+        std::vector<double> d2(6);
+        data_block.get_vector<double>(d2, "d", 2, 2, 1);
+        data_block.get_vector<double>(d2, "d", 2, 0, 3);
 
         print_vector(a, "a");
         print_vector(b, "b");
         print_vector(c, "c");
         print_vector(d1, "d1");
-        print_vector(d2, "d2");
-
-        data_block.get_vector_range(d2, "d", 2, 2, 0);
         print_vector(d2, "d2");
     }
     catch (std::exception &e)

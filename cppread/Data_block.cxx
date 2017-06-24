@@ -117,25 +117,11 @@ namespace
 }
 
 template <typename T>
-std::vector<T> Data_block::get_vector(const std::string& name,
-                                      const size_t length,
-                                      const size_t start_index)
-{
-    std::vector<T> v(start_index + length);
-    std::transform(data_series.at(name).begin(),
-            data_series.at(name).begin()+length,
-            v.begin()+start_index,
-            [](std::string value) { return convert_from_string<T>(value); });
-
-    return v;
-}
-
-template <typename T>
-void Data_block::get_vector_range(std::vector<T>& destination,
-                                  const std::string& name,
-                                  const size_t length,
-                                  const size_t source_start_index,
-                                  const size_t destination_start_index)
+void Data_block::get_vector(std::vector<T>& destination,
+                            const std::string& name,
+                            const size_t length,
+                            const size_t source_start_index,
+                            const size_t destination_start_index)
 {
     std::transform(data_series.at(name).begin()+source_start_index,
             data_series.at(name).begin()+source_start_index+length,
@@ -143,11 +129,7 @@ void Data_block::get_vector_range(std::vector<T>& destination,
             [](std::string value) { return convert_from_string<T>(value); });
 }
 
-template std::vector<std::string> Data_block::get_vector(const std::string&, const size_t, const size_t);
-template std::vector<double> Data_block::get_vector(const std::string&, const size_t, const size_t);
-template std::vector<int> Data_block::get_vector(const std::string&, const size_t, const size_t);
-
-template void Data_block::get_vector_range(std::vector<std::string>&, const std::string&, const size_t, const size_t, const size_t);
-template void Data_block::get_vector_range(std::vector<double>&, const std::string&, const size_t, const size_t, const size_t);
-template void Data_block::get_vector_range(std::vector<int>&, const std::string&, const size_t, const size_t, const size_t);
+template void Data_block::get_vector(std::vector<std::string>&, const std::string&, const size_t, const size_t, const size_t);
+template void Data_block::get_vector(std::vector<double>&, const std::string&, const size_t, const size_t, const size_t);
+template void Data_block::get_vector(std::vector<int>&, const std::string&, const size_t, const size_t, const size_t);
 
