@@ -58,20 +58,20 @@ int main(int argc, char *argv[])
         Data_block data_block(data_file_name);
 
         std::vector<std::string> a(4);
-        data_block.get_vector<std::string>(a, "a", 4, 0, 0);
+        data_block.get_vector(a, "a", 4, 0, 0);
 
         std::vector<double> b(4);
-        data_block.get_vector<double>(b, "b", 1, 0, 0);
+        data_block.get_vector(b, "b", 1, 0, 0);
 
         std::vector<int> c(6);
-        data_block.get_vector<int>(c, "c", 4, 0, 1);
+        data_block.get_vector(c, "c", 4, 0, 1);
 
         std::vector<double> d1(6);
-        data_block.get_vector<double>(d1, "d", 4, 0, 1);
+        data_block.get_vector(d1, "d", 4, 0, 1);
 
         std::vector<double> d2(6);
-        data_block.get_vector<double>(d2, "d", 2, 2, 1);
-        data_block.get_vector<double>(d2, "d", 2, 0, 3);
+        data_block.get_vector(d2, "d", 2, 2, 1);
+        data_block.get_vector(d2, "d", 2, 0, 3);
 
         print_vector(a, "a");
         print_vector(b, "b");
