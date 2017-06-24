@@ -5,6 +5,15 @@
 #include "Input.h"
 #include "Data_block.h"
 
+template <typename T>
+void print_vector(std::vector<T> v, const std::string name)
+{
+    std::cout << "vector "<< name <<  ":" << std::endl;
+    for (const T& i : v)
+        std::cout << i << " ";
+    std::cout << std::endl;
+}
+
 int main(int argc, char *argv[])
 {
     try
@@ -48,23 +57,13 @@ int main(int argc, char *argv[])
         // Read data block.
         Data_block data_block(data_file_name);
 
-        std::cout << "vector a:" << std::endl;
         std::vector<std::string> a = data_block.get_vector<std::string>("a", 4);
-        for (const std::string& s : a)
-            std::cout << s << " ";
-        std::cout << std::endl;
-
-        std::cout << "vector c:" << std::endl;
         std::vector<double> c = data_block.get_vector<double>("c", 4);
-        for (const double d : c)
-            std::cout << d << " ";
-        std::cout << std::endl;
+        std::vector<int> d = data_block.get_vector<int>("d", 2);
 
-        std::cout << "vector d:" << std::endl;
-        std::vector<int> d = data_block.get_vector<int>("d", 4);
-        for (const int i : d)
-            std::cout << i << " ";
-        std::cout << std::endl;
+        print_vector(a, "a");
+        print_vector(c, "c");
+        print_vector(d, "d");
     }
     catch (std::exception &e)
     {

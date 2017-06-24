@@ -117,7 +117,9 @@ namespace
 }
 
 template <typename T>
-std::vector<T> Data_block::get_vector(const std::string& name, const int length)
+std::vector<T> Data_block::get_vector(const std::string& name,
+                                      const int length,
+                                      const int start_index)
 {
     std::vector<T> v;
     std::transform(data_series[name].begin(), data_series[name].end(),
@@ -127,6 +129,6 @@ std::vector<T> Data_block::get_vector(const std::string& name, const int length)
     return v;
 }
 
-template std::vector<std::string> Data_block::get_vector(const std::string&, const int);
-template std::vector<double> Data_block::get_vector(const std::string&, const int);
-template std::vector<int> Data_block::get_vector(const std::string&, const int);
+template std::vector<std::string> Data_block::get_vector(const std::string&, const int, const int);
+template std::vector<double> Data_block::get_vector(const std::string&, const int, const int);
+template std::vector<int> Data_block::get_vector(const std::string&, const int, const int);
