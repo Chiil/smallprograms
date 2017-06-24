@@ -126,9 +126,9 @@ void Data_block::get_vector(std::vector<T>& destination,
     try
     {
         std::transform(data_series.at(name).begin()+source_start_index,
-                data_series.at(name).begin()+source_start_index+length,
+                data_series.at(name).begin()+(source_start_index+length),
                 destination.begin()+destination_start_index,
-                [](std::string value) { return convert_from_string<T>(value); });
+                [](const std::string value) { return convert_from_string<T>(value); });
     }
     catch (std::exception& e)
     {

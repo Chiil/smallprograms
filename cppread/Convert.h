@@ -31,7 +31,7 @@ namespace Convert
         // Check whether stringstream is empty, if not type is incorrect.
         std::string dummy;
         if (ss >> dummy)
-            throw std::runtime_error("Partial item does not match type");
+            throw std::runtime_error("Item does not match type");
     
         return item;
     }
