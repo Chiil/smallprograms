@@ -6,9 +6,9 @@
 #include "Data_block.h"
 
 template <typename T>
-void print_vector(std::vector<T> v, const std::string name)
+void print_vector(const std::vector<T>& v, const std::string name)
 {
-    std::cout << "vector "<< name <<  ":" << std::endl;
+    std::cout << "vector "<< name << "(" << v.size() << "):" << std::endl;
     for (const T& i : v)
         std::cout << i << " ";
     std::cout << std::endl;
@@ -58,10 +58,13 @@ int main(int argc, char *argv[])
         Data_block data_block(data_file_name);
 
         std::vector<std::string> a = data_block.get_vector<std::string>("a", 4);
-        std::vector<double> c = data_block.get_vector<double>("c", 4);
-        std::vector<int> d = data_block.get_vector<int>("d", 2);
+        std::vector<double> b = data_block.get_vector<double>("b", 1);
+        std::vector<int> c = data_block.get_vector<int>("c", 4);
+        std::vector<double> d;
+        d = data_block.get_vector<double>("d", 2);
 
         print_vector(a, "a");
+        print_vector(b, "b");
         print_vector(c, "c");
         print_vector(d, "d");
     }

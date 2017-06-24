@@ -122,7 +122,8 @@ std::vector<T> Data_block::get_vector(const std::string& name,
                                       const int start_index)
 {
     std::vector<T> v;
-    std::transform(data_series[name].begin(), data_series[name].end(),
+    std::transform(data_series[name].begin(),
+            data_series[name].begin()+length,
             std::back_inserter(v),
             [](std::string value) { return convert_from_string<T>(value); });
 
