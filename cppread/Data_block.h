@@ -6,13 +6,13 @@ class Data_block
     public:
         Data_block(const std::string&);
         template<typename T> std::vector<T> get_vector(const std::string&,
-                                                       const int,
-                                                       const int start_index=0);
+                                                       const size_t,
+                                                       const size_t start_index=0);
         template<typename T> void get_vector_range(std::vector<T>&,
                                                    const std::string&,
-                                                   const int,
-                                                   const int,
-                                                   const int);
+                                                   const size_t,
+                                                   const size_t,
+                                                   const size_t);
 };
 #endif
 
