@@ -62,11 +62,14 @@ int main(int argc, char *argv[])
         std::vector<int> c = data_block.get_vector<int>("c", 4);
         std::vector<double> d;
         d = data_block.get_vector<double>("d", 2);
+        std::vector<double> e;
+        d = data_block.get_vector<double>("e", 2, 2);
 
         print_vector(a, "a");
         print_vector(b, "b");
         print_vector(c, "c");
         print_vector(d, "d");
+        print_vector(e, "e");
     }
     catch (std::exception &e)
     {
