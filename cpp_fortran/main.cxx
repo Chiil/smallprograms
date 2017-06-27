@@ -60,5 +60,4 @@ int main()
     std::cout << "g = " << g << std::endl;
 
     return 0;
-    return 0;
 }
