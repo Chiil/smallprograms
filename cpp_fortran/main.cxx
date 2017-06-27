@@ -5,7 +5,9 @@ namespace
 {
     extern "C" void square(double*, size_t);
     extern "C" void set_array(int*, int, int);
-    extern "C" void increment(int&, int);
+    extern "C" void increment(int*, int);
+
+    void call_increment(int& a, int b) { increment(&a, b); }
 }
 
 int main()
@@ -42,7 +44,7 @@ int main()
     int d = 6;
     const int e = 2;
 
-    increment(d, e);
+    call_increment(d, e);
 
     std::cout << "d = " << d << std::endl;
     std::cout << "e = " << e << std::endl;
