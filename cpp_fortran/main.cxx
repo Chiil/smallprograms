@@ -5,9 +5,11 @@ namespace
 {
     extern "C" void square(double*, size_t);
     extern "C" void set_array(int*, int, int);
-    extern "C" void increment(int*, int);
+    extern "C" void increment_int(int*, int);
+    extern "C" void increment_double(double*, double);
 
-    void call_increment(int& a, int b) { increment(&a, b); }
+    void increment(int& a, int b) { increment_int(&a, b); }
+    void increment(double& a, double b) { increment_double(&a, b); }
 }
 
 int main()
@@ -44,10 +46,19 @@ int main()
     int d = 6;
     const int e = 2;
 
-    call_increment(d, e);
+    increment(d, e);
 
     std::cout << "d = " << d << std::endl;
     std::cout << "e = " << e << std::endl;
 
+    double f = 6;
+    const double g = 2;
+
+    increment(f, g);
+
+    std::cout << "f = " << f << std::endl;
+    std::cout << "g = " << g << std::endl;
+
+    return 0;
     return 0;
 }

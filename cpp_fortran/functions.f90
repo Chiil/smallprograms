@@ -24,9 +24,16 @@ contains
         end do
     end subroutine
 
-    subroutine increment(a, b) bind(c, name="increment")
+    subroutine increment_int(a, b) bind(c, name="increment_int")
         integer(c_int), intent(inout) :: a
         integer(c_int), value :: b
+
+        a = a + b
+    end subroutine
+
+    subroutine increment_double(a, b) bind(c, name="increment_double")
+        real(c_double), intent(inout) :: a
+        real(c_double), value :: b
 
         a = a + b
     end subroutine
