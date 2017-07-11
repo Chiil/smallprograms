@@ -6,29 +6,29 @@ import pyfftw.interfaces.numpy_fft as fft
 nx = 128
 ny = 128
 
-Lx = 1e6
-Ly = 1e6
+L = 1e6
 
 # Settings
 nu = 200.
 c0 = 3e-6
-T_relax = 10.*86400.
-c1 = 1./T_relax
+c1 = 2e-6
 
-x = np.arange(0., Lx, Lx/nx)
-y = np.arange(0., Ly, Ly/ny)
+nd1 = c0*L**2/nu
+nd2 = c1*L**2/nu
 
-x_km = x/1000
-y_km = y/1000
+print('ND: ', nd1, nd2)
 
-kx = 2.*np.pi/Lx * np.arange(0, nx//2+1)
+x = np.arange(0., 1., 1./nx)
+y = np.arange(0., 1., 1./ny)
+
+kx = 2.*np.pi * np.arange(0, nx//2+1)
 ky = np.zeros(ny)
-ky[0:ny//2+1] = 2.*np.pi/Ly * np.arange(0, ny//2+1)
+ky[0:ny//2+1] = 2.*np.pi * np.arange(0, ny//2+1)
 for j in range(1, ny//2+1):
     ky[-j] = -ky[j]
 
 k_2 = kx[np.newaxis,:]**2 + ky[:ny//2+1,np.newaxis]**2
-stab = -k_2 * nu + c0 - c1
+stab = -k_2 + nd1 - nd2
 
 plt.figure()
 plt.contourf(stab, 21)
@@ -74,8 +74,8 @@ def generate_random_field(a_std):
 #h = generate_random_field(1.) + h0
 q = generate_random_field(1.)
 
-nt = 24*1000
-dt = 6*3600.
+nt = 100000
+dt = 6.*3600 / L**2 * nu
 t = 0.
 n_out = 16
 
@@ -102,9 +102,9 @@ def calc_prod(a, b):
     return unpad(ab_pad)
 
 def calc_rhs(q):
-    q_tend = fft.rfft2(c0*np.tanh(fft.irfft2(q))) \
-           - c1*q \
-           - nu * (kx[np.newaxis,:]**2 + ky[:,np.newaxis]**2) * q
+    q_tend = fft.rfft2(nd1*np.tanh(fft.irfft2(q))) \
+           - nd2*q \
+           - (kx[np.newaxis,:]**2 + ky[:,np.newaxis]**2) * q
 
     return q_tend
 
@@ -117,9 +117,9 @@ for n in range(nt):
         q_range = np.max(abs(q_plot))
 
         plt.figure()
-        plt.pcolormesh(x_km, y_km, q_plot/q_range, vmin=-1, vmax=1, cmap=plt.cm.RdBu)
+        plt.pcolormesh(x, y, q_plot/q_range, vmin=-1, vmax=1, cmap=plt.cm.RdBu)
         plt.colorbar()
-        plt.title('{0} d'.format(n*dt/86400))
+        plt.title('{0} (-)'.format(n*dt))
         plt.tight_layout()
         plt.savefig('figs/{0:08d}.png'.format(n//n_out), dpi=100)
         plt.close()
