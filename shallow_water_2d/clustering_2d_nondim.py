@@ -9,7 +9,7 @@ ny = 128
 L = 1e6
 
 # Settings
-nu = 200.
+nu = 10.
 c0 = 3e-6
 c1 = 2e-6
 
@@ -71,7 +71,6 @@ def generate_random_field(a_std):
     a *= a_std/np.std(a)
     return a
 
-#h = generate_random_field(1.) + h0
 q = generate_random_field(1.)
 
 nt = 100000
@@ -82,24 +81,27 @@ n_out = 16
 # Set all variables in Fourier space.
 q = fft.rfft2(q)
 
-def pad(a):
-    a_pad = np.zeros((3*ny//2, 3*nx//4+1), dtype=np.complex)
-    a_pad[:ny//2,:nx//2+1] = a[:ny//2,:]
-    a_pad[ny:3*ny//2,:nx//2+1] = a[ny//2:,:]
-    return (9/4)*a_pad
+#def pad(a):
+#    a_pad = np.zeros((3*ny//2, 3*nx//4+1), dtype=np.complex)
+#    a_pad[:ny//2,:nx//2+1] = a[:ny//2,:]
+#    a_pad[ny:3*ny//2,:nx//2+1] = a[ny//2:,:]
+#    return (9/4)*a_pad
 
-def unpad(a_pad):
-    a = np.zeros((ny, nx//2+1), dtype=complex)
-    a[:ny//2,:] = a_pad[:ny//2,:nx//2+1]
-    a[ny//2:,:] = a_pad[ny:3*ny//2,:nx//2+1]
-    return (4/9)*a
+#def unpad(a_pad):
+#    a = np.zeros((ny, nx//2+1), dtype=complex)
+#    a[:ny//2,:] = a_pad[:ny//2,:nx//2+1]
+#    a[ny//2:,:] = a_pad[ny:3*ny//2,:nx//2+1]
+#    return (4/9)*a
+
+#def calc_prod(a, b):
+#    a_pad = pad(a)
+#    b_pad = pad(b)
+#
+#    ab_pad = fft.rfft2( fft.irfft2(a_pad) * fft.irfft2(b_pad) )
+#    return unpad(ab_pad)
 
 def calc_prod(a, b):
-    a_pad = pad(a)
-    b_pad = pad(b)
-
-    ab_pad = fft.rfft2( fft.irfft2(a_pad) * fft.irfft2(b_pad) )
-    return unpad(ab_pad)
+    return fft.rfft2( fft.irfft2(a) * fft.irfft2(b) )
 
 def calc_rhs(q):
     q_tend = fft.rfft2(nd1*np.tanh(fft.irfft2(q))) \
@@ -113,7 +115,7 @@ for n in range(nt):
     if (output and n%n_out == 0):
         q_plot = fft.irfft2(q)
 
-        print('{0}, var = '.format(n//n_out), q_plot.var())
+        print('{0}, mean = {1}, var = {2}'.format(n//n_out, q_plot.mean(), q_plot.var()))
         q_range = np.max(abs(q_plot))
 
         plt.figure()
