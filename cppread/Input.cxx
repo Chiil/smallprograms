@@ -13,6 +13,26 @@
 namespace
 {
     using namespace Convert;
+
+    std::string get_item_string(const Input::Itemlist& itemlist,
+                                const std::string& blockname,
+                                const std::string& itemname,
+                                const std::string& subitemname)
+    {
+        auto itblock = itemlist.find(blockname);
+        if (itblock == itemlist.end())
+            throw std::runtime_error("Block does not exist");
+
+        auto ititem = itblock->second.find(itemname);
+        if (ititem == itblock->second.end())
+            throw std::runtime_error("Item does not exist");
+
+        auto itsubitem = ititem->second.find(subitemname);
+        if (itsubitem == ititem->second.end())
+            throw std::runtime_error("Subitem does not exist");
+
+        return itsubitem->second;
+    }
 }
 
 Input::Input(const std::string& file_name)
@@ -112,29 +132,6 @@ void Input::print_itemlist()
         for (auto& i : b.second)
             for (auto& is : i.second)
                 std::cout << b.first << "," << i.first << "," << is.first << "," << is.second << ";" << std::endl;
-}
-    
-namespace
-{
-    std::string get_item_string(const Input::Itemlist& itemlist,
-                                const std::string& blockname,
-                                const std::string& itemname,
-                                const std::string& subitemname)
-    {
-        auto itblock = itemlist.find(blockname);
-        if (itblock == itemlist.end())
-            throw std::runtime_error("Block does not exist");
-    
-        auto ititem = itblock->second.find(itemname);
-        if (ititem == itblock->second.end())
-            throw std::runtime_error("Item does not exist");
-    
-        auto itsubitem = ititem->second.find(subitemname);
-        if (itsubitem == ititem->second.end())
-            throw std::runtime_error("Subitem does not exist");
-    
-        return itsubitem->second;
-    }
 }
 
 template<typename T>

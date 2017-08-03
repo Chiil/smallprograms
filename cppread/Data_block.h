@@ -10,6 +10,8 @@ class Data_block
                                              const size_t,
                                              const size_t,
                                              const size_t);
+    private:
+        std::map<std::string, std::vector<std::string>> data_series;
 };
 #endif
 

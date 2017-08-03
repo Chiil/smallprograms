@@ -10,8 +10,6 @@
 
 namespace
 {
-    std::map< std::string, std::vector<std::string> > data_series;
-
     std::vector<std::string> split_line(std::string& line, const std::string splitter)
     {
         std::vector<std::string> strings;
@@ -37,6 +35,17 @@ namespace
         boost::split(strings, line, boost::is_any_of(splitter));
 
         return strings;
+    }
+
+    template<typename T>
+    T convert_from_string(const std::string& value)
+    {
+        std::istringstream ss(value);
+
+        T item = Convert::get_item_from_stream<T>(ss);
+        Convert::check_item<T>(item);
+
+        return item;
     }
 }
 
@@ -99,20 +108,6 @@ Data_block::Data_block(const std::string& file_name)
             data_series[h].push_back(*it_s);
             ++it_s;
         }
-    }
-}
-
-namespace
-{
-    template<typename T>
-    T convert_from_string(const std::string& value)
-    {
-        std::istringstream ss(value);
-
-        T item = Convert::get_item_from_stream<T>(ss);
-        Convert::check_item<T>(item);
-
-        return item;
     }
 }
 
