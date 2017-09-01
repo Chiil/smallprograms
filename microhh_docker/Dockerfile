@@ -24,7 +24,6 @@ RUN usermod -aG sudo microhh_user
 USER microhh_user
 WORKDIR /home/microhh_user
 RUN git clone https://github.com/microhh/microhh
-RUN git clone https://github.com/microhh/microhh2
 WORKDIR microhh
 RUN mkdir build
 WORKDIR build
