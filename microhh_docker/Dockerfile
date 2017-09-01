@@ -1,11 +1,6 @@
 # Use Ubuntu as the base
 FROM ubuntu:16.04
 
-# Add user and allow sudo
-RUN useradd -ms /bin/bash microhh_user
-RUN usermod -aG sudo microhh_user
-COPY inputrc /home/microhh_user/.inputrc
-
 # Complete install of required packages.
 RUN apt-get update
 RUN apt-get -y install \
@@ -13,13 +8,17 @@ RUN apt-get -y install \
         fftw3 libfftw3-dev \
         git \
         cmake \
-        python3 python3-pip \
+        python3 python3-pip python3-tk \
         ncview \
         sudo \
         valgrind gdb binutils \
         vim
 RUN pip3 install --upgrade pip
 RUN pip3 install numpy matplotlib ipython jupyter netcdf4
+
+# Add user and allow sudo
+RUN useradd -p $(openssl passwd -1 microhh_user) -ms /bin/bash microhh_user
+RUN usermod -aG sudo microhh_user
 
 # User actions.
 USER microhh_user
