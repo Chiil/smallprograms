@@ -1,3 +1,8 @@
+# This Docker image can be run via the Docker cloud with the following command:
+# docker run -it chiil/microhh bash
+
+# The instructions below build the image from the Ubuntu 17.10 image.
+
 # Use Ubuntu as the base
 FROM ubuntu:17.10
 
