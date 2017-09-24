@@ -21,7 +21,10 @@ namespace Advec
         else if (swadvec == "2")
             Advec_2::exec();
         else
-            throw std::runtime_error("Whoops!");
+        {
+            std::string error = "Illegal option for swadvec: " + swadvec;
+            throw std::runtime_error(error);
+        }
     }
 }
 #endif
