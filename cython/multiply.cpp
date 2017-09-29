@@ -1628,7 +1628,7 @@ static PyObject *__pyx_pf_8multiply_multiply(CYTHON_UNUSED PyObject *__pyx_self,
  */
   __pyx_t_3 = 0;
   __pyx_t_4 = 0;
-  oink::c_multiply((&(*__Pyx_BufPtrCContig2d(double *, __pyx_pybuffernd_input.rcbuffer->pybuffer.buf, __pyx_t_3, __pyx_pybuffernd_input.diminfo[0].strides, __pyx_t_4, __pyx_pybuffernd_input.diminfo[1].strides))), __pyx_v_value, __pyx_v_m, __pyx_v_n);
+  kernels::c_multiply((&(*__Pyx_BufPtrCContig2d(double *, __pyx_pybuffernd_input.rcbuffer->pybuffer.buf, __pyx_t_3, __pyx_pybuffernd_input.diminfo[0].strides, __pyx_t_4, __pyx_pybuffernd_input.diminfo[1].strides))), __pyx_v_value, __pyx_v_m, __pyx_v_n);
 
   /* "multiply.pyx":16
  *     m, n = input.shape[0], input.shape[1]
