@@ -1,6 +1,6 @@
 namespace diff
 {
-    void diff_cpp(double* __restrict__ at, double* __restrict__ a, const double visc, 
+    void diff_cpp(double* __restrict__ at, const double* __restrict__ a, const double visc, 
                   const double dxidxi, const double dyidyi, const double dzidzi, 
                   const int itot, const int jtot, const int ktot)
     {

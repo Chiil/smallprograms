@@ -11,12 +11,13 @@ ncells = itot*jtot*ktot;
 at = np.zeros((ktot, jtot, itot))
 
 index = np.arange(ncells)
-a = (index/index+1)**2
+a = (index/(index+1))**2
 a.shape = (ktot, jtot, itot)
+print(a)
 
 # Check results
 diff.diff(at, a, 0.1, 0.1, 0.1, 0.1)
-print("at={:}".format(at[23]))
+print("at={0}".format(at.flatten()[itot*jtot+itot+itot//2]))
 
 # Time the loop
 start = timer()
