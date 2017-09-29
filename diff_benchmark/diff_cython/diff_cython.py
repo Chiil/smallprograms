@@ -13,7 +13,6 @@ at = np.zeros((ktot, jtot, itot))
 index = np.arange(ncells)
 a = (index/(index+1))**2
 a.shape = (ktot, jtot, itot)
-print(a)
 
 # Check results
 diff.diff(at, a, 0.1, 0.1, 0.1, 0.1)
@@ -25,5 +24,5 @@ for i in range(nloop):
     diff.diff(at, a, 0.1, 0.1, 0.1, 0.1)
 end = timer()
 
-print((end-start)/nloop)
+print("Time/iter: {0} s ({1} iters)".format((end-start)/nloop, nloop))
 
