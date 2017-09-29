@@ -7,7 +7,7 @@ import numpy
 setup(
     cmdclass = {'build_ext': build_ext},
     ext_modules = [Extension("multiply",
-                             sources=["multiply.pyx", "c_multiply.c"],
-                             language="c",
+                             sources=["multiply.pyx"],
+                             language="c++",
                              include_dirs=[numpy.get_include()])],
 )

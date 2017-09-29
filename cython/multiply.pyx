@@ -4,7 +4,8 @@ import numpy as np
 cimport numpy as np
 
 # declare the interface to the C code
-cdef extern void c_multiply(double* array, double value, int m, int n)
+cdef extern from "c_multiply.cpp" namespace "oink":
+    void c_multiply(double* array, double value, int m, int n)
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
