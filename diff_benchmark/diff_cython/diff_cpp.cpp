@@ -1,8 +1,8 @@
-namespace kernels
+namespace diff
 {
-    void diff(double* const __restrict__ at, const double* const __restrict__ a, const double visc, 
-              const double dxidxi, const double dyidyi, const double dzidzi, 
-              const int itot, const int jtot, const int ktot)
+    void diff_cpp(double* __restrict__ at, double* __restrict__ a, const double visc, 
+                  const double dxidxi, const double dyidyi, const double dzidzi, 
+                  const int itot, const int jtot, const int ktot)
     {
         const int ii = 1;
         const int jj = itot;
@@ -24,6 +24,4 @@ namespace kernels
                             );
                 }
     }
-
-
 }
