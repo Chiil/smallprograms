@@ -2,7 +2,7 @@ module diff
 contains
     subroutine diff_f90(at, a, visc, dxidxi, dyidyi, dzidzi, itot, jtot, ktot)
         double precision, intent(inout), dimension(itot, jtot, ktot) :: at
-        double precision, intent(in)   , dimension(itot, jtot, ktot) :: a
+        double precision, intent(in), dimension(itot, jtot, ktot) :: a
         double precision, intent(in) :: visc, dxidxi, dyidyi, dzidzi
         integer, intent(in) :: itot, jtot, ktot
 

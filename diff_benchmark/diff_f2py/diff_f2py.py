@@ -15,13 +15,13 @@ a = (index/(index+1))**2
 a.shape = (ktot, jtot, itot)
 
 # Check results
-diff.diff(at, a, 0.1, 0.1, 0.1, 0.1)
+diff.diff(at.T, a.T, 0.1, 0.1, 0.1, 0.1)
 print("at={0}".format(at.flatten()[itot*jtot+itot+itot//2]))
 
 # Time the loop
 start = timer()
 for i in range(nloop):
-    diff.diff(at, a, 0.1, 0.1, 0.1, 0.1, itot, jtot, ktot)
+    diff.diff(at.T, a.T, 0.1, 0.1, 0.1, 0.1, itot, jtot, ktot)
 end = timer()
 
 print("Time/iter: {0} s ({1} iters)".format((end-start)/nloop, nloop))
