@@ -9,6 +9,6 @@ setup(
     ext_modules = [Extension("diff",
                              sources=["diff.pyx"],
                              language="c++",
-                             extra_compile_args=["-Ofast -march=native"],
+                             extra_compile_args=["-Ofast", "-march=native", "-mtune=native", "-fno-wrapv"],
                              include_dirs=[numpy.get_include()])],
 )
