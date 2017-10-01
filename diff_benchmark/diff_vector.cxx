@@ -43,10 +43,10 @@ void diff(std::vector<double>& at, const std::vector<double>& a, const double vi
 
 int main()
 {
-    const int nloop = 20;
-    const int itot = 256;
-    const int jtot = 256;
-    const int ktot = 256;
+    const int nloop = 100;
+    const int itot = 384;
+    const int jtot = 384;
+    const int ktot = 384;
     const int ncells = itot*jtot*ktot;
 
     std::vector<double> a (ncells);

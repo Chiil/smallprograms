@@ -3,9 +3,9 @@ import diff
 from timeit import default_timer as timer
 
 nloop = 100;
-itot = 256;
-jtot = 256;
-ktot = 256;
+itot = 384;
+jtot = 384;
+ktot = 384;
 ncells = itot*jtot*ktot;
 
 at = np.zeros((ktot, jtot, itot))

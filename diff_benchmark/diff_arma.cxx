@@ -42,10 +42,10 @@ void diff(cube& at, const cube& a, const double visc,
 
 int main()
 {
-    const int nloop = 20;
-    const int itot = 256;
-    const int jtot = 256;
-    const int ktot = 256;
+    const int nloop = 100;
+    const int itot = 384;
+    const int jtot = 384;
+    const int ktot = 384;
     const int ncells = itot*jtot*ktot;
 
     cube at = cube(itot, jtot, ktot);
