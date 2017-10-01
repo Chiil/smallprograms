@@ -25,7 +25,7 @@ void diff(double* const __restrict__ at, const double* const __restrict__ a, con
 
     for (int k=1; k<ktot-1; k++)
         for (int j=1; j<jtot-1; j++)
-        #pragma ivdep
+        #pragma GCC ivdep
             for (int i=1; i<itot-1; i++)
             {
                 const int ijk = i + j*jj + k*kk;
@@ -40,12 +40,18 @@ void diff(double* const __restrict__ at, const double* const __restrict__ a, con
             }
 }
 
-int main()
+int main(int argc, char* argv[])
 {
-    const int nloop = 20;
-    const int itot = 256;
-    const int jtot = 256;
-    const int ktot = 256;
+    if (argc != 2)
+    {
+        std::cout << "Add the grid size as an argument!" << std::endl;
+        return 1;
+    }
+
+    const int nloop = 100;
+    const int itot = std::stoi(argv[1]);
+    const int jtot = std::stoi(argv[1]);
+    const int ktot = std::stoi(argv[1]);
     const int ncells = itot*jtot*ktot;
 
     double *a  = new double[ncells];

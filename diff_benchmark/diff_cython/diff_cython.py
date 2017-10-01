@@ -2,7 +2,7 @@ import numpy as np
 import diff
 from timeit import default_timer as timer
 
-nloop = 20;
+nloop = 100;
 itot = 256;
 jtot = 256;
 ktot = 256;
