@@ -1,0 +1,1 @@
+f2py --opt="-Ofast -march=native -fno-wrapv" -c -m diff diff_f90.f90 
