@@ -23,8 +23,16 @@ void kernel(double* a, double* abot) {}
 
 void kernel_launcher(Fields& f)
 {
+    // Method 1
     kernel(f.at.at("u").data.data(), f.at.at("u").databot.data());
-    kernel(f.d ("u"), f.db("u"));
+
+    // Method 2
+    kernel(f.d("u"), f.db("u"));
+
+    // Method 3
+    double* u  = f.at.at("u").data.data();
+    double* ub = f.at.at("u").databot.data();
+    kernel(u, ub);
 }
 
 int main()
