@@ -1,7 +1,8 @@
 namespace diff
 {
-    void diff_cpp(double* __restrict__ at, const double* __restrict__ a, const double visc,
-                  const double dxidxi, const double dyidyi, const double dzidzi,
+    template<typename TF>
+    void diff_cpp(TF* __restrict__ at, const TF* __restrict__ a, const TF visc,
+                  const TF dxidxi, const TF dyidyi, const TF dzidzi,
                   const int itot, const int jtot, const int ktot)
     {
         const int ii = 1;
@@ -11,6 +12,7 @@ namespace diff
         for (int k=1; k<ktot-1; k++)
             for (int j=1; j<jtot-1; j++)
                 #pragma clang loop vectorize(enable)
+                #pragma GCC ivdep
                 for (int i=1; i<itot-1; i++)
                 {
                     const int ijk = i + j*jj + k*kk;

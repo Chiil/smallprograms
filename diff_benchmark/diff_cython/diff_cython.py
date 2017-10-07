@@ -2,16 +2,20 @@ import numpy as np
 import diff
 from timeit import default_timer as timer
 
-nloop = 100;
+nloop = 10;
 itot = 384;
 jtot = 384;
 ktot = 384;
 ncells = itot*jtot*ktot;
 
-at = np.zeros((ktot, jtot, itot))
+float_type = np.float32
+#float_type = np.float64
 
-index = np.arange(ncells)
+at = np.zeros((ktot, jtot, itot), dtype=float_type)
+
+index = np.arange(ncells, dtype=float_type)
 a = (index/(index+1))**2
+del(index)
 a.shape = (ktot, jtot, itot)
 
 # Check results
