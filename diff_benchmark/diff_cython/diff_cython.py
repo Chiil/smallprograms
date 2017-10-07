@@ -1,12 +1,6 @@
 import numpy as np
 from timeit import default_timer as timer
 
-nloop = 100;
-itot = 384;
-jtot = 384;
-ktot = 384;
-ncells = itot*jtot*ktot;
-
 #float_type = np.float32
 float_type = np.float64
 
@@ -14,6 +8,12 @@ if (float_type == np.float32):
     import diff_f as diff
 elif (float_type == np.float64):
     import diff_d as diff
+
+nloop = 100;
+itot = 384;
+jtot = 384;
+ktot = 384;
+ncells = itot*jtot*ktot;
 
 at = np.zeros((ktot, jtot, itot), dtype=float_type)
 
