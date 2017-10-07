@@ -1,15 +1,19 @@
 import numpy as np
-import diff
 from timeit import default_timer as timer
 
-nloop = 10;
+nloop = 100;
 itot = 384;
 jtot = 384;
 ktot = 384;
 ncells = itot*jtot*ktot;
 
-float_type = np.float32
-#float_type = np.float64
+#float_type = np.float32
+float_type = np.float64
+
+if (float_type == np.float32):
+    import diff_f as diff
+elif (float_type == np.float64):
+    import diff_d as diff
 
 at = np.zeros((ktot, jtot, itot), dtype=float_type)
 

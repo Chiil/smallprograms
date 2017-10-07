@@ -6,8 +6,8 @@ import numpy
 
 setup(
     cmdclass = {'build_ext': build_ext},
-    ext_modules = [Extension("diff",
-                             sources=["diff.pyx"],
+    ext_modules = [Extension("diff_d",
+                             sources=["diff_d.pyx"],
                              language="c++",
                              extra_compile_args=["-Ofast", "-march=native", "-mtune=native", "-fno-wrapv"],
                              include_dirs=[numpy.get_include()])],
