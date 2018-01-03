@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 s0 = 100.
-a = -0.006
+a = -0.007
 p = 0.
 
 def calc_s(t):
@@ -30,13 +30,16 @@ def trendline(t_start, t_end, s_start, method):
         s_end = s_start + calc_dsdt(t_start, s_start)*dt
     elif method == 'impl':
         s_end = calc_s_impl(t_start, t_end, s_start)
-    else:
+    elif method == 'mixed_impl':
         s_mid = s_start + calc_dsdt(t_start, s_start)*dt/2.
         s_end = calc_s_impl(t_start+dt/2, t_end, s_mid)
+    elif method == 'mixed_expl':
+        s_mid = s_start + calc_dsdt(t_start, s_start)*dt/2.
+        s_end = s_mid + calc_dsdt(t_start + dt/2, s_mid)*dt/2.
 
     return np.array([t_start, t_end]), np.array([s_start, s_end])
 
-t_end = 250
+t_end = 200
 x_expl_1, y_expl_1 = trendline(0, t_end, calc_s(0), 'expl')
 x_expl_2, y_expl_2 = trendline(t_end, 2*t_end, y_expl_1[-1], 'expl')
 x_expl_3, y_expl_3 = trendline(2*t_end, 3*t_end, y_expl_2[-1], 'expl')
@@ -47,10 +50,10 @@ x_impl_2, y_impl_2 = trendline(t_end, 2*t_end, y_impl_1[-1], 'impl')
 x_impl_3, y_impl_3 = trendline(2*t_end, 3*t_end, y_impl_2[-1], 'impl')
 x_impl_4, y_impl_4 = trendline(3*t_end, 4*t_end, y_impl_3[-1], 'impl')
 
-x_mixed_1, y_mixed_1 = trendline(0, t_end, calc_s(0), 'mixed')
-x_mixed_2, y_mixed_2 = trendline(t_end, 2*t_end, y_mixed_1[-1], 'mixed')
-x_mixed_3, y_mixed_3 = trendline(2*t_end, 3*t_end, y_mixed_2[-1], 'mixed')
-x_mixed_4, y_mixed_4 = trendline(3*t_end, 4*t_end, y_mixed_3[-1], 'mixed')
+x_mixed_1, y_mixed_1 = trendline(0, t_end, calc_s(0), 'mixed_impl')
+x_mixed_2, y_mixed_2 = trendline(t_end, 2*t_end, y_mixed_1[-1], 'mixed_impl')
+x_mixed_3, y_mixed_3 = trendline(2*t_end, 3*t_end, y_mixed_2[-1], 'mixed_impl')
+x_mixed_4, y_mixed_4 = trendline(3*t_end, 4*t_end, y_mixed_3[-1], 'mixed_impl')
 
 smin, smax = -0.6*s0, 1.1*s0
 
@@ -62,6 +65,16 @@ plt.xlabel('t (d)')
 plt.ylabel('h (m)')
 plt.ylim(smin, smax)
 plt.savefig('vectorfield_1.pdf')
+plt.close()
+
+plt.figure()
+plt.semilogy(t, s, 'r-', linewidth=1.5)
+#plt.streamplot(tt, ss, dsdt_tt, dsdt_ss,
+#        color='#bbbbbb')
+plt.xlabel('t (d)')
+plt.ylabel('h (m)')
+plt.ylim(0.08, smax)
+plt.savefig('vectorfield_1_log.pdf')
 plt.close()
 
 plt.figure()
