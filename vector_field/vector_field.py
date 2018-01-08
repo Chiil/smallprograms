@@ -31,8 +31,7 @@ def trendline(t_start, t_end, s_start, method):
     elif method == 'impl':
         s_end = calc_s_impl(t_start, t_end, s_start)
     elif method == 'mixed_impl':
-        s_mid = s_start + calc_dsdt(t_start, s_start)*dt/2.
-        s_end = calc_s_impl(t_start+dt/2, t_end, s_mid)
+        s_end = (1 + a*dt/2)/(1. - a*dt/2)*s_start
     elif method == 'mixed_expl':
         s_mid = s_start + calc_dsdt(t_start, s_start)*dt/2.
         s_end = s_mid + calc_dsdt(t_start + dt/2, s_mid)*dt/2.
@@ -79,6 +78,7 @@ plt.close()
 
 plt.figure()
 plt.plot(t, s, 'r-', linewidth=1.5)
+plt.plot(t[::t_end], s[::t_end], 'ro', linewidth=1.5)
 #plt.streamplot(tt, ss, dsdt_tt, dsdt_ss,
 #        color='#bbbbbb')
 plt.quiver(tt, ss, dsdt_tt, dsdt_ss,
@@ -92,6 +92,7 @@ plt.close()
 
 plt.figure()
 plt.plot(t, s, 'r-', linewidth=1.5)
+plt.plot(t[::t_end], s[::t_end], 'ro', linewidth=1.5)
 #plt.streamplot(tt, ss, dsdt_tt, dsdt_ss,
 #        color='#bbbbbb')
 plt.quiver(tt, ss, dsdt_tt, dsdt_ss,
@@ -106,6 +107,7 @@ plt.close()
 
 plt.figure()
 plt.plot(t, s, 'r-', linewidth=1.5)
+plt.plot(t[::t_end], s[::t_end], 'ro', linewidth=1.5)
 #plt.streamplot(tt, ss, dsdt_tt, dsdt_ss,
 #        color='#bbbbbb')
 plt.quiver(tt, ss, dsdt_tt, dsdt_ss,
@@ -121,13 +123,14 @@ plt.close()
 
 plt.figure()
 plt.plot(t, s, 'r-', linewidth=1.5)
+plt.plot(t[::t_end], s[::t_end], 'ro', linewidth=1.5)
 #plt.streamplot(tt, ss, dsdt_tt, dsdt_ss,
 #        color='#bbbbbb')
 plt.quiver(tt, ss, dsdt_tt, dsdt_ss,
         angles='xy', color='#dddddd', pivot='mid', units='dots',
         headlength=0, headaxislength=0, width=2)
-plt.plot(x_expl_1, y_expl_1, 'k+--')
-plt.plot(x_expl_2, y_expl_2, 'k+--')
+#plt.plot(x_expl_1, y_expl_1, 'k+--')
+#plt.plot(x_expl_2, y_expl_2, 'k+--')
 plt.plot(x_impl_1, y_impl_1, 'k+:')
 plt.xlabel('t (d)')
 plt.ylabel('h (m)')
@@ -137,13 +140,14 @@ plt.close()
 
 plt.figure()
 plt.plot(t, s, 'r-', linewidth=1.5)
+plt.plot(t[::t_end], s[::t_end], 'ro', linewidth=1.5)
 #plt.streamplot(tt, ss, dsdt_tt, dsdt_ss,
 #        color='#bbbbbb')
 plt.quiver(tt, ss, dsdt_tt, dsdt_ss,
         angles='xy', color='#dddddd', pivot='mid', units='dots',
         headlength=0, headaxislength=0, width=2)
-plt.plot(x_expl_1, y_expl_1, 'k+--')
-plt.plot(x_expl_2, y_expl_2, 'k+--')
+#plt.plot(x_expl_1, y_expl_1, 'k+--')
+#plt.plot(x_expl_2, y_expl_2, 'k+--')
 plt.plot(x_impl_1, y_impl_1, 'k+:')
 plt.plot(x_impl_2, y_impl_2, 'k+:')
 plt.xlabel('t (d)')
@@ -154,19 +158,13 @@ plt.close()
 
 plt.figure()
 plt.plot(t, s, 'r-', linewidth=1.5)
+plt.plot(t[::t_end], s[::t_end], 'ro', linewidth=1.5)
 #plt.streamplot(tt, ss, dsdt_tt, dsdt_ss,
 #        color='#bbbbbb')
 plt.quiver(tt, ss, dsdt_tt, dsdt_ss,
         angles='xy', color='#dddddd', pivot='mid', units='dots',
         headlength=0, headaxislength=0, width=2)
-plt.plot(x_expl_1, y_expl_1, 'k+--')
-plt.plot(x_expl_2, y_expl_2, 'k+--')
-plt.plot(x_expl_3, y_expl_3, 'k+--')
-plt.plot(x_expl_4, y_expl_4, 'k+--')
-plt.plot(x_impl_1, y_impl_1, 'k+:')
-plt.plot(x_impl_2, y_impl_2, 'k+:')
-plt.plot(x_impl_3, y_impl_3, 'k+:')
-plt.plot(x_impl_4, y_impl_4, 'k+:')
+plt.plot(x_mixed_1, y_mixed_1, 'k+-.')
 plt.xlabel('t (d)')
 plt.ylabel('h (m)')
 plt.ylim(smin, smax)
@@ -175,6 +173,23 @@ plt.close()
 
 plt.figure()
 plt.plot(t, s, 'r-', linewidth=1.5)
+plt.plot(t[::t_end], s[::t_end], 'ro', linewidth=1.5)
+#plt.streamplot(tt, ss, dsdt_tt, dsdt_ss,
+#        color='#bbbbbb')
+plt.quiver(tt, ss, dsdt_tt, dsdt_ss,
+        angles='xy', color='#dddddd', pivot='mid', units='dots',
+        headlength=0, headaxislength=0, width=2)
+plt.plot(x_mixed_1, y_mixed_1, 'k+-.')
+plt.plot(x_mixed_2, y_mixed_2, 'k+-.')
+plt.xlabel('t (d)')
+plt.ylabel('h (m)')
+plt.ylim(smin, smax)
+plt.savefig('vectorfield_8.pdf')
+plt.close()
+
+plt.figure()
+plt.plot(t, s, 'r-', linewidth=1.5)
+plt.plot(t[::t_end], s[::t_end], 'ro', linewidth=1.5)
 #plt.streamplot(tt, ss, dsdt_tt, dsdt_ss,
 #        color='#bbbbbb')
 plt.quiver(tt, ss, dsdt_tt, dsdt_ss,
@@ -195,6 +210,6 @@ plt.plot(x_mixed_4, y_mixed_4, 'k+-.')
 plt.xlabel('t (d)')
 plt.ylabel('h (m)')
 plt.ylim(smin, smax)
-plt.savefig('vectorfield_8.pdf')
+plt.savefig('vectorfield_9.pdf')
 plt.close()
 
