@@ -1,43 +1,69 @@
 #include <vector>
 #include <iostream>
+#include <memory>
 
 class Tmp
 {
     public:
-        Tmp() : available(true), data(100) {}
-        ~Tmp() { std::cout << "Tmp (available = " << is_available() << ") going out of scope..." << std::endl; }
+        Tmp() : data(100) {}
+        ~Tmp() {}
 
     private:
-        bool available;
         std::vector<double> data;
 };
 
 class Tmp_container
 {
     public:
-        Tmp_container(const unsigned n) : tmp_vector(n) {}
-        Tmp& get_tmp()
+        Tmp_container(const unsigned n)
         {
-            for (Tmp& tmp : tmp_vector)
-                if (tmp.is_available())
+            for (int i=0; i<n; ++i)
+            {
+                tmp_vector.push_back( std::make_pair( Tmp_status::Available, std::make_shared<Tmp>() ) );
+            }
+        }
+
+        std::shared_ptr<Tmp> get_tmp()
+        {
+            for (auto& a : tmp_vector)
+                if (a.first == Tmp_status::Available)
                 {
-                    tmp.lock();
-                    return tmp;
+                    a.first = Tmp_status::Locked;
+                    return a.second;
                 }
             throw std::runtime_error("Out of tmp!");
         }
+
+        void release(std::shared_ptr<Tmp>& ptr)
+        {
+            auto result = std::find_if(tmp_vector.begin(), tmp_vector.end(),
+                    [&ptr](Tmp_pair& tp) { return (tp.first == Tmp_status::Locked) && (tp.second == ptr); });
+
+            if (result != tmp_vector.end())
+            {
+                std::cout << "Releasing Tmp field" << std::endl;
+                result->first = Tmp_status::Available;
+            }
+            else
+                throw std::runtime_error("Releasing a non-locked or non-exisiting Tmp field");
+        }
+
         bool is_idle() const
         {
-            for (const Tmp& tmp : tmp_vector)
-                if (!tmp.is_available())
+            for (const auto& a: tmp_vector)
+            {
+                if (a.first != Tmp_status::Available)
                     return false;
+            }
 
             return true;
         }
 
+
     private:
         enum class Tmp_status { Available, Locked };
-        std::vector<<std::pair<Tmp_status, Tmp>> tmp_vector;
+        typedef std::pair<Tmp_status, std::shared_ptr<Tmp>> Tmp_pair;
+        std::vector<Tmp_pair> tmp_vector;
 };
 
 int main()
@@ -46,11 +72,10 @@ int main()
     {
         Tmp_container tmp_container(2);
 
-        Tmp& tmp1 = tmp_container.get_tmp();
-        Tmp& tmp2 = tmp_container.get_tmp();
-        tmp1.release();
-        tmp2.release();
-        // Tmp& tmp3 = tmp_container.get_tmp();
+        auto tmp1 = tmp_container.get_tmp();
+        auto tmp2 = tmp_container.get_tmp();
+        tmp_container.release(tmp1);
+        tmp_container.release(tmp2);
 
         if (!tmp_container.is_idle())
             throw std::runtime_error("Not all Tmp fields have been released at exit!");
