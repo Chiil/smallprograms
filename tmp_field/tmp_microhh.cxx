@@ -31,7 +31,7 @@ class Tmp_container
                     a.first = Tmp_status::Locked;
                     return a.second;
                 }
-            throw std::runtime_error("Out of tmp!");
+            throw std::runtime_error("Out of tmp");
         }
 
         void release(std::shared_ptr<Tmp>& ptr)
@@ -74,11 +74,13 @@ int main()
 
         auto tmp1 = tmp_container.get_tmp();
         auto tmp2 = tmp_container.get_tmp();
-        tmp_container.release(tmp1);
-        tmp_container.release(tmp2);
+        // tmp_container.release(tmp1);
+        // tmp_container.release(tmp2);
+
+        auto tmp3 = tmp_container.get_tmp();
 
         if (!tmp_container.is_idle())
-            throw std::runtime_error("Not all Tmp fields have been released at exit!");
+            throw std::runtime_error("Not all Tmp fields have been released at exit");
     }
     catch (std::exception& e)
     {
