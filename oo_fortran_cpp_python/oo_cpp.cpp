@@ -7,8 +7,8 @@ class Animal
         Animal(const double age, const double weight) :
             age_(age), weight_(weight) {}
 
-        virtual void print_age() { std::cout << age_ << std::endl; }
-        virtual void print_weight() { std::cout << weight_ << std::endl; }
+        void print_age() { std::cout << age_ << std::endl; }
+        void print_weight() { std::cout << weight_ << std::endl; }
         virtual void make_sound() = 0;
 
     private:
