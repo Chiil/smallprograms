@@ -31,10 +31,9 @@ class Cat(Animal):
     def make_sound(self):
         print(self.sound)
 
-animal1 = Dog(10, 3)
-animal2 = Cat(12, 1)
-
-animals = [ animal1, animal2 ]
+animals = []
+animals.append( Dog(10, 3) )
+animals.append( Cat(12, 1) )
 
 for a in animals:
     a.print_age()
