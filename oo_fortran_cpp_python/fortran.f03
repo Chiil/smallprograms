@@ -56,9 +56,16 @@ program animal_test
     implicit none
 
     type(Dog) :: animal_1
+    type(Cat) :: animal_2
+
     animal_1 = Dog(10, 3)
+    animal_2 = Cat(12, 1)
 
     call animal_1%print_age
     call animal_1%print_weight
     call animal_1%make_sound
+
+    call animal_2%print_age
+    call animal_2%print_weight
+    call animal_2%make_sound
 end program animal_test
