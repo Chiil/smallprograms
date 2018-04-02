@@ -22,18 +22,19 @@ void diff(cube& at, const cube& a, const double visc,
           const double dxidxi, const double dyidyi, const double dzidzi, 
           const int itot, const int jtot, const int ktot)
 {
-    subview_cube<double> at_mid  = at.subcube(1, 1, 1, itot-2, jtot-2, ktot-2);
-    subview_cube<double> a_mid   = a .subcube(1, 1, 1, itot-2, jtot-2, ktot-2);
-    subview_cube<double> a_west  = a .subcube(0, 1, 1, itot-3, jtot-2, ktot-2);
-    subview_cube<double> a_east  = a .subcube(2, 1, 1, itot-1, jtot-2, ktot-2);
-    subview_cube<double> a_south = a .subcube(1, 0, 1, itot-2, jtot-3, ktot-2);
-    subview_cube<double> a_north = a .subcube(1, 2, 1, itot-2, jtot-1, ktot-2);
-    subview_cube<double> a_bot   = a .subcube(1, 1, 0, itot-2, jtot-2, ktot-3);
-    subview_cube<double> a_top   = a .subcube(1, 1, 2, itot-2, jtot-2, ktot-1);
-
-    at_mid += visc * ( (a_east  - 2.*a_mid + a_west )*dxidxi
-                     + (a_north - 2.*a_mid + a_south)*dyidyi
-                     + (a_top   - 2.*a_mid + a_bot  )*dzidzi );
+    for (int k=1; k<ktot-1; k++)
+        for (int j=1; j<jtot-1; j++)
+            for (int i=1; i<itot-1; i++)
+            {
+                at(i, j, k) += visc * (
+                        + ( (a(i+1, j, k) - a(i  , j, k))
+                          - (a(i  , j, k) - a(i-1, j, k)) ) * dxidxi
+                        + ( (a(i, j+1, k) - a(i, j  , k))
+                          - (a(i, j  , k) - a(i, j-1, k)) ) * dyidyi
+                        + ( (a(i, j, k+1) - a(i, j, k  ))
+                          - (a(i, j, k  ) - a(i, j, k-1)) ) * dzidzi
+                        );
+            }
 }
 
 int main()
