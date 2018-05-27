@@ -7,6 +7,7 @@ namespace
     extern "C" void set_array(int*, int, int);
     extern "C" void increment_int(int*, int);
     extern "C" void increment_double(double*, double);
+    extern "C" void reverse_bool(bool*);
 
     void increment(int& a, int b) { increment_int(&a, b); }
     void increment(double& a, double b) { increment_double(&a, b); }
@@ -58,6 +59,10 @@ int main()
 
     std::cout << "f = " << f << std::endl;
     std::cout << "g = " << g << std::endl;
+
+    bool i_am_true = false;
+    reverse_bool(&i_am_true);
+    std::cout << "i_am_true = " << i_am_true << std::endl;
 
     return 0;
 }

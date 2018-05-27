@@ -1,5 +1,5 @@
 module functions
-    use, intrinsic :: iso_c_binding, only : c_double, c_size_t, c_int
+    use, intrinsic :: iso_c_binding, only : c_double, c_size_t, c_int, c_bool
     implicit none
 
 contains
@@ -36,5 +36,11 @@ contains
         real(c_double), value :: b
 
         a = a + b
+    end subroutine
+
+    subroutine reverse_bool(a) bind(c, name="reverse_bool")
+        logical(c_bool), intent(inout) :: a
+
+        a = .not. a
     end subroutine
 end module functions
