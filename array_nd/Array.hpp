@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cassert>
+#include <vector>
 
 struct Add 
 {
@@ -102,12 +103,8 @@ class Array_1d
 {
     public:
         Array_1d(const int itot) :
-            itot(itot), data(nullptr)
-        {
-            data = new double[itot];
-        }
-
-        ~Array_1d() { delete[] data; }
+            itot(itot), data(itot)
+        {}
 
         void print()
         {
@@ -118,10 +115,10 @@ class Array_1d
         inline double& operator()(const int i) { return data[i]; }
         inline double operator()(const int i) const { return data[i]; }
 
-        Array_1d_view operator()(const int is, const int ie) const
+        Array_1d_view operator()(const int is, const int ie)
         {
             assert(is >= 0 && ie <= itot && "Range out of bounds");
-            return Array_1d_view(ie-is, data+is);
+            return Array_1d_view(ie-is, data.data()+is);
         }
 
         template<class T>
@@ -153,5 +150,5 @@ class Array_1d
         }
 
         const int itot;
-        double* data;
+        std::vector<double> data;
 };
