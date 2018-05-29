@@ -50,10 +50,18 @@ class Array_1d
 {
     public:
         Array_1d(const int itot) :
-            itot(itot), data(itot)
+            itot(itot), data(nullptr)
         {
-            std::fill(data.begin(), data.end(), 0.);
+            data = new double[itot];
         }
+
+        Array_1d(const int itot, double* data) :
+            itot(itot), data(data)
+        {}
+
+        // Deletion is an issue!
+        ~Array_1d()
+        {}
 
         void print()
         {
@@ -64,8 +72,21 @@ class Array_1d
         double& operator()(const int i) { return data[i]; }
         double operator()(const int i) const { return data[i]; }
 
+        Array_1d operator()(const int is, const int ie) const { return Array_1d(ie-is, data+is); }
+
         template<class T>
         inline Array_1d& operator= (const T& __restrict__ expression)
+        {
+            #pragma clang loop vectorize(enable)
+            #pragma GCC ivdep
+            #pragma ivdep
+            for (int i=0; i<itot; ++i)
+                (*this)(i) = expression(i);
+
+            return *this;
+        }
+
+        inline Array_1d& operator= (const Array_1d& __restrict__ expression)
         {
             #pragma clang loop vectorize(enable)
             #pragma GCC ivdep
@@ -86,8 +107,8 @@ class Array_1d
 
             return *this;
         }
+
     private:
         const int itot;
-        std::vector<double> data;
+        double* data;
 };
-

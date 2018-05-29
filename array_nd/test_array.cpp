@@ -12,6 +12,11 @@ int main()
     a.print();
 
     a = a*(a+b);
-
     a.print();
+
+    a(0, 3) = 666.;
+    a.print();
+
+    b(7,10) = a(0,3);
+    b.print();
 }
