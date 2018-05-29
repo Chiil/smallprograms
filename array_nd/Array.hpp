@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cassert>
 
 struct Add 
 {
@@ -21,10 +22,11 @@ struct Multiply
 template<class Left, class Op, class Right>
 struct Operator
 {
-    Operator(const Left& left, const Right& right) : left(left), right(right) {}
+    Operator(const Left& left, const Right& right) : left(left), right(right), itot(left.itot) {}
 
     const Left& left;
     const Right& right;
+    const int itot;
 
     inline double operator()(const int i) const
     { 
@@ -36,12 +38,14 @@ struct Operator
 template<class Left, class Right>
 inline Operator<Left, Add, Right> operator+(const Left& left, const Right& right)
 {
+    assert(left.itot == right.itot && "Size mismatch");
     return Operator<Left, Add, Right>(left, right);
 }
 
 template<class Left, class Right>
 inline Operator<Left, Multiply, Right> operator*(const Left& left, const Right& right)
 {
+    assert(left.itot == right.itot && "Size mismatch");
     return Operator<Left, Multiply, Right>(left, right);
 }
 
@@ -58,8 +62,8 @@ class Array_1d_view
                 std::cout << i << " = " << (*this)(i) << std::endl;
         }
 
-        double& operator()(const int i) { return data[i]; }
-        double operator()(const int i) const { return data[i]; }
+        inline double& operator()(const int i) { return data[i]; }
+        inline double operator()(const int i) const { return data[i]; }
 
         template<class T>
         inline Array_1d_view& operator= (const T& __restrict__ expression)
@@ -90,7 +94,6 @@ class Array_1d_view
             return *this;
         }
 
-    private:
         const int itot;
         double* data;
 };
@@ -112,10 +115,14 @@ class Array_1d
                 std::cout << i << " = " << (*this)(i) << std::endl;
         }
 
-        double& operator()(const int i) { return data[i]; }
-        double operator()(const int i) const { return data[i]; }
+        inline double& operator()(const int i) { return data[i]; }
+        inline double operator()(const int i) const { return data[i]; }
 
-        Array_1d_view operator()(const int is, const int ie) const {return Array_1d_view(ie-is, data+is); }
+        Array_1d_view operator()(const int is, const int ie) const
+        {
+            assert(is >= 0 && ie <= itot && "Range out of bounds");
+            return Array_1d_view(ie-is, data+is);
+        }
 
         template<class T>
         inline Array_1d& operator= (const T& __restrict__ expression)
@@ -145,7 +152,6 @@ class Array_1d
             return *this;
         }
 
-    private:
         const int itot;
         double* data;
 };
