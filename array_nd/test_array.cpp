@@ -6,9 +6,12 @@ int main()
     Array_1d a(itot);
     Array_1d b(itot);
 
+    a = 3.;
+    b = 5.;
+
     a.print();
 
-    a = a + b;
+    a = a*(a+b);
 
     a.print();
 }

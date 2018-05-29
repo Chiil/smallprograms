@@ -52,8 +52,7 @@ class Array_1d
         Array_1d(const int itot) :
             itot(itot), data(itot)
         {
-            for (int i=0; i<itot; ++i)
-                data[i] = i;
+            std::fill(data.begin(), data.end(), 0.);
         }
 
         void print()
@@ -77,6 +76,16 @@ class Array_1d
             return *this;
         }
 
+        inline Array_1d& operator= (const double value)
+        {
+            #pragma clang loop vectorize(enable)
+            #pragma GCC ivdep
+            #pragma ivdep
+            for (int i=0; i<itot; ++i)
+                (*this)(i) = value;
+
+            return *this;
+        }
     private:
         const int itot;
         std::vector<double> data;
