@@ -23,7 +23,9 @@ struct Multiply
 template<class Left, class Op, class Right>
 struct Operator
 {
-    Operator(const Left& left, const Right& right) : left(left), right(right), itot(left.itot) {}
+    Operator(const Left& left, const Right& right) :
+        left(left), right(right), itot(left.itot)
+    {}
 
     const Left& left;
     const Right& right;
@@ -82,7 +84,6 @@ class Array_1d_view
         {
             return this->operator=<Array_1d_view>(expression);
         }
-
 
         inline Array_1d_view& operator= (const double value)
         {
