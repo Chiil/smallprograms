@@ -1,46 +1,70 @@
 #include <array>
 #include <vector>
+#include <iostream>
 
-template<int dim>
-inline std::array<int, dim> calc_strides(const std::array<int, dim>& dims)
+template<int N>
+inline std::array<int, N> calc_strides(const std::array<int, N>& dims)
 {
-    std::array<int, dim> strides;
+    std::array<int, N> strides;
     strides[0] = 1;
-    for(int i=1; i<dim; ++i)
+    for(int i=1; i<N; ++i)
         strides[i] = strides[i-1]*dims[i-1];
 
     return strides;
 }
 
-template<int dim>
-int dot(const std::array<int, dim> left, const std::array<int, dim> right)
+template<int N>
+int dot(const std::array<int, N>& left, const std::array<int, N>& right)
 {
     int sum = 0;
-    for (int i=0; i<dim; ++i)
+    for (int i=0; i<N; ++i)
         sum += left[i]*right[i];
 
     return sum;
 }
 
-template<int dim>
+template<int N>
+int product(const std::array<int, N>& array)
+{
+    int product = array[0];
+    for (int i=1; i<N; ++i)
+        product *= array[i];
+
+    return product;
+}
+
+template<int N>
 struct Array
 {
-    Array(std::array<int, dim> dims) :
-        dims(dims), strides(calc_strides<dim>(dims))
-    {}
-
-    double& operator()(std::array<int, dim> indices)
+    Array(std::array<int, N> dims) :
+        dims(dims),
+        ncells(product<N>(dims)),
+        data(ncells),
+        strides(calc_strides<N>(dims))
     {
-        const int index = dot(indices, strides);
+        std::cout << ncells << std::endl;
+    }
+
+    inline double& operator()(const std::array<int, N>& indices)
+    {
+        const int index = dot<N>(indices, strides);
         return data[index];
     }
 
-    const std::array<int, dim> dims;
-    const std::array<int, dim> strides;
+    inline double operator()(const std::array<int, N>& indices) const
+    {
+        const int index = dot<N>(indices, strides);
+        return data[index];
+    }
+
+    const std::array<int, N> dims;
+    const int ncells;
     std::vector<double> data;
+    const std::array<int, N> strides;
 };
 
 int main()
 {
     Array<3> a({128, 96, 64});
+    std::cout << a({85, 55, 35}) << std::endl;
 }
