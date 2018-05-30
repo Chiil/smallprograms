@@ -42,7 +42,8 @@ struct Array
         data(ncells),
         strides(calc_strides<N>(dims))
     {
-        std::cout << ncells << std::endl;
+        for (int i=0; i<ncells; ++i)
+            data[i] = i;
     }
 
     inline double& operator()(const std::array<int, N>& indices)
@@ -51,10 +52,17 @@ struct Array
         return data[index];
     }
 
-    inline double operator()(const std::array<int, N>& indices) const
+    inline double operator()(const std::array<int, N>& index) const
     {
-        const int index = dot<N>(indices, strides);
-        return data[index];
+        const int i = dot<N>(index, strides);
+        return data[i];
+    }
+
+    inline void operator()(const std::array<std::pair<int, int>, N>& ranges) const
+    {
+        std::cout << "a( ";
+        for (int i=0; i<N; ++i)
+            std::cout << ranges[i].first << ":" << ranges[i].second << ", ";
     }
 
     const std::array<int, N> dims;
@@ -66,5 +74,7 @@ struct Array
 int main()
 {
     Array<3> a({128, 96, 64});
-    std::cout << a({85, 55, 35}) << std::endl;
+    std::cout << a({127, 95, 63}) << std::endl;
+
+    return 0;
 }
