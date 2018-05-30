@@ -42,8 +42,6 @@ struct Range
         value({i_start, i_end})
     {}
 
-    inline int begin() const { return value.first; }
-    inline int end() const { return value.second; }
     const std::pair<int, int> value;
 };
 
@@ -78,7 +76,7 @@ struct Array
         std::cout << "Range = ( ";
         for (int i=0; i<N; ++i)
         {
-            std::cout << ranges[i].begin() << ":" << ranges[i].end() << ( (i == N-1) ? " )" : ", " );
+            std::cout << ranges[i].value.first << ":" << ranges[i].value.second << ( (i == N-1) ? " )" : ", " );
         }
         std::cout << std::endl;
     }
