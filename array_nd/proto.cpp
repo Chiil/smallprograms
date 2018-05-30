@@ -33,6 +33,21 @@ int product(const std::array<int, N>& array)
     return product;
 }
 
+struct Range
+{
+    Range(const int i) :
+        value({i, i+1})
+    {}
+    Range(const int i_start, const int i_end) :
+        value({i_start, i_end})
+    {}
+
+    inline int begin() const { return value.first; }
+    inline int end() const { return value.second; }
+    const std::pair<int, int> value;
+};
+
+
 template<int N>
 struct Array
 {
@@ -58,12 +73,12 @@ struct Array
         return data[i];
     }
 
-    inline void operator()(const std::array<std::pair<int, int>, N>& ranges) const
+    inline void operator()(const std::array<Range, N>& ranges) const
     {
         std::cout << "Range = ( ";
         for (int i=0; i<N; ++i)
         {
-            std::cout << ranges[i].first << ":" << ranges[i].second << ( (i == N-1) ? " )" : ", " );
+            std::cout << ranges[i].begin() << ":" << ranges[i].end() << ( (i == N-1) ? " )" : ", " );
         }
         std::cout << std::endl;
     }
@@ -79,7 +94,10 @@ int main()
     Array<3> a({128, 96, 64});
     std::cout << a({127, 95, 63}) << std::endl;
 
+    // Examples of ranges.
     a({{{1, 3}, {2, 15}, {0, 64}}});
+    a({{3, 8, {0, 64}}});
+    a({{{0, 128}, 8, {0, 64}}});
 
     return 0;
 }
