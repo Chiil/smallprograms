@@ -60,9 +60,12 @@ struct Array
 
     inline void operator()(const std::array<std::pair<int, int>, N>& ranges) const
     {
-        std::cout << "a( ";
+        std::cout << "Range = ( ";
         for (int i=0; i<N; ++i)
-            std::cout << ranges[i].first << ":" << ranges[i].second << ", ";
+        {
+            std::cout << ranges[i].first << ":" << ranges[i].second << ( (i == N-1) ? " )" : ", " );
+        }
+        std::cout << std::endl;
     }
 
     const std::array<int, N> dims;
@@ -75,6 +78,8 @@ int main()
 {
     Array<3> a({128, 96, 64});
     std::cout << a({127, 95, 63}) << std::endl;
+
+    a({{{1, 3}, {2, 15}, {0, 64}}});
 
     return 0;
 }
