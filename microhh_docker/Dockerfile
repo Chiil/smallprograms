@@ -1,14 +1,14 @@
 # This Docker image can be run via the Docker cloud with the following command:
 # docker run -it chiil/microhh bash
 
-# The instructions below build the image from the Ubuntu 17.10 image.
+# The instructions below build the image from the Ubuntu 18.04 LTS image.
 
 # Use Ubuntu as the base
-FROM ubuntu:17.10
+FROM ubuntu:18.04
 
 # Complete install of required packages.
 RUN apt-get update
-RUN apt-get -y install \
+RUN DEBIAN_FRONTEND=noninteractive apt-get -y install \
         netcdf-bin libnetcdf-dev libnetcdf-c++4 libnetcdf-c++4-dev \
         fftw3 libfftw3-dev \
         libboost-dev \
