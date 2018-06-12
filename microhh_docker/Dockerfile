@@ -4,7 +4,7 @@
 # The instructions below build the image from the Ubuntu 18.04 LTS image.
 
 # Use Ubuntu as the base
-FROM ubuntu:18.04
+FROM ubuntu:latest
 
 # Complete install of required packages.
 RUN apt-get update
@@ -19,7 +19,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y install \
         sudo \
         valgrind gdb binutils \
         vim \
-        libopenmpi-dev
+        libopenmpi-dev \
+        gfortran
 RUN pip3 install --upgrade pip
 RUN pip3 install numpy matplotlib ipython jupyter netcdf4
 
