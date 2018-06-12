@@ -1,4 +1,5 @@
-#include <iostream>
+#include <cstdlib>
+#include <cstdio>
 
 template<typename TF>
 struct Constants
@@ -15,14 +16,12 @@ TF calculate_buoyancy(const TF theta, const Constants<TF>& constants)
     return constants.g/constants.theta_0 * theta;
 }
 
-int main()
+int main(int argc, char* argv[])
 {
     Constants<double> constants;
 
-    double theta;
-    std::cin >> theta;
-
-    std::cout << calculate_buoyancy<double>(theta, constants) << std::endl;
+    double theta = std::atof(argv[1]);
+    std::printf("%E\n", calculate_buoyancy(theta, constants));
 
     return 0;
 }

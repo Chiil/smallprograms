@@ -1,4 +1,5 @@
-#include <iostream>
+#include <cstdlib>
+#include <cstdio>
 
 template<typename TF>
 TF calculate_buoyancy(const TF theta)
@@ -8,12 +9,10 @@ TF calculate_buoyancy(const TF theta)
     return g/theta_0 * theta;
 }
 
-int main()
+int main(int argc, char* argv[])
 {
-    double theta;
-    std::cin >> theta;
-
-    std::cout << calculate_buoyancy<double>(theta) << std::endl;
+    double theta = std::atof(argv[1]);
+    std::printf("%E\n", calculate_buoyancy(theta));
 
     return 0;
 }
