@@ -51,7 +51,7 @@ int main()
                     #pragma omp taskwait
                     std::vector<double> v_copy(v);
 
-                    #pragma omp task
+                    #pragma omp task shared(v_copy), firstprivate(iter)
                     stats(v_copy, iter);
                 }
                 ++iter;
