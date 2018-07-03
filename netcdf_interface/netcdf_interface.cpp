@@ -134,12 +134,20 @@ void Netcdf_variable::insert(const double value, const std::vector<size_t> i_sta
     nc_file.insert(value, var_id, i_start, dim_sizes);
 }
 
-Netcdf_group::Netcdf_group(const Netcdf_handle& parent, const std::string& name) :
-    Netcdf_handle()
+Netcdf_group Netcdf_handle::add_group(const std::string& name)
 {
-    root_ncid = parent.root_ncid;
+    int group_ncid;
 
     nc_check( nc_redef(root_ncid) );
-    nc_check( nc_def_grp(parent.ncid, name.c_str(), &ncid) );
+    nc_check( nc_def_grp(ncid, name.c_str(), &group_ncid) );
     nc_check( nc_enddef(root_ncid) );
+
+    return Netcdf_group(group_ncid, root_ncid);
+}
+
+Netcdf_group::Netcdf_group(int ncid_in, int root_ncid_in) :
+    Netcdf_handle()
+{
+    ncid = ncid_in;
+    root_ncid = root_ncid_in;
 }

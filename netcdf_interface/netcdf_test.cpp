@@ -8,7 +8,7 @@ int main()
     try
     {
         Netcdf_file nc_file("test.nc", Netcdf_mode::Create);
-        Netcdf_group nc_group(nc_file, "test_group");
+        Netcdf_group nc_group = nc_file.add_group("test_group");
 
         nc_group.add_dimension("time");
         nc_group.add_dimension("zh", 33);

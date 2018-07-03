@@ -9,6 +9,7 @@
 enum class Netcdf_mode { Create, Read, Write };
 
 class Netcdf_handle;
+class Netcdf_group;
 
 class Netcdf_variable
 {
@@ -28,6 +29,8 @@ class Netcdf_handle
     public:
         Netcdf_handle();
         void add_dimension(const std::string&, const size_t dim_size = NC_UNLIMITED);
+
+        Netcdf_group add_group(const std::string&);
 
         Netcdf_variable add_variable(
                 const std::string&,
@@ -50,9 +53,6 @@ class Netcdf_handle
         int root_ncid;
         std::map<std::string, int> dims;
         int record_counter;
-
-        friend class Netcdf_file;
-        friend class Netcdf_group;
 };
 
 class Netcdf_file : public Netcdf_handle
@@ -65,6 +65,6 @@ class Netcdf_file : public Netcdf_handle
 class Netcdf_group : public Netcdf_handle
 {
     public:
-        Netcdf_group(const Netcdf_handle&, const std::string&);
+        Netcdf_group(const int, const int);
 };
 #endif
