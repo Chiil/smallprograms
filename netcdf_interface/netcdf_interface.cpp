@@ -20,7 +20,8 @@ namespace
     }
 }
 
-Netcdf_file::Netcdf_file(const std::string& name, Netcdf_mode mode)
+Netcdf_file::Netcdf_file(const std::string& name, Netcdf_mode mode) :
+    Netcdf_handle()
 {
     if (mode == Netcdf_mode::Create)
         nc_check( nc_create(name.c_str(), NC_NOCLOBBER | NC_NETCDF4, &ncid) );
@@ -88,6 +89,10 @@ Netcdf_variable Netcdf_handle::add_variable(
     return Netcdf_variable(*this, var_id, dim_sizes);
 }
 
+Netcdf_handle::Netcdf_handle() :
+    record_counter(0)
+{}
+
 void Netcdf_handle::insert(
         const std::vector<double>& values,
         const int var_id,
@@ -122,7 +127,8 @@ void Netcdf_variable::insert(const double value, const std::vector<size_t> i_sta
     nc_file.insert(value, var_id, i_start, dim_sizes);
 }
 
-Netcdf_group::Netcdf_group(const Netcdf_handle& parent, const std::string& name)
+Netcdf_group::Netcdf_group(const Netcdf_handle& parent, const std::string& name) :
+    Netcdf_handle()
 {
     root_ncid = parent.root_ncid;
 

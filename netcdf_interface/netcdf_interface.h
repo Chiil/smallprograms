@@ -26,6 +26,7 @@ class Netcdf_variable
 class Netcdf_handle
 {
     public:
+        Netcdf_handle();
         void add_dimension(const std::string&, const size_t dim_size = NC_UNLIMITED);
 
         Netcdf_variable add_variable(
@@ -48,6 +49,7 @@ class Netcdf_handle
         int ncid;
         int root_ncid;
         std::map<std::string, int> dims;
+        int record_counter;
 
         friend class Netcdf_file;
         friend class Netcdf_group;
