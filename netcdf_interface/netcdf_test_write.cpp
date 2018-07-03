@@ -24,7 +24,7 @@ int main()
         std::vector<double> vflux(33);
 
         for(int i=0; i<33; ++i)
-            zh[i] = i;
+            zh[i] = 2*i;
 
         nc_zh.insert(zh, {0});
 

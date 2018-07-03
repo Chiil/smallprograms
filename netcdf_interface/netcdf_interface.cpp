@@ -32,7 +32,8 @@ Netcdf_file::Netcdf_file(const std::string& name, Netcdf_mode mode) :
 
     root_ncid = ncid;
 
-    nc_check( nc_enddef(root_ncid) );
+    if (mode == Netcdf_mode::Create)
+        nc_check( nc_enddef(root_ncid) );
 }
 
 Netcdf_file::~Netcdf_file()
@@ -145,9 +146,29 @@ Netcdf_group Netcdf_handle::add_group(const std::string& name)
     return Netcdf_group(group_ncid, root_ncid);
 }
 
+Netcdf_group Netcdf_handle::get_group(const std::string& name)
+{
+    int group_ncid;
+    nc_check( nc_inq_ncid(ncid, name.c_str(), &group_ncid) );
+
+    return Netcdf_group(group_ncid, root_ncid);
+}
+
+
 Netcdf_group::Netcdf_group(int ncid_in, int root_ncid_in) :
     Netcdf_handle()
 {
     ncid = ncid_in;
     root_ncid = root_ncid_in;
+}
+
+void Netcdf_handle::get_variable(
+        std::vector<double>& values,
+        const std::string& name,
+        const std::vector<size_t>& i_start,
+        const std::vector<size_t>& i_count)
+{
+    int var_id;
+    nc_check( nc_inq_varid(ncid, name.c_str(), &var_id) );
+    nc_check( nc_get_vara_double(ncid, var_id, i_start.data(), i_count.data(), values.data()) );
 }

@@ -31,10 +31,17 @@ class Netcdf_handle
         void add_dimension(const std::string&, const size_t dim_size = NC_UNLIMITED);
 
         Netcdf_group add_group(const std::string&);
+        Netcdf_group get_group(const std::string&);
 
         Netcdf_variable add_variable(
                 const std::string&,
                 const std::vector<std::string>);
+
+        void get_variable(
+                std::vector<double>&,
+                const std::string&,
+                const std::vector<size_t>&,
+                const std::vector<size_t>&);
 
         void insert(
                 const std::vector<double>&,
