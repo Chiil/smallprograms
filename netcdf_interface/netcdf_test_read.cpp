@@ -16,6 +16,18 @@ int main()
         for (size_t i=0; i<zh.size(); ++i)
             std::cout << i << " = " << zh[i] << std::endl;
 
+        std::vector<double> vflux(33*2);
+        nc_group.get_variable(vflux, "vflux", {0, 0}, {2, zh.size()});
+
+        for (size_t n=0; n<2; ++n)
+        {
+            std::cout << "STEP: n = " << n << std::endl;
+            for (size_t i=0; i<zh.size(); ++i)
+            {
+                const size_t index = i + n*zh.size();
+                std::cout << i << " = " << vflux[index] << std::endl;
+            }
+        }
     }
 
     catch (std::exception& e)
