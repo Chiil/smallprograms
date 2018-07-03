@@ -8,27 +8,24 @@
 
 enum class Netcdf_mode { Create, Read, Write };
 
-class Netcdf_file;
+class Netcdf_handle;
 
 class Netcdf_variable
 {
     public:
-        Netcdf_variable(Netcdf_file&, const int, const std::vector<size_t>&);
+        Netcdf_variable(Netcdf_handle&, const int, const std::vector<size_t>&);
         void insert(const std::vector<double>&, const std::vector<size_t>);
         void insert(const double, const std::vector<size_t>);
 
     private:
-        Netcdf_file& nc_file;
+        Netcdf_handle& nc_file;
         const int var_id;
         const std::vector<size_t> dim_sizes;
 };
 
-class Netcdf_file
+class Netcdf_handle
 {
     public:
-        Netcdf_file(const std::string&, Netcdf_mode);
-        ~Netcdf_file();
-
         void add_dimension(const std::string&, const size_t dim_size = NC_UNLIMITED);
 
         Netcdf_variable add_variable(
@@ -47,8 +44,25 @@ class Netcdf_file
                 const std::vector<size_t>&,
                 const std::vector<size_t>&);
 
-    private:
+    protected:
         int ncid;
+        int root_ncid;
         std::map<std::string, int> dims;
+
+        friend class Netcdf_file;
+        friend class Netcdf_group;
+};
+
+class Netcdf_file : public Netcdf_handle
+{
+    public:
+        Netcdf_file(const std::string&, Netcdf_mode);
+        ~Netcdf_file();
+};
+
+class Netcdf_group : public Netcdf_handle
+{
+    public:
+        Netcdf_group(const Netcdf_handle&, const std::string&);
 };
 #endif

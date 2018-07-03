@@ -37,7 +37,7 @@ Netcdf_file::~Netcdf_file()
     nc_check( nc_close(ncid) );
 }
 
-void Netcdf_file::add_dimension(const std::string& dim_name, const size_t dim_size)
+void Netcdf_handle::add_dimension(const std::string& dim_name, const size_t dim_size)
 {
     nc_check( nc_redef(ncid) );
 
@@ -56,7 +56,7 @@ void Netcdf_file::add_dimension(const std::string& dim_name, const size_t dim_si
     nc_check( nc_enddef(ncid) );
 }
 
-Netcdf_variable Netcdf_file::add_variable(
+Netcdf_variable Netcdf_handle::add_variable(
         const std::string& var_name,
         const std::vector<std::string> dim_names)
 {
@@ -86,7 +86,7 @@ Netcdf_variable Netcdf_file::add_variable(
     return Netcdf_variable(*this, var_id, dim_sizes);
 }
 
-void Netcdf_file::insert(
+void Netcdf_handle::insert(
         const std::vector<double>& values,
         const int var_id,
         const std::vector<size_t>& i_start,
@@ -95,7 +95,7 @@ void Netcdf_file::insert(
     nc_check( nc_put_vara_double(ncid, var_id, i_start.data(), i_count.data(), values.data()) );
 }
 
-void Netcdf_file::insert(
+void Netcdf_handle::insert(
         const double value,
         const int var_id,
         const std::vector<size_t>& i_start,
@@ -104,7 +104,7 @@ void Netcdf_file::insert(
     nc_check( nc_put_vara_double(ncid, var_id, i_start.data(), i_count.data(), &value) );
 }
 
-Netcdf_variable::Netcdf_variable(Netcdf_file& nc_file, const int var_id, const std::vector<size_t>& dim_sizes) :
+Netcdf_variable::Netcdf_variable(Netcdf_handle& nc_file, const int var_id, const std::vector<size_t>& dim_sizes) :
     nc_file(nc_file), var_id(var_id), dim_sizes(dim_sizes)
 {}
 
@@ -118,4 +118,10 @@ void Netcdf_variable::insert(const double value, const std::vector<size_t> i_sta
 {
     // CvH: Add proper size checking.
     nc_file.insert(value, var_id, i_start, dim_sizes);
+}
+
+Netcdf_group::Netcdf_group(const Netcdf_handle& parent, const std::string& name)
+{
+    root_ncid = parent.root_ncid;
+    nc_check( nc_def_grp(parent.ncid, name.c_str(), &ncid) );
 }
