@@ -13,31 +13,39 @@ class Netcdf_file;
 class Netcdf_variable
 {
     public:
-        Netcdf_variable(Netcdf_file& nc_file, const int var_id);
-        void insert(std::vector<double>& values, std::vector<size_t> i_start, std::vector<size_t> i_length);
+        Netcdf_variable(Netcdf_file&, const int, const std::vector<size_t>&);
+        void insert(const std::vector<double>&, const std::vector<size_t>);
+        void insert(const double, const std::vector<size_t>);
 
     private:
         Netcdf_file& nc_file;
         const int var_id;
+        const std::vector<size_t> dim_sizes;
 };
 
 class Netcdf_file
 {
     public:
-        Netcdf_file(const std::string& name, Netcdf_mode mode);
+        Netcdf_file(const std::string&, Netcdf_mode);
         ~Netcdf_file();
 
-        void add_dimension(const std::string& dim_name, const size_t dim_size = NC_UNLIMITED);
+        void add_dimension(const std::string&, const size_t dim_size = NC_UNLIMITED);
 
         Netcdf_variable add_variable(
-                const std::string& var_name,
-                const std::vector<std::string> dim_names);
+                const std::string&,
+                const std::vector<std::string>);
 
         void insert(
-                std::vector<double>& values,
+                const std::vector<double>&,
                 const int var_id,
-                const std::vector<size_t> i_start,
-                const std::vector<size_t> i_length);
+                const std::vector<size_t>&,
+                const std::vector<size_t>&);
+
+        void insert(
+                const double,
+                const int var_id,
+                const std::vector<size_t>&,
+                const std::vector<size_t>&);
 
     private:
         int ncid;

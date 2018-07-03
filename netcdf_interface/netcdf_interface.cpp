@@ -46,14 +46,9 @@ void Netcdf_file::add_dimension(const std::string& dim_name, const size_t dim_si
 
     // Dimension is written or already exists.
     if (def_out == NC_NOERR)
-    {
         dims.emplace(dim_name, dim_id);
-        std::cout << "CvH: Created new dimension: " << dim_name << std::endl;
-    }
     else if (def_out == NC_ENAMEINUSE)
-    {
-        std::cout << "CvH: Use existing dimension: " << dim_name << std::endl;
-    }
+    {}
     // Error.
     else
         nc_throw(def_out);
@@ -74,32 +69,53 @@ Netcdf_variable Netcdf_file::add_variable(
 
     int var_id;
     nc_check( nc_def_var(ncid, var_name.c_str(), NC_DOUBLE, ndims, dim_ids.data(), &var_id) );
-    std::cout << "CvH: Added variable: " << var_name << ", with dims: ";
-    for (auto& s : dim_names)
-        std::cout << s << " ";
-    std::cout << std::endl;
-
     nc_check( nc_enddef(ncid) );
 
-    return Netcdf_variable(*this, var_id);
+    std::vector<size_t> dim_sizes;
+    for (const int dim_id : dim_ids)
+    {
+        size_t dim_len;
+        nc_check( nc_inq_dimlen(ncid, dim_id, &dim_len) );
+
+        if (dim_len == NC_UNLIMITED)
+            dim_sizes.push_back(1);
+        else
+            dim_sizes.push_back(dim_len);
+    }
+
+    return Netcdf_variable(*this, var_id, dim_sizes);
 }
 
 void Netcdf_file::insert(
-        std::vector<double>& values,
+        const std::vector<double>& values,
         const int var_id,
-        const std::vector<size_t> i_start,
-        const std::vector<size_t> i_count)
+        const std::vector<size_t>& i_start,
+        const std::vector<size_t>& i_count)
 {
-    for (auto& a : i_count)
-        std::cout << "CvH: " << a << " !!!" << std::endl;
     nc_check( nc_put_vara_double(ncid, var_id, i_start.data(), i_count.data(), values.data()) );
 }
 
-Netcdf_variable::Netcdf_variable(Netcdf_file& nc_file, const int var_id) :
-    nc_file(nc_file), var_id(var_id)
+void Netcdf_file::insert(
+        const double value,
+        const int var_id,
+        const std::vector<size_t>& i_start,
+        const std::vector<size_t>& i_count)
+{
+    nc_check( nc_put_vara_double(ncid, var_id, i_start.data(), i_count.data(), &value) );
+}
+
+Netcdf_variable::Netcdf_variable(Netcdf_file& nc_file, const int var_id, const std::vector<size_t>& dim_sizes) :
+    nc_file(nc_file), var_id(var_id), dim_sizes(dim_sizes)
 {}
 
-void Netcdf_variable::insert(std::vector<double>& values, std::vector<size_t> i_start, std::vector<size_t> i_count)
+void Netcdf_variable::insert(const std::vector<double>& values, const std::vector<size_t> i_start)
 {
-    nc_file.insert(values, var_id, i_start, i_count);
+    // CvH: Add proper size checking.
+    nc_file.insert(values, var_id, i_start, dim_sizes);
+}
+
+void Netcdf_variable::insert(const double value, const std::vector<size_t> i_start)
+{
+    // CvH: Add proper size checking.
+    nc_file.insert(value, var_id, i_start, dim_sizes);
 }
