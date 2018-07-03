@@ -8,12 +8,14 @@ int main()
     try
     {
         Netcdf_file nc_file("test.nc", Netcdf_mode::Create);
-        nc_file.add_dimension("time");
-        nc_file.add_dimension("zh", 33);
+        Netcdf_group nc_group(nc_file, "test_group");
 
-        auto nc_time = nc_file.add_variable("time", {"time"});
-        auto nc_uflux = nc_file.add_variable("uflux", {"time", "zh"});
-        auto nc_vflux = nc_file.add_variable("vflux", {"time", "zh"});
+        nc_group.add_dimension("time");
+        nc_group.add_dimension("zh", 33);
+
+        auto nc_time = nc_group.add_variable("time", {"time"});
+        auto nc_uflux = nc_group.add_variable("uflux", {"time", "zh"});
+        auto nc_vflux = nc_group.add_variable("vflux", {"time", "zh"});
 
         std::vector<double> uflux(33);
         std::vector<double> vflux(33);
