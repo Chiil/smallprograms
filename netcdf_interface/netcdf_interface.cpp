@@ -75,13 +75,20 @@ Netcdf_variable Netcdf_handle::add_variable(
     nc_check( nc_enddef(root_ncid) );
 
     std::vector<size_t> dim_sizes;
-    for (const int dim_id : dim_ids)
+    for (size_t i=0; i<dim_ids.size(); ++i)
     {
+        const int dim_id = dim_ids[i];
+
         size_t dim_len;
         nc_check( nc_inq_dimlen(ncid, dim_id, &dim_len) );
 
         if (dim_len == NC_UNLIMITED)
-            dim_sizes.push_back(1);
+        {
+            if (i == 0)
+                dim_sizes.push_back(1);
+            else
+                throw std::runtime_error("Only the outermost dimension is allowed to be an NC_UNLIMITED dimension");
+        }
         else
             dim_sizes.push_back(dim_len);
     }
