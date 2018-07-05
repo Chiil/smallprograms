@@ -47,6 +47,23 @@ int main()
         nc_time.insert(ustar, {1});
         nc_uflux.insert(uflux, {1,0});
         nc_vflux.insert(vflux, {1,0});
+
+        Netcdf_group nc_group_3d = nc_file.add_group("test_3d");
+        nc_group_3d.add_dimension("x", 4);
+        nc_group_3d.add_dimension("y", 4);
+        nc_group_3d.add_dimension("z", 4);
+        auto nc_s = nc_group_3d.add_variable("s", {"z", "y", "x"});
+
+        std::vector<double> s(4*4*4);
+        for (int k=0; k<4; ++k)
+            for (int j=0; j<4; ++j)
+                for (int i=0; i<4; ++i)
+                {
+                    const int ijk = i + j*4 + k*4*4;
+                    s.at(ijk) = (i+1) + (j+1)*10 + (k+1)*100;
+                }
+
+        nc_s.insert(s, {0,0,0}, {4,4,4});
     }
 
     catch (std::exception& e)

@@ -28,6 +28,25 @@ int main()
                 std::cout << i << " = " << vflux[index] << std::endl;
             }
         }
+
+        const size_t read_size = 1;
+        std::vector<double> s(read_size*read_size*read_size);
+        Netcdf_group nc_group_3d = nc_file.get_group("test_3d");
+        nc_group_3d.get_variable(s, "s", {1,1,1}, {read_size,read_size,read_size});
+
+        for (int k=0; k<read_size; ++k)
+        {
+            for (int j=0; j<read_size; ++j)
+            {
+                for (int i=0; i<read_size; ++i)
+                {
+                    const int ijk = i + j*read_size + k*read_size*read_size;
+                    std::cout << s[ijk] << " ";
+                }
+                std::cout << std::endl;
+            }
+            std::cout << std::endl;
+        }
     }
 
     catch (std::exception& e)

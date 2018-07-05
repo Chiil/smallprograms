@@ -170,6 +170,14 @@ void Netcdf_variable::insert(const std::vector<double>& values, const std::vecto
     nc_file.insert(values, var_id, i_start, dim_sizes);
 }
 
+void Netcdf_variable::insert(
+        const std::vector<double>& values,
+        const std::vector<size_t> i_start,
+        const std::vector<size_t> i_count)
+{
+    nc_file.insert(values, var_id, i_start, i_count);
+}
+
 void Netcdf_variable::insert(const double value, const std::vector<size_t> i_start)
 {
     nc_file.insert(value, var_id, i_start, dim_sizes);
