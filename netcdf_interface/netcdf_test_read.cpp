@@ -29,18 +29,19 @@ int main()
             }
         }
 
-        const size_t read_size = 1;
+        // Read out a block of a 3D variable.
+        const size_t read_size = 2;
         std::vector<double> s(read_size*read_size*read_size);
         Netcdf_group nc_group_3d = nc_file.get_group("test_3d");
         nc_group_3d.get_variable(s, "s", {1,1,1}, {read_size,read_size,read_size});
 
-        for (int k=0; k<read_size; ++k)
+        for (size_t k=0; k<read_size; ++k)
         {
-            for (int j=0; j<read_size; ++j)
+            for (size_t j=0; j<read_size; ++j)
             {
-                for (int i=0; i<read_size; ++i)
+                for (size_t i=0; i<read_size; ++i)
                 {
-                    const int ijk = i + j*read_size + k*read_size*read_size;
+                    const size_t ijk = i + j*read_size + k*read_size*read_size;
                     std::cout << s[ijk] << " ";
                 }
                 std::cout << std::endl;
