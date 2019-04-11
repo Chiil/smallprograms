@@ -41,7 +41,7 @@ dx_max_z = 0.5 * dz**2 * u / Kz[1:]
 dx_max = min( dx_max_y.min(), dx_max_z.min() )
 
 # Keep a factor 2 safety margin.
-n_tot = 2*int( dx_tot / dx_max )
+n_tot = int( 1.2*dx_tot / dx_max )
 dx_step = dx_tot / n_tot
 
 print("Solving in {:} steps.".format(n_tot))
