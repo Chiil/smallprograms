@@ -12,13 +12,21 @@ std::tm calc_tm_actual(const std::tm& tm_start, const double time)
     return tm_actual;
 }
 
-double calc_day_of_the_year(const std::tm& tm_start, const double time)
+double calc_day_of_year(const std::tm& tm_start, const double time)
 {
     std::tm tm_actual = calc_tm_actual(tm_start, time);
     const double frac_day = ( tm_actual.tm_hour*3600.
                             + tm_actual.tm_min*60.
                             + tm_actual.tm_sec + std::fmod(time, 1.) ) / 86400.;
     return tm_actual.tm_yday+1. + frac_day; // Counting starts at 0 in std::tm, thus add 1.
+}
+
+double calc_hour_of_day(const std::tm& tm_start, const double time)
+{
+    std::tm tm_actual = calc_tm_actual(tm_start, time);
+    const double frac_hour = ( tm_actual.tm_min*60
+                             + tm_actual.tm_sec + std::fmod(time, 1.) ) / 3600.;
+    return tm_actual.tm_hour + frac_hour; // Counting starts at 0 in std::tm, thus add 1.
 }
 
 std::string make_string(const std::tm& tm)
@@ -35,7 +43,7 @@ std::string make_string(const std::tm& tm)
 
 int main()
 {
-    int year = 2000;
+    int year = 3000;
     int month = 12;
     int day = 31;
     int hour = 23;
@@ -53,9 +61,11 @@ int main()
 
     double time = 0.;
     std::cout << "Datetime: " << make_string(calc_tm_actual(tm_start, time)) << std::endl;
-    std::cout << "Day of the year: " << std::setprecision(15) << calc_day_of_the_year(tm_start, time) << std::endl;
+    std::cout << "Day of the year: " << std::setprecision(15) << calc_day_of_year(tm_start, time) << std::endl;
+    std::cout << "Fractional hour: " << std::setprecision(15) << calc_hour_of_day(tm_start, time) << std::endl;
 
-    time = 1801;
+    time = 3.*86400 + 5.*3600 + 2701;
     std::cout << "Datetime: " << make_string(calc_tm_actual(tm_start, time)) << std::endl;
-    std::cout << "Day of the year: " << std::setprecision(15) << calc_day_of_the_year(tm_start, time) << std::endl;
+    std::cout << "Day of the year: " << std::setprecision(15) << calc_day_of_year(tm_start, time) << std::endl;
+    std::cout << "Fractional hour: " << std::setprecision(15) << calc_hour_of_day(tm_start, time) << std::endl;
 }
