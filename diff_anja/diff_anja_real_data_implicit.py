@@ -67,14 +67,14 @@ def solve_diff(K_vect):
     # IMPLICIT SOLVER
     c = c0.copy()
 
-    n_tot = 1
+    n_tot = 10
     dx_step = dx_tot / n_tot
 
     print("Solving in {:} steps.".format(n_tot))
     x_step = 0.
     c = np.fft.rfft(c, axis=1)
 
-    print("iter: ", 0, "mass: ", (dy*dz*c[:,0]).sum(), "mass_ref: ", mass(c0))
+    #print("iter: ", 0, "mass balance: ", (dy*dz*c[:,0]).sum() - mass(c0))
 
     for n in range(n_tot):
         am  = np.zeros((nz+2, ny//2+1))
@@ -91,46 +91,54 @@ def solve_diff(K_vect):
         ap[1:-1] = dx_step/u*Kz[1:]/(dz*dzh[1:])
         rhs[1:-1,:] = -c[:,:]
 
-        # Set the BC (no gradient, dirichlet = 0 at top for wavenumber 0)
-        ac[0,:] = -1.
-        ap[0] = 1.
+        am [1:-1,:] *= dz[:,None]**2
+        ac [1:-1,:] *= dz[:,None]**2
+        ap [1:-1] *= dz[:]**2
+        rhs[1:-1,:] *= dz[:,None]**2
 
-        ac[-1, :] =  1. # Dirichlet and Neumann
-        am[-1,1:] = -1. # Neumann
-        #am[-1,:] = -1. # Neumann, ignore dirichlet
+        # Set the BC (no gradient)
+        ac[0,:] = -dz[0]
+        ap[0] = dz[0]
+
+        ac[-1,:] =  dz[-1]
+        am[-1,:] = -dz[-1]
 
         tdma(rhs, am, ac, ap, nz+2)
 
         c[:,:] = rhs[1:-1,:]
 
-        print("iter: ", n+1, "mass: ", (dy*dz*c[:,0]).sum(), "mass_ref: ", mass(np.fft.irfft(c, axis=1)))
+        #print("iter: ", n+1, "mass balance: ", (dy*dz*c[:,0]).sum() - mass(c0))
 
         x_step += dx_step
 
     c1[:,:] = np.fft.irfft(c, axis=1)
     error = (dx*dz[:,None]*c1-dx*dz[:,None]*slice_1).sum()
+    print(error)
     return error
 
 K = np.append(Ky0, Kz0)
 error = solve_diff(K)
-print(error)
-
-#jac = approx_fprime(K, solve_diff, 1e-3)
-#print(jac)
-#minimize(solve_diff, K, jac=jac, method="Newton-CG")
+jac = approx_fprime(K, solve_diff, 1e-3)
+print(jac)
+#minimize(solve_diff, K, method="BFGS")
 
 plt.figure()
-plt.subplot(131)
+plt.subplot(141)
 plt.pcolormesh(y, z, c0)
 plt.colorbar()
 plt.title('start')
-plt.subplot(132)
+plt.subplot(142)
 plt.pcolormesh(y, z, c1)
 plt.colorbar()
 plt.title('end')
-plt.subplot(133)
+plt.subplot(143)
 plt.pcolormesh(y, z, slice_1)
 plt.colorbar()
 plt.title('ref')
+plt.subplot(144)
+plt.pcolormesh(y, z, c1-slice_1)
+plt.colorbar()
+plt.title('end-ref')
 plt.tight_layout()
+
 plt.show()
