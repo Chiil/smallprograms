@@ -34,7 +34,6 @@ slice_1.shape = (nz, ny)
 c0 = slice_0.copy()
 c1 = np.zeros(c0.shape)
 
-u = 0.11*np.ones(z.shape)
 kappa = 0.4
 ustar = 0.005
 Ky0 = kappa*z*ustar
@@ -45,26 +44,19 @@ Kz0 = kappa*zh*ustar
 dx_tot = 0.1
 
 #@jit(nopython=True)
-def tdma(xc, ac, bc, cc, dc, nf):
-    '''
-    TDMA solver, a b c d can be NumPy array type or Python list type.
-    refer to http://en.wikipedia.org/wiki/Tridiagonal_matrix_algorithm
-    and to http://www.cfd-online.com/Wiki/Tridiagonal_matrix_algorithm_-_TDMA_(Thomas_algorithm)
-    '''
+def tdma(sol, am, ac, ap, rhs, nf):
     for k in range(1, nf):
-        mc = ac[k-1]/bc[k-1]
-        bc[k] = bc[k] - mc*cc[k-1]
-        dc[k] = dc[k] - mc*dc[k-1]
+        mc = am[k-1,:]/ac[k-1,:]
+        ac[k,:] = ac[k,:] - mc*ap[k-1,None]
+        rhs[k,:] = rhs[k,:] - mc*rhs[k-1,:]
 
     for k in range(nf):
-        xc[k] = bc[k]
+        sol[k,:] = ac[k,:]
 
-    xc[nf-1] = dc[nf-1]/bc[nf-1]
+    sol[nf-1,:] = rhs[nf-1,:]/ac[nf-1,:]
 
     for k in range(nf-2, -1, -1):
-        xc[k] = (dc[k]-cc[k]*xc[k+1])/bc[k]
-
-    return xc
+        sol[k,:] = (rhs[k,:]-ap[k,None]*sol[k+1,:])/ac[k,:]
 
 def solve_diff(K_vect):
     Ky = K_vect[:nz]
@@ -81,31 +73,31 @@ def solve_diff(K_vect):
     c = np.fft.rfft(c, axis=1)
 
     for n in range(n_tot):
-        c_sol = np.zeros(nz+2, dtype=np.complex)
-        am    = np.zeros(nz+2)
-        ac    = np.zeros(nz+2)
+        c_sol = np.zeros((nz+2, ny//2+1), dtype=np.complex)
+        am    = np.zeros((nz+2, ny//2+1))
+        ac    = np.zeros((nz+2, ny//2+1))
         ap    = np.zeros(nz+2)
-        rhs   = np.zeros(nz+2, dtype=np.complex)
+        rhs   = np.zeros((nz+2, ny//2+1), dtype=np.complex)
 
-        # Solve per wavenumber
-        for j in range(ny//2+1):
-            am[1:-1] = dx_step/u*Kz[:-1]/(dz*dzh[:-1])
-            ac[1:-1] = dx_step/u*Ky/dy**2 * (2*np.cos(2.*np.pi*j/ny) - 2.) - dx_step/u*Kz[1:]/(dz*dzh[1:]) - dx_step/u*Kz[:-1]/(dz*dzh[:-1])
-            ap[1:-1] = dx_step/u*Kz[1:]/(dz*dzh[1:])
-            rhs[1:-1] = c[:,j]
+        # Solve all wave numbers at once.
+        jj = np.arange(ny//2+1) / ny
+        am[1:-1,:] = dx_step/u[:,None]*Kz[:-1,None]/(dz[:,None]*dzh[:-1,None])
+        ac[1:-1,:] = dx_step/u[:,None]*Ky[:,None]/dy**2 * (2.*np.cos(2.*np.pi*jj[None,:]) - 2.) \
+                   - dx_step/u[:,None]*Kz[1:,None]/(dz[:,None]*dzh[1:,None]) \
+                   - dx_step/u[:,None]*Kz[:-1,None]/(dz[:,None]*dzh[:-1,None]) - 1.
+        ap[1:-1] = dx_step/u*Kz[1:]/(dz*dzh[1:])
+        rhs[1:-1,:] = -c[:,:]
 
-            # Set the BC (no gradient)
-            ac[0] = 1.
-            ap[0] = -1.
-            rhs[0] = 0.
+        # Set the BC (no gradient, dirichlet = 0 at top for wavenumber 0)
+        ac[0,:] = 1.
+        ap[0] = -1.
 
-            if (j == 0):
-                ac[-1] = 1.
-                rhs[-1] = 0.
+        ac[-1, :] =  1. # Dirichlet and Neumann
+        am[-1,1:] = -1. # Neumann
 
-            tdma(c_sol, am, ac, ap, rhs, nz+2)
+        tdma(c_sol, am, ac, ap, rhs, nz+2)
 
-            c[:,j] = c_sol[1:-1]
+        c[:,:] = c_sol[1:-1,:]
 
         x_step += dx_step
 
