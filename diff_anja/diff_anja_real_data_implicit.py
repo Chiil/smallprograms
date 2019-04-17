@@ -76,8 +76,6 @@ def solve_diff(K_vect):
 
     print("iter: ", 0, "mass: ", (dy*dz*c[:,0]).sum(), "mass_ref: ", mass(c0))
 
-    plt.figure()
-
     for n in range(n_tot):
         c_sol = np.zeros((nz+2, ny//2+1), dtype=np.complex)
         am    = np.zeros((nz+2, ny//2+1))
@@ -105,7 +103,6 @@ def solve_diff(K_vect):
         tdma(c_sol, am, ac, ap, rhs, nz+2)
 
         c[:,:] = c_sol[1:-1,:]
-        plt.plot(c[:,0]/ny-c0.mean(axis=1), z)
 
         print("iter: ", n+1, "mass: ", (dy*dz*c[:,0]).sum(), "mass_ref: ", mass(np.fft.irfft(c, axis=1)))
 
