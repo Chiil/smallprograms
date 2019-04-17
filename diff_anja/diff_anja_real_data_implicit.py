@@ -64,8 +64,8 @@ def tdma(sol, a, b, c, nk):
         sol[k,:] -= work3d[k+1,:]*sol[k+1,:]
 
 def solve_diff(K_vect):
-    Ky[:] = K_vect[:nz]
-    Kz[:] = np.append(0, K_vect[nz:])
+    Ky[ :] = K_vect[:nz]
+    Kz[1:] = K_vect[nz:]
 
     # IMPLICIT SOLVER
     c = c0.copy()
@@ -115,7 +115,7 @@ def solve_diff(K_vect):
         x_step += dx_step
 
     c1[:,:] = np.fft.irfft(c, axis=1)
-    error = ( (dy*dz[:,None]*c1-dy*dz[:,None]*slice_1)**2 ).sum()
+    error = ( (dy*dz[:,None]*c1-dy*dz[:,None]*slice_1)**2 ).flatten()
     # print("Error: ", error)
     return error
 
@@ -135,14 +135,11 @@ def jacobian(K_vect):
 
 K = np.append(Ky0, Kz0[1:])
 
-#minimize(solve_diff, K, jac=jacobian, method="Newton-CG")
-#least_squares(solve_diff, K, jac=jacobian)
 try:
-    least_squares(solve_diff, K, verbose=2)
+    #least_squares(solve_diff, K, jac=jacobian)
+    least_squares(solve_diff, K, verbose=2, loss='cauchy', gtol=1e-12)
 except KeyboardInterrupt:
     print("Breaking out of solver")
-
-# solve_diff(K)
 
 plt.figure()
 plt.subplot(141)
@@ -162,9 +159,6 @@ plt.pcolormesh(y, z, c1-slice_1)
 plt.colorbar()
 plt.title('end-ref')
 plt.tight_layout()
-
-#Ky[:] = K[:nz]
-#Kz[:] = np.append(0, K[nz:])
 
 plt.figure()
 plt.plot(Ky0, z, 'k:')
