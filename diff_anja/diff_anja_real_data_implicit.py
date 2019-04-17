@@ -2,7 +2,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import netCDF4 as nc
-from scipy.optimize import minimize, approx_fprime, basinhopping
+from scipy.optimize import minimize, least_squares
 
 # DIFF
 nx, ny, nz = 2304, 576, 144
@@ -39,6 +39,9 @@ ustar = 0.005
 Ky0 = kappa*z*ustar
 Kz0 = kappa*zh*ustar
 
+Ky = Ky0.copy()
+Kz = Kz0.copy()
+
 # Distance to cover.
 dx_tot = 1.578977465629577637
 
@@ -61,8 +64,8 @@ def tdma(sol, a, b, c, nk):
         sol[k,:] -= work3d[k+1,:]*sol[k+1,:]
 
 def solve_diff(K_vect):
-    Ky = K_vect[:nz]
-    Kz = K_vect[nz:]
+    Ky[:] = K_vect[:nz]
+    Kz[:] = np.append(0, K_vect[nz:])
 
     # IMPLICIT SOLVER
     c = c0.copy()
@@ -113,26 +116,33 @@ def solve_diff(K_vect):
 
     c1[:,:] = np.fft.irfft(c, axis=1)
     error = ( (dy*dz[:,None]*c1-dy*dz[:,None]*slice_1)**2 ).sum()
-    print("Error: ", error)
+    # print("Error: ", error)
     return error
-
-K = np.append(Ky0, Kz0)
 
 def jacobian(K_vect):
     print("Computing Jacobian")
     error_ref = solve_diff(K_vect)
     dedK = np.zeros(K_vect.size)
-    fac = 0.01*K_vect.max()
+    fac = 1.5
     for k in range(K_vect.size):
         K_ref = K_vect[k]
-        K_vect[k] += fac
+        K_vect[k] *= fac
         error = solve_diff(K_vect)
         dedK[k] = (error - error_ref) / (K_vect[k] - K_ref)
         K_vect[k] = K_ref
 
     return dedK
 
-minimize(solve_diff, K, jac=jacobian, method="Newton-CG")
+K = np.append(Ky0, Kz0[1:])
+
+#minimize(solve_diff, K, jac=jacobian, method="Newton-CG")
+#least_squares(solve_diff, K, jac=jacobian)
+try:
+    least_squares(solve_diff, K, verbose=2)
+except KeyboardInterrupt:
+    print("Breaking out of solver")
+
+# solve_diff(K)
 
 plt.figure()
 plt.subplot(141)
@@ -153,10 +163,12 @@ plt.colorbar()
 plt.title('end-ref')
 plt.tight_layout()
 
-Ky = K[:nz]
-Kz = K[nz:]
+#Ky[:] = K[:nz]
+#Kz[:] = np.append(0, K[nz:])
 
 plt.figure()
 plt.plot(Ky0, z, 'k:')
 plt.plot(Ky , z)
+plt.plot(Kz0, zh, 'k:')
+plt.plot(Kz , zh)
 plt.show()
