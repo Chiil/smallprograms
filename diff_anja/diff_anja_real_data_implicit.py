@@ -1,4 +1,4 @@
-from numba import jit
+#from numba import jit
 import numpy as np
 import matplotlib.pyplot as plt
 import netCDF4 as nc
@@ -41,9 +41,11 @@ Kz0 = kappa*zh*ustar
 
 # Distance to cover.
 #dx_tot = 1.578977465629577637
-dx_tot = 0.1
+dx_tot = 0.01
 
-#@jit(nopython=True)
+def mass(c):
+    return (c*dy*dz[:,None]).sum()
+
 def tdma(sol, am, ac, ap, rhs, nf):
     for k in range(1, nf):
         mc = am[k-1,:]/ac[k-1,:]
@@ -72,6 +74,10 @@ def solve_diff(K_vect):
     x_step = 0.
     c = np.fft.rfft(c, axis=1)
 
+    print("iter: ", 0, "mass: ", (dy*dz*c[:,0]).sum(), "mass_ref: ", mass(c0))
+
+    plt.figure()
+
     for n in range(n_tot):
         c_sol = np.zeros((nz+2, ny//2+1), dtype=np.complex)
         am    = np.zeros((nz+2, ny//2+1))
@@ -89,21 +95,26 @@ def solve_diff(K_vect):
         rhs[1:-1,:] = -c[:,:]
 
         # Set the BC (no gradient, dirichlet = 0 at top for wavenumber 0)
-        ac[0,:] = 1.
-        ap[0] = -1.
+        ac[0,:] = -1.
+        ap[0] = 1.
 
         ac[-1, :] =  1. # Dirichlet and Neumann
-        am[-1,1:] = -1. # Neumann
+        #am[-1,1:] = -1. # Neumann
+        am[-1,:] = -1. # Neumann, ignore dirichlet
 
         tdma(c_sol, am, ac, ap, rhs, nz+2)
 
         c[:,:] = c_sol[1:-1,:]
+        plt.plot(c[:,0]/ny-c0.mean(axis=1), z)
+
+        print("iter: ", n+1, "mass: ", (dy*dz*c[:,0]).sum(), "mass_ref: ", mass(np.fft.irfft(c, axis=1)))
 
         x_step += dx_step
 
-    c1[:,:] = np.fft.irfft(c)
-    error = (c1-slice_1).sum()
+    c1[:,:] = np.fft.irfft(c, axis=1)
+    error = (dx*dz[:,None]*c1-dx*dz[:,None]*slice_1).sum()
     return error
+
 
 K = np.append(Ky0, Kz0)
 error = solve_diff(K)
