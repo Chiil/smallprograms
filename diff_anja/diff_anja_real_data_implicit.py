@@ -41,7 +41,8 @@ Ky0 = kappa*z*ustar
 Kz0 = kappa*zh*ustar
 
 # Distance to cover.
-dx_tot = 1.578977465629577637
+#dx_tot = 1.578977465629577637
+dx_tot = 0.1
 
 #@jit(nopython=True)
 def tdma(xc, ac, bc, cc, dc, nf):
@@ -106,16 +107,10 @@ def solve_diff(K_vect):
 
             c[:,j] = c_sol[1:-1]
 
-        #c[1:-1,1:-1] = u[:,None]/dx_step * c[1:-1,1:-1] \
-        #             + Ky[:,None] * (c[1:-1,:-2] - 2*c[1:-1,1:-1] + c[1:-1,2:]) / dy**2 \
-        #             + ( ( Kz[1:,None] * (c[2:,1:-1] - c[1:-1,1:-1]) / dzh[1:,None] )
-        #               - ( Kz[:-1,None] * (c[1:-1,1:-1] - c[:-2,1:-1]) / dzh[:-1,None] ) ) / dz[:,None]
-
         x_step += dx_step
 
     c1[:,:] = np.fft.irfft(c)
     error = (c1-slice_1).sum()
-    print(error)
     return error
 
 K = np.append(Ky0, Kz0)
