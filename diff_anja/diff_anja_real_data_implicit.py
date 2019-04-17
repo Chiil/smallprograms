@@ -40,25 +40,25 @@ Ky0 = kappa*z*ustar
 Kz0 = kappa*zh*ustar
 
 # Distance to cover.
-#dx_tot = 1.578977465629577637
-dx_tot = 0.01
+dx_tot = 1.578977465629577637
 
 def mass(c):
     return (c*dy*dz[:,None]).sum()
 
-def tdma(sol, am, ac, ap, rhs, nf):
-    for k in range(1, nf):
-        mc = am[k-1,:]/ac[k-1,:]
-        ac[k,:] = ac[k,:] - mc*ap[k-1,None]
-        rhs[k,:] = rhs[k,:] - mc*rhs[k-1,:]
+def tdma(sol, a, b, c, nk):
+    work2d = b[0,:]
+    sol[0,:] /= work2d[:]
 
-    for k in range(nf):
-        sol[k,:] = ac[k,:]
+    work3d = np.empty(sol.shape)
 
-    sol[nf-1,:] = rhs[nf-1,:]/ac[nf-1,:]
+    for k in range(1, nk):
+        work3d[k,:] = c[k-1] / work2d[:]
+        work2d[:] = b[k,:] - a[k,:]*work3d[k,:]
+        sol[k,:] -= a[k,:]*sol[k-1,:]
+        sol[k,:] /= work2d[:]
 
-    for k in range(nf-2, -1, -1):
-        sol[k,:] = (rhs[k,:]-ap[k,None]*sol[k+1,:])/ac[k,:]
+    for k in range(nk-2, -1, -1):
+        sol[k,:] -= work3d[k+1,:]*sol[k+1,:]
 
 def solve_diff(K_vect):
     Ky = K_vect[:nz]
@@ -77,11 +77,10 @@ def solve_diff(K_vect):
     print("iter: ", 0, "mass: ", (dy*dz*c[:,0]).sum(), "mass_ref: ", mass(c0))
 
     for n in range(n_tot):
-        c_sol = np.zeros((nz+2, ny//2+1), dtype=np.complex)
-        am    = np.zeros((nz+2, ny//2+1))
-        ac    = np.zeros((nz+2, ny//2+1))
-        ap    = np.zeros(nz+2)
-        rhs   = np.zeros((nz+2, ny//2+1), dtype=np.complex)
+        am  = np.zeros((nz+2, ny//2+1))
+        ac  = np.zeros((nz+2, ny//2+1))
+        ap  = np.zeros(nz+2)
+        rhs = np.zeros((nz+2, ny//2+1), dtype=np.complex)
 
         # Solve all wave numbers at once.
         jj = np.arange(ny//2+1) / ny
@@ -97,12 +96,12 @@ def solve_diff(K_vect):
         ap[0] = 1.
 
         ac[-1, :] =  1. # Dirichlet and Neumann
-        #am[-1,1:] = -1. # Neumann
-        am[-1,:] = -1. # Neumann, ignore dirichlet
+        am[-1,1:] = -1. # Neumann
+        #am[-1,:] = -1. # Neumann, ignore dirichlet
 
-        tdma(c_sol, am, ac, ap, rhs, nz+2)
+        tdma(rhs, am, ac, ap, nz+2)
 
-        c[:,:] = c_sol[1:-1,:]
+        c[:,:] = rhs[1:-1,:]
 
         print("iter: ", n+1, "mass: ", (dy*dz*c[:,0]).sum(), "mass_ref: ", mass(np.fft.irfft(c, axis=1)))
 
@@ -111,7 +110,6 @@ def solve_diff(K_vect):
     c1[:,:] = np.fft.irfft(c, axis=1)
     error = (dx*dz[:,None]*c1-dx*dz[:,None]*slice_1).sum()
     return error
-
 
 K = np.append(Ky0, Kz0)
 error = solve_diff(K)
