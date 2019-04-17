@@ -2,7 +2,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import netCDF4 as nc
-from scipy.optimize import minimize, approx_fprime
+from scipy.optimize import minimize, approx_fprime, basinhopping
 
 # DIFF
 nx, ny, nz = 2304, 576, 144
@@ -70,11 +70,11 @@ def solve_diff(K_vect):
     n_tot = 10
     dx_step = dx_tot / n_tot
 
-    print("Solving in {:} steps.".format(n_tot))
+    # print("Solving in {:} steps.".format(n_tot))
     x_step = 0.
     c = np.fft.rfft(c, axis=1)
 
-    #print("iter: ", 0, "mass balance: ", (dy*dz*c[:,0]).sum() - mass(c0))
+    # print("iter: ", 0, "mass balance: ", (dy*dz*c[:,0]).sum() - mass(c0))
 
     for n in range(n_tot):
         am  = np.zeros((nz+2, ny//2+1))
@@ -107,20 +107,32 @@ def solve_diff(K_vect):
 
         c[:,:] = rhs[1:-1,:]
 
-        #print("iter: ", n+1, "mass balance: ", (dy*dz*c[:,0]).sum() - mass(c0))
+        # print("iter: ", n+1, "mass balance: ", (dy*dz*c[:,0]).sum() - mass(c0))
 
         x_step += dx_step
 
     c1[:,:] = np.fft.irfft(c, axis=1)
-    error = (dx*dz[:,None]*c1-dx*dz[:,None]*slice_1).sum()
-    print(error)
+    error = ( (dy*dz[:,None]*c1-dy*dz[:,None]*slice_1)**2 ).sum()
+    print("Error: ", error)
     return error
 
 K = np.append(Ky0, Kz0)
-error = solve_diff(K)
-jac = approx_fprime(K, solve_diff, 1e-3)
-print(jac)
-#minimize(solve_diff, K, method="BFGS")
+
+def jacobian(K_vect):
+    print("Computing Jacobian")
+    error_ref = solve_diff(K_vect)
+    dedK = np.zeros(K_vect.size)
+    fac = 0.01*K_vect.max()
+    for k in range(K_vect.size):
+        K_ref = K_vect[k]
+        K_vect[k] += fac
+        error = solve_diff(K_vect)
+        dedK[k] = (error - error_ref) / (K_vect[k] - K_ref)
+        K_vect[k] = K_ref
+
+    return dedK
+
+minimize(solve_diff, K, jac=jacobian, method="Newton-CG")
 
 plt.figure()
 plt.subplot(141)
@@ -141,4 +153,10 @@ plt.colorbar()
 plt.title('end-ref')
 plt.tight_layout()
 
+Ky = K[:nz]
+Kz = K[nz:]
+
+plt.figure()
+plt.plot(Ky0, z, 'k:')
+plt.plot(Ky , z)
 plt.show()
