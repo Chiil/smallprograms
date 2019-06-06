@@ -44,23 +44,6 @@ sets_found = 0
 exec_times = []
 
 ### FUNCTIONS TO IMPLEMENT ###
-# c_red    = 1 << 0
-# c_green  = 1 << 1
-# c_blue   = 1 << 2
-# c_block  = 1 << 3
-# c_circle = 1 << 4
-# c_wave   = 1 << 5
-# c_open   = 1 << 6
-# c_close  = 1 << 7
-# c_dot    = 1 << 8
-# c_one    = 1 << 9
-# c_two    = 1 << 10
-# c_three  = 1 << 11
-# c_color = [ c_red, c_green, c_blue ]
-# c_shape = [ c_block, c_circle, c_wave ]
-# c_fill = [ c_open, c_close, c_dot ]
-# c_number = [ c_one, c_two, c_three ]
-
 def process_cards(cards):
     cards_code = []
     for i in range(len(cards)):
@@ -81,6 +64,10 @@ def find_set(cards):
     t_start = time.process_time()
 
     cards_code = process_cards(cards)
+
+    # Sort the list increase set likelihood in adjacent cards.
+    cards_code.sort()
+
     set_found_code = []
 
     for three_cards in itertools.combinations(cards_code, 3):
