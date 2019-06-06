@@ -1,27 +1,17 @@
 import random
 import time
+import numpy as np
+import itertools
 
 # https://en.wikipedia.org/wiki/Set_(card_game)
 # I have created a script that generated the deck of cards,
 # shuffles the deck and plays the game. Your task is to write the fastest
 # possible set finder. I have added a performance counter.
 
-### FUNCTION TO IMPLEMENT ###
-def find_set(cards):
-    t_start = time.process_time()
-
-    # Two wrong outcomes to test function.
-    #set_found = cards[0:3]
-    set_found = []
-
-    t_end = time.process_time()
-    return set_found, t_end-t_start
-### END FUNCTION TO IMPLEMENT ###
-
 # The properties
 color = ["red  ", "green", "blue "]
 shape = ["block ", "circle", "wave  "]
-fill = ["open", "fill", "dot "]
+fill = ["open ", "close", "dot  "]
 number = [1, 2, 3]
 
 # Create all cards
@@ -52,6 +42,59 @@ deck_position = 12
 end_game = False
 sets_found = 0
 exec_times = []
+
+### FUNCTIONS TO IMPLEMENT ###
+# c_red    = 1 << 0
+# c_green  = 1 << 1
+# c_blue   = 1 << 2
+# c_block  = 1 << 3
+# c_circle = 1 << 4
+# c_wave   = 1 << 5
+# c_open   = 1 << 6
+# c_close  = 1 << 7
+# c_dot    = 1 << 8
+# c_one    = 1 << 9
+# c_two    = 1 << 10
+# c_three  = 1 << 11
+# c_color = [ c_red, c_green, c_blue ]
+# c_shape = [ c_block, c_circle, c_wave ]
+# c_fill = [ c_open, c_close, c_dot ]
+# c_number = [ c_one, c_two, c_three ]
+
+def process_cards(cards):
+    cards_code = []
+    for i in range(len(cards)):
+        color_code  = color .index(cards[i][0])
+        shape_code  = shape .index(cards[i][1])
+        fill_code   = fill  .index(cards[i][2])
+        number_code = number.index(cards[i][3])
+        cards_code.append((color_code, shape_code, fill_code, number_code))
+    return cards_code
+
+def is_set(card0, card1, card2):
+    for i in range(4):
+        if not ( (card0[i] == card1[i] == card2[i]) or ( (card0[i] != card1[i]) and (card1[i] != card2[i]) and (card0[i] != card2[i]) ) ):
+            return False
+    return True
+
+def find_set(cards):
+    t_start = time.process_time()
+
+    cards_code = process_cards(cards)
+    set_found_code = []
+
+    for three_cards in itertools.combinations(cards_code, 3):
+        if is_set(*three_cards):
+            set_found_code = three_cards
+            break
+
+    set_found = []
+    for card in set_found_code:
+        set_found.append([color[card[0]], shape[card[1]], fill[card[2]], number[card[3]]])
+
+    t_end = time.process_time()
+    return set_found, t_end-t_start
+### END FUNCTIONS TO IMPLEMENT ###
 
 for i in range(len(deck)//3):
     print("###### ROUND {0} ######".format(i+1))
