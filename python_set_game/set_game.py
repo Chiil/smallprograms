@@ -2,9 +2,9 @@ import random
 import time
 
 # https://en.wikipedia.org/wiki/Set_(card_game)
-# I have created a script that generated the deck of cards
-# and shuffles the deck. Your task is to write the fastest
-# possible set finder.
+# I have created a script that generated the deck of cards,
+# shuffles the deck and plays the game. Your task is to write the fastest
+# possible set finder. I have added a performance counter.
 
 ### FUNCTION TO IMPLEMENT ###
 def find_set(cards):
