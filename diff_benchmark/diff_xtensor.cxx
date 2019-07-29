@@ -17,8 +17,21 @@ void init(double* const __restrict__ a, double* const __restrict__ at, const siz
     }
 }
 
+template<typename T>
+void diff_xtensor(
+        T& at_c, const T& a_c, const T& a_w, const T& a_e, const T& a_s, const T& a_n, const T& a_b, const T& a_t,
+        const double visc, 
+        const double dxidxi, const double dyidyi, const double dzidzi, 
+        const int itot, const int jtot, const int ktot)
+{
+    xt::noalias(at_c) += visc * ( (a_e - 2*a_c + a_w) * dxidxi
+                                + (a_n - 2*a_c + a_s) * dyidyi
+                                + (a_t - 2*a_c + a_b) * dzidzi );
+}
+
 void diff_ref(
-        double* const __restrict__ at, const double* const __restrict__ a, const double visc, 
+        double* const __restrict__ at, const double* const __restrict__ a,
+        const double visc,
         const double dxidxi, const double dyidyi, const double dzidzi, 
         const int itot, const int jtot, const int ktot)
 {
@@ -28,7 +41,7 @@ void diff_ref(
 
     for (int k=1; k<ktot-1; k++)
         for (int j=1; j<jtot-1; j++)
-        #pragma GCC ivdep
+            #pragma GCC ivdep
             for (int i=1; i<itot-1; i++)
             {
                 const int ijk = i + j*jj + k*kk;
@@ -75,14 +88,14 @@ int main(int argc, char* argv[])
     const auto a_b = xt::view(a, xt::range(0, ktot-2), xt::range(1, jtot-1), xt::range(1, itot-1));
     const auto a_t = xt::view(a, xt::range(2, ktot  ), xt::range(1, jtot-1), xt::range(1, itot-1));
 
-    std::cout << typeid(a_c).name() << std::endl;
-
     init(a.data(), at.data(), ncells);
 
     // Check the results.
-    xt::noalias(at_c) += visc * ( (a_e - 2*a_c + a_w) * dxidxi
-                                + (a_n - 2*a_c + a_s) * dyidyi
-                                + (a_t - 2*a_c + a_b) * dzidzi );
+    diff_xtensor(
+            at_c, a_c, a_w, a_e, a_s, a_n, a_b, a_t,
+            visc,
+            dxidxi, dyidyi, dzidzi,
+            itot, jtot, ktot);
 
     printf("at=%.20f\n", at.data()[itot*jtot+itot+itot/2]);
 
@@ -91,9 +104,11 @@ int main(int argc, char* argv[])
    
     for (int i=0; i<nloop; ++i)
     {
-        xt::noalias(at_c) += visc * ( (a_e - 2*a_c + a_w) * dxidxi
-                                    + (a_n - 2*a_c + a_s) * dyidyi
-                                    + (a_t - 2*a_c + a_b) * dzidzi );
+        diff_xtensor(
+                at_c, a_c, a_w, a_e, a_s, a_n, a_b, a_t,
+                visc,
+                dxidxi, dyidyi, dzidzi,
+                itot, jtot, ktot);
 
         // Handwritten kernel 10 times faster than code above.
         // diff_ref(
