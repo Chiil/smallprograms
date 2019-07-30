@@ -3,6 +3,8 @@ import time
 import numpy as np
 import itertools
 
+random_seed = 0
+
 # https://en.wikipedia.org/wiki/Set_(card_game)
 # I have created a script that generated the deck of cards,
 # shuffles the deck and plays the game. Your task is to write the fastest
@@ -27,7 +29,7 @@ for c in color:
 
 # Shuffle the deck. Fix the random seed to ensure that everybody
 # has the same deck.
-random.seed(0)
+random.seed(random_seed)
 random.shuffle(deck)
 
 # Print the shuffled cards.
@@ -63,6 +65,7 @@ def is_set(card0, card1, card2):
 def find_set(cards):
     t_start = time.process_time()
 
+    # Convert the cards into codes.
     cards_code = process_cards(cards)
 
     # Sort the list increase set likelihood in adjacent cards.
