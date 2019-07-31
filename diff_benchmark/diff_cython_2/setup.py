@@ -1,3 +1,5 @@
+# Code can be compiled using "python3 setup.py build_ext --inplace"
+
 from distutils.core import setup
 from distutils.extension import Extension
 from Cython.Distutils import build_ext
