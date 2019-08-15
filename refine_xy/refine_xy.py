@@ -2,22 +2,21 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 itot_in = 96
-itot_out = 480
-
 jtot_in = 96
+index_in = 3600
+
+itot_out = 480
 jtot_out = 480
+index_out = 0
 
 ktot = 144
 
-field_list = []
-field_list.append(("u", True, False))
-field_list.append(("v", False, True))
-field_list.append(("w", False, False))
-field_list.append(("thl", False, False))
-field_list.append(("qt", False, False))
-field_list.append(("qr", False, False))
-field_list.append(("qs", False, False))
-field_list.append(("qg", False, False))
+field_list = ["u"] #, "v", "w", "thl", "qt", "qr", "qs", "qg"]
+
+# CvH: hack a field to test
+u = np.random.rand(ktot, jtot_in, itot_in)
+u.tofile("{0:}.{1:07d}".format("u", index_in))
+# CvH: end hack
 
 # The input range contains ghost cells cover full range.
 dx_in = 1. / itot_in
@@ -72,12 +71,12 @@ def refine_xy(a_in, at_xh, at_yh):
     return a_out
 
 # Loop over the list.
-for name, at_xh, at_yh in field_list:
-    a_in = np.fromfile("{0:}.{1:07d}".format(name, 0))
+for field in field_list:
+    a_in = np.fromfile("{0:}.{1:07d}".format(field, index_in))
     a_in.shape = (ktot, jtot_in, itot_in)
 
-    a_out = refine_xy(a_in, at_xh, at_yh)
-    a_out.tofile("{0:}.{:07d}.new".format(name, 0))
+    a_out = refine_xy(a_in, field == "u", field == "v")
+    a_out.tofile("{0:}.{1:07d}".format(field, index_out))
 
 """
 # Some arrays to test it.
