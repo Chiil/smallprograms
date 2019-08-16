@@ -1,12 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-itot_in = 96
-jtot_in = 96
+itot_in = 8
+jtot_in = 8
 index_in = 3600
 
-itot_out = 480
-jtot_out = 480
+itot_out = 16
+jtot_out = 16
 index_out = 0
 
 ktot = 144
@@ -14,7 +14,7 @@ ktot = 144
 field_list = ["u"] #, "v", "w", "thl", "qt", "qr", "qs", "qg"]
 
 # CvH: hack a field to test
-u = np.random.rand(ktot, jtot_in, itot_in)
+u = np.ones((ktot, jtot_in, itot_in))
 u.tofile("{0:}.{1:07d}".format("u", index_in))
 # CvH: end hack
 
@@ -65,6 +65,19 @@ def refine_xy(a_in, at_xh, at_yh):
     a_in_gc = np.empty((ktot, jtot_in+1+j_start, itot_in+1+i_start))
     a_in_gc[:, j_start:-1, i_start:-1] = a_in[:, :, :]
 
+    # Set the ghost cells.
+    if at_xh:
+        a_in_gc[:, :, -1] = a_in_gc[:, :, 0]
+    else:
+        a_in_gc[:, :,  0] = a_in_gc[:, :, -2]
+        a_in_gc[:, :, -1] = a_in_gc[:, :,  1]
+ 
+    if at_yh:
+        a_in_gc[:, -1, :] = a_in_gc[:, 0, :]
+    else:
+        a_in_gc[:,  0, :] = a_in_gc[:, -2, :]
+        a_in_gc[:, -1, :] = a_in_gc[:,  1, :]
+
     a_out = np.einsum('ijk,lk->ijl', a_in_gc, M_xh, optimize=True) if at_xh else np.einsum('ijk,lk->ijl', a_in_gc, M_x, optimize=True)
     a_out = np.einsum('ijk,lj->ilk', a_out  , M_yh, optimize=True) if at_yh else np.einsum('ijk,lj->ilk', a_out  , M_y, optimize=True)
 
@@ -78,30 +91,16 @@ for field in field_list:
     a_out = refine_xy(a_in, field == "u", field == "v")
     a_out.tofile("{0:}.{1:07d}".format(field, index_out))
 
-"""
-# Some arrays to test it.
-u_in = np.empty((ktot, jtot_in, itot_in))
-s_in = np.empty((ktot, jtot_in, itot_in))
-u_in[:,:,:] = np.sin(2.*np.pi*xh_in[None, None,  :-1]) * np.sin(2.*np.pi*y_in[None, 1:-1, None])
-s_in[:,:,:] = np.sin(2.*np.pi* x_in[None, None, 1:-1]) * np.sin(2.*np.pi*y_in[None, 1:-1, None])
-
-u_out = refine_xy(u_in, True, False)
-s_out = refine_xy(u_in, False, False)
-
 # Plot it.
+u = np.fromfile("u.0000000")
+u.shape = (ktot, jtot_out, itot_out)
+
 k_plot = ktot // 2
 
 plt.figure()
-plt.subplot(121)
-plt.pcolormesh(xh_in[:-1], y_in[1:-1], u_in[k_plot])
-plt.xlim(0, 1)
-plt.ylim(0, 1)
-plt.colorbar()
-plt.subplot(122)
-plt.pcolormesh(xh_out, y_out, u_out[k_plot])
+plt.pcolormesh(xh_out, y_out, u[k_plot])
 plt.xlim(0, 1)
 plt.ylim(0, 1)
 plt.colorbar()
 
 plt.show()
-"""
