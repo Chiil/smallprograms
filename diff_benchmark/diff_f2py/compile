@@ -1,4 +1,4 @@
-cpp-7 -DTF=c_double diff_f90.f90 > diff_f90_d.f90
+cpp-9 -DTF=c_double diff_f90.f90 > diff_f90_d.f90
 f2py --opt="-Ofast -march=native -fno-wrapv" -c -m diff_d diff_f90_d.f90 
-cpp-7 -DTF=c_float diff_f90.f90 > diff_f90_f.f90
+cpp-9 -DTF=c_float diff_f90.f90 > diff_f90_f.f90
 f2py --opt="-Ofast -march=native -fno-wrapv" -c -m diff_f diff_f90_f.f90 

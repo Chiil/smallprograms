@@ -1,8 +1,8 @@
 import numpy as np
 from timeit import default_timer as timer
 
-float_type = np.float32
-#float_type = np.float64
+#float_type = np.float32
+float_type = np.float64
 
 if (float_type == np.float32):
     import diff_f as diff

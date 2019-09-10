@@ -26,7 +26,7 @@ void diff(std::vector<double>& at, const std::vector<double>& a, const double vi
 
     for (int k=1; k<ktot-1; k++)
         for (int j=1; j<jtot-1; j++)
-        #pragma ivdep
+            #pragma GCC ivdep
             for (int i=1; i<itot-1; i++)
             {
                 const int ijk = i + j*jj + k*kk;

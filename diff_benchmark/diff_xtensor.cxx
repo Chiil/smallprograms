@@ -24,7 +24,8 @@ void diff_xtensor(
         const double dxidxi, const double dyidyi, const double dzidzi, 
         const int itot, const int jtot, const int ktot)
 {
-    xt::noalias(at_c) += visc * ( (a_e - 2*a_c + a_w) * dxidxi
+    // xt::noalias(at_c) += visc * ( (a_e - 2*a_c + a_w) * dxidxi
+                at_c  += visc * ( (a_e - 2*a_c + a_w) * dxidxi
                                 + (a_n - 2*a_c + a_s) * dyidyi
                                 + (a_t - 2*a_c + a_b) * dzidzi );
 }

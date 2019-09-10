@@ -2,8 +2,8 @@ import numpy as np
 from timeit import default_timer as timer
 import diff
 
-float_type = np.float32
-#float_type = np.float64
+#float_type = np.float32
+float_type = np.float64
 
 
 nloop = 100;
