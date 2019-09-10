@@ -12,7 +12,7 @@ cdef extern from "nn_cpp.cpp" namespace "nn":
             const int itot, const int jtot, const int ktot)
 
 ctypedef fused float_t:
-    cython.float
+    #cython.float
     cython.double
 
 @cython.boundscheck(False)

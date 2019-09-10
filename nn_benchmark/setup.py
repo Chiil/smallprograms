@@ -10,8 +10,8 @@ setup(
     cmdclass = {'build_ext': build_ext},
     ext_modules = [Extension("nn",
                              sources=["nn.pyx"],
-                             language="c++",
                              language_level=3,
-                             extra_compile_args=["-O3", "-march=native", "-fno-wrapv", "-DNDEBUG"],
-                             include_dirs=[numpy.get_include(), "/usr/local/Cellar/eigen/3.3.7/include/eigen3"])],
+                             language="c++",
+                             extra_compile_args=["-std=c++14", "-O3", "-march=native", "-fno-wrapv", "-DNDEBUG"],
+                             include_dirs=[numpy.get_include(), "/usr/local/Cellar/openblas/0.3.7/include"])]
 )
