@@ -2,8 +2,8 @@ namespace nn
 {
     template<typename TF>
     void inference_cpp(
-            TF* __restrict__ at, const TF* __restrict__ a, const TF visc,
-            const TF dxidxi, const TF dyidyi, const TF dzidzi,
+            TF* __restrict__ ut, TF* __restrict__ vt, TF* __restrict__ wt,
+            const TF* __restrict__ u, const TF* __restrict__ v, const TF* __restrict__ w,
             const int itot, const int jtot, const int ktot)
     {
         const int ii = 1;
@@ -17,14 +17,6 @@ namespace nn
                 for (int i=1; i<itot-1; i++)
                 {
                     const int ijk = i + j*jj + k*kk;
-                    at[ijk] += visc * (
-                            + ( (a[ijk+ii] - a[ijk   ]) 
-                              - (a[ijk   ] - a[ijk-ii]) ) * dxidxi 
-                            + ( (a[ijk+jj] - a[ijk   ]) 
-                              - (a[ijk   ] - a[ijk-jj]) ) * dyidyi
-                            + ( (a[ijk+kk] - a[ijk   ]) 
-                              - (a[ijk   ] - a[ijk-kk]) ) * dzidzi
-                            );
                 }
     }
 }
