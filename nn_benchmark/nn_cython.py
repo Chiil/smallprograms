@@ -3,11 +3,13 @@ from timeit import default_timer as timer
 import nn
 
 float_type = np.float64
+n0 = 375
+n1 = 80
 
-nloop = 10;
-itot = 64;
+nloop = 100;
+itot = 96;
 jtot = 48;
-ktot = 32;
+ktot = 64;
 
 ut = np.zeros((ktot, jtot, itot), dtype=float_type)
 vt = np.zeros((ktot, jtot, itot), dtype=float_type)
@@ -20,8 +22,8 @@ u[:,:,:] = np.random.random_sample((ktot, jtot, itot))
 v[:,:,:] = np.random.random_sample((ktot, jtot, itot))
 w[:,:,:] = np.random.random_sample((ktot, jtot, itot))
 
-M0 = np.random.random_sample((80, 375))
-b0 = np.random.random_sample((80))
+M0 = np.random.random_sample((n1, n0))
+b0 = np.random.random_sample((n1))
 
 # Time the loop
 start = timer()
