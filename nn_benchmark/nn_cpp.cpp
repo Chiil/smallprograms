@@ -12,14 +12,14 @@ namespace nn
     constexpr int n2 = 18;
 
     template<typename TF>
-    void add_bias_and_activate(TF* __restrict__ v, const TF* __restrict__ b, const int v_length)
+    inline TF leaky_relu(const TF a) { return std::max(TF(0.2)*a, a); }
+
+    template<typename TF>
+    inline void add_bias_and_activate(TF* __restrict__ v, const TF* __restrict__ b, const int v_length)
     {
         #pragma GCC ivdep
         for (int n=0; n<v_length; ++n)
-        {
-            const TF v_tmp = v[n] + b[n];
-            v[n] = std::max(TF(0.2)*v_tmp, v_tmp);
-        }
+            v[n] = leaky_relu(v[n] + b[n]);
     }
 
     template<typename TF>

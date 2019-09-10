@@ -7,7 +7,7 @@ n0 = 375
 n1 = 80
 n2 = 18
 
-nloop = 10;
+nloop = 20;
 itot = 100;
 jtot = 52;
 ktot = 68;
