@@ -5,9 +5,9 @@ import nn
 float_type = np.float64
 
 nloop = 10;
-itot = 96;
-jtot = 96;
-ktot = 96;
+itot = 64;
+jtot = 48;
+ktot = 32;
 
 ut = np.zeros((ktot, jtot, itot), dtype=float_type)
 vt = np.zeros((ktot, jtot, itot), dtype=float_type)

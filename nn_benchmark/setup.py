@@ -11,6 +11,6 @@ setup(
     ext_modules = [Extension("nn",
                              sources=["nn.pyx"],
                              language="c++",
-                             extra_compile_args=["-Ofast", "-march=native", "-mtune=native", "-fno-wrapv"],
-                             include_dirs=[numpy.get_include()])],
+                             extra_compile_args=["-Ofast", "-march=native", "-mtune=native", "-fno-wrapv", "-DNDEBUG"],
+                             include_dirs=[numpy.get_include(), "/usr/local/Cellar/eigen/3.3.7/include/eigen3"])],
 )
