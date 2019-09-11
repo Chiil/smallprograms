@@ -7,10 +7,14 @@ n0 = 375
 n1 = 80
 n2 = 18
 
-nloop = 20;
-itot = 100;
-jtot = 52;
-ktot = 68;
+nloop = 10;
+itot = 96;
+jtot = 48;
+ktot = 64;
+
+itot += 4
+jtot += 4
+ktot += 4
 
 ut = np.zeros((ktot, jtot, itot), dtype=float_type)
 vt = np.zeros((ktot, jtot, itot), dtype=float_type)

@@ -7,6 +7,23 @@ namespace nn
             const enum CBLAS_ORDER, const enum CBLAS_TRANSPOSE, const int, const int, const double, const double*,
             const int, const double*, const int, const double, double*, const int);
 
+    template<typename TF>
+    void matrix_multiply(
+            TF* __restrict__ v_out, const TF* __restrict__ M, TF* __restrict__ v_in, const int rows, const int cols)
+    {
+        for (int j=0; j<rows; ++j)
+        {
+            TF v_tmp = TF(0.);
+            #pragma GCC ivdep
+            for (int i=0; i<cols; ++i)
+            {
+                const int ij = i + j*cols;
+                v_tmp += M[ij]*v_in[i];
+            }
+            v_out[j] = v_tmp;
+        }
+    }
+
     constexpr int n0 = 375;
     constexpr int n1 = 80;
     constexpr int n2 = 18;
@@ -56,21 +73,37 @@ namespace nn
                                 const int ijkb = (i+ib) + (j+jb)*jj + (k+kb)*kk;
                                 v0[iv] = u[ijkb];
                                 ++iv;
+                            }
 
+                    for (int kb=-2; kb<3; ++kb)
+                        for (int jb=-2; jb<3; ++jb)
+                            #pragma GCC ivdep
+                            for (int ib=-2; ib<3; ++ib)
+                            {
+                                const int ijkb = (i+ib) + (j+jb)*jj + (k+kb)*kk;
                                 v0[iv] = v[ijkb];
                                 ++iv;
+                            }
 
+                    for (int kb=-2; kb<3; ++kb)
+                        for (int jb=-2; jb<3; ++jb)
+                            #pragma GCC ivdep
+                            for (int ib=-2; ib<3; ++ib)
+                            {
+                                const int ijkb = (i+ib) + (j+jb)*jj + (k+kb)*kk;
                                 v0[iv] = w[ijkb];
                                 ++iv;
                             }
 
                     // Step 2. Execute the network.
                     // v1 = M0*v0 + b0;
-                    cblas_dgemv(CblasRowMajor, CblasNoTrans, n1, n0, 1., M0, n0, v0.data(), 1, 0., v1.data(), 1);
+                    // cblas_dgemv(CblasRowMajor, CblasNoTrans, n1, n0, 1., M0, n0, v0.data(), 1, 0., v1.data(), 1);
+                    matrix_multiply(v1.data(), M0, v0.data(), n1, n0);
                     add_bias_and_activate(v1.data(), b0, n1);
 
                     // v2 = M1*v1 + b1;
-                    cblas_dgemv(CblasRowMajor, CblasNoTrans, n2, n1, 1., M1, n1, v1.data(), 1, 0., v2.data(), 1);
+                    // cblas_dgemv(CblasRowMajor, CblasNoTrans, n2, n1, 1., M1, n1, v1.data(), 1, 0., v2.data(), 1);
+                    matrix_multiply(v2.data(), M1, v1.data(), n2, n1);
                     add_bias_and_activate(v2.data(), b1, n2);
 
                     // Step 3. Read out the vector.
