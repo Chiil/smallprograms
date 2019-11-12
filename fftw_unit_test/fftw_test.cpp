@@ -14,8 +14,6 @@ void save(
         std::stringstream& ss_jplanf,
         std::stringstream& ss_jplanb)
 {
-    // SAVE THE FFTW PLAN IN ORDER TO ENSURE BITWISE IDENTICAL RESTARTS
-    // Use the FFTW3 many interface in order to reduce function call overhead.
     int rank = 1;
     int ni[] = {itot};
     int nj[] = {jtot};
@@ -57,16 +55,13 @@ void load(
         std::stringstream& ss_jplanf,
         std::stringstream& ss_jplanb)
 {
-    // LOAD THE FFTW PLAN
     char filename[256];
     std::sprintf(filename, "%s.%07d", "fftwplan", 0);
 
-    // fftw_forget_wisdom();
     int n = fftw_import_wisdom_from_filename(filename);
     if (n == 0)
         throw std::runtime_error("Error loading FFTW Plan");
 
-    // use the FFTW3 many interface in order to reduce function call overhead
     int rank = 1;
     int ni[] = {itot};
     int nj[] = {jtot};
