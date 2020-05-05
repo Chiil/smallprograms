@@ -37,7 +37,6 @@ RUN touch .sudo_as_admin_successful
 
 # Clone MicroHH source code.
 RUN git clone https://github.com/microhh/microhh
-RUN git clone https://github.com/microhh/microhh2
 
 # Echo instructions at login.
 RUN echo "echo \"Open the MicroHH tutorial at: https://github.com/microhh/microhh/wiki/Tutorial\"" >> .bashrc
