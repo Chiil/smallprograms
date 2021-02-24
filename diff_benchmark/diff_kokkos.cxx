@@ -7,81 +7,84 @@
 #include <Kokkos_core.hpp>
 
 
-using Array_3d = Kokkos::View<double***>;
-using Array_3d_inner = Kokkos::View<double***, Kokkos::LayoutStride>;
-using size_type = Array_3d::size_type;
-
-void init(double* const __restrict__ a, double* const __restrict__ at, const size_t ncells)
+namespace
 {
-    for (size_t i=0; i<ncells; ++i)
+    using Array_3d = Kokkos::View<double***, Kokkos::LayoutRight>;
+    using Array_3d_inner = Kokkos::View<double***, Kokkos::LayoutStride>;
+    using size_type = Array_3d::size_type;
+    
+    void init(double* const __restrict__ a, double* const __restrict__ at, const size_t ncells)
     {
-        a [i] = pow(i,2)/pow(i+1,2);
-        at[i] = 0.;
-    }
-}
-
-struct diff
-{
-    Array_3d at;
-    const Array_3d a;
-    const double visc;
-    const double dxidxi;
-    const double dyidyi;
-    const double dzidzi;
-
-    diff(
-            Array_3d at_, const Array_3d a_,
-            const double visc_,
-            const double dxidxi_, const double dyidyi_, const double dzidzi_) :
-        at(at_), a(a_), visc(visc_), dxidxi(dxidxi_), dyidyi(dyidyi_), dzidzi(dzidzi_) {};
-
-    KOKKOS_INLINE_FUNCTION
-    void operator()(typename Array_3d::size_type k) const
-    {
-        using size_type = typename Array_3d::size_type;
-        ++k;
-        for (size_type j=1; j<a.extent(1)-1; ++j)
+        for (size_t i=0; i<ncells; ++i)
         {
-            for (size_type i=1; i<a.extent(2)-1; ++i)
-            {
-                at(k, j, i) += visc * (
-                        + ( (a(k+1, j  , i  ) - a(k  , j  , i  ))
-                          - (a(k  , j  , i  ) - a(k-1, j  , i  )) ) * dxidxi
-                        + ( (a(k  , j+1, i  ) - a(k  , j  , i  ))
-                          - (a(k  , j  , i  ) - a(k  , j-1, i  )) ) * dyidyi
-                        + ( (a(k  , j  , i+1) - a(k  , j  , i  ))
-                          - (a(k  , j  , i  ) - a(k  , j  , i-1)) ) * dzidzi
-                        );
-            }
+            a [i] = pow(i,2)/pow(i+1,2);
+            at[i] = 0.;
         }
     }
-};
-
-void diff_ref(
-        double* const __restrict__ at, const double* const __restrict__ a,
-        const double visc,
-        const double dxidxi, const double dyidyi, const double dzidzi, 
-        const int itot, const int jtot, const int ktot)
-{
-    const int ii = 1;
-    const int jj = itot;
-    const int kk = itot*jtot;
-
-    for (int k=1; k<ktot-1; k++)
-        for (int j=1; j<jtot-1; j++)
-            #pragma GCC ivdep
-            for (int i=1; i<itot-1; i++)
+    
+    struct diff
+    {
+        Array_3d at;
+        const Array_3d a;
+        const double visc;
+        const double dxidxi;
+        const double dyidyi;
+        const double dzidzi;
+    
+        diff(
+                Array_3d at_, const Array_3d a_,
+                const double visc_,
+                const double dxidxi_, const double dyidyi_, const double dzidzi_) :
+            at(at_), a(a_), visc(visc_), dxidxi(dxidxi_), dyidyi(dyidyi_), dzidzi(dzidzi_) {};
+    
+        KOKKOS_INLINE_FUNCTION
+        void operator()(Array_3d::size_type k) const
+        {
+            using size_type = Array_3d::size_type;
+            ++k;
+            for (size_type j=1; j<a.extent(1)-1; ++j)
             {
-                const int ijk = i + j*jj + k*kk;
-                at[ijk] += visc * (
-                        + ( (a[ijk+ii] - a[ijk   ]) 
-                          - (a[ijk   ] - a[ijk-ii]) ) * dxidxi 
-                        + ( (a[ijk+jj] - a[ijk   ]) 
-                          - (a[ijk   ] - a[ijk-jj]) ) * dyidyi
-                        + ( (a[ijk+kk] - a[ijk   ]) 
-                          - (a[ijk   ] - a[ijk-kk]) ) * dzidzi
-                        );
+                for (size_type i=1; i<a.extent(2)-1; ++i)
+                {
+                    at(k, j, i) += visc * (
+                            + ( (a(k+1, j  , i  ) - a(k  , j  , i  ))
+                              - (a(k  , j  , i  ) - a(k-1, j  , i  )) ) * dxidxi
+                            + ( (a(k  , j+1, i  ) - a(k  , j  , i  ))
+                              - (a(k  , j  , i  ) - a(k  , j-1, i  )) ) * dyidyi
+                            + ( (a(k  , j  , i+1) - a(k  , j  , i  ))
+                              - (a(k  , j  , i  ) - a(k  , j  , i-1)) ) * dzidzi
+                            );
+                }
             }
+        }
+    };
+    
+    void diff_ref(
+            double* const __restrict__ at, const double* const __restrict__ a,
+            const double visc,
+            const double dxidxi, const double dyidyi, const double dzidzi, 
+            const int itot, const int jtot, const int ktot)
+    {
+        const int ii = 1;
+        const int jj = itot;
+        const int kk = itot*jtot;
+    
+        for (int k=1; k<ktot-1; k++)
+            for (int j=1; j<jtot-1; j++)
+                #pragma GCC ivdep
+                for (int i=1; i<itot-1; i++)
+                {
+                    const int ijk = i + j*jj + k*kk;
+                    at[ijk] += visc * (
+                            + ( (a[ijk+ii] - a[ijk   ]) 
+                              - (a[ijk   ] - a[ijk-ii]) ) * dxidxi 
+                            + ( (a[ijk+jj] - a[ijk   ]) 
+                              - (a[ijk   ] - a[ijk-jj]) ) * dyidyi
+                            + ( (a[ijk+kk] - a[ijk   ]) 
+                              - (a[ijk   ] - a[ijk-kk]) ) * dzidzi
+                            );
+                }
+    }
 }
 
 int main(int argc, char* argv[])
@@ -133,6 +136,7 @@ int main(int argc, char* argv[])
             //         dxidxi, dyidyi, dzidzi, visc,
             //         itot, jtot, ktot);
         }
+
         Kokkos::fence();
   
         double duration = (std::clock() - start ) / (double)CLOCKS_PER_SEC;
