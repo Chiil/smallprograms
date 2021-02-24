@@ -111,7 +111,7 @@ int main(int argc, char* argv[])
                 Kokkos::pair<size_type, size_type>(1, jtot-2),
                 Kokkos::pair<size_type, size_type>(1, itot-2));
 
-        Range_3d range_3d({1, 1, 1}, {ktot-2, jtot-2, itot-2}, {1, 1, 1});
+        Range_3d range_3d({1, 1, 1}, {ktot-2, jtot-2, itot-2});
 
         init(a.data(), at.data(), ncells);
 

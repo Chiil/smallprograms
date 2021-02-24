@@ -113,9 +113,9 @@ int main(int argc, char* argv[])
 
         Array_3d_inner at_inner = Kokkos::subview(
                 at,
-                Kokkos::pair<size_type, size_type>(1, ktot-1),
-                Kokkos::pair<size_type, size_type>(1, jtot-1),
-                Kokkos::pair<size_type, size_type>(1, itot-1));
+                Kokkos::pair<size_type, size_type>(1, ktot-2),
+                Kokkos::pair<size_type, size_type>(1, jtot-2),
+                Kokkos::pair<size_type, size_type>(1, itot-2));
 
         init(a.data(), at.data(), ncells);
 
