@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
             return 1;
         }
 
-        constexpr int nloop = 10;
+        constexpr int nloop = 30;
         const size_t itot = std::stoi(argv[1]);
         const size_t jtot = std::stoi(argv[1]);
         const size_t ktot = std::stoi(argv[1]);
@@ -86,7 +86,7 @@ int main(int argc, char* argv[])
         printf("at=%.20f\n", at.data()[itot*jtot+itot+itot/2]);
 
         // Time performance.
-        std::clock_t start = std::clock();
+        Kokkos::Timer timer;
 
         for (int i=0; i<nloop; ++i)
         {
@@ -97,7 +97,7 @@ int main(int argc, char* argv[])
 
         Kokkos::fence();
 
-        double duration = (std::clock() - start ) / (double)CLOCKS_PER_SEC;
+        double duration = timer.seconds();
 
         printf("time/iter = %f s (%i iters)\n", duration/(double)nloop, nloop);
     }
