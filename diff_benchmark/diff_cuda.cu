@@ -47,7 +47,7 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    const int nloop = 20;
+    const int nloop = 30;
     const int itot = std::stoi(argv[1]);
     const int jtot = std::stoi(argv[1]);
     const int ktot = std::stoi(argv[1]);
