@@ -9,9 +9,6 @@
 namespace
 {
     using Array_3d = Kokkos::View<double***, Kokkos::LayoutRight>;
-    using Array_3d_inner = Kokkos::View<double***, Kokkos::LayoutStride>;
-    using size_type = Array_3d::size_type;
-
     using Range_3d = Kokkos::MDRangePolicy<Kokkos::Rank<3>>;
 
     void init(double* const __restrict__ a, double* const __restrict__ at, const size_t ncells)
@@ -82,7 +79,9 @@ int main(int argc, char* argv[])
         init(a.data(), at.data(), ncells);
 
         // Check the results.
-        Kokkos::parallel_for(range_3d, diff(at, a, visc, dxidxi, dyidyi, dzidzi));
+        Kokkos::parallel_for(
+                range_3d,
+                diff(at, a, visc, dxidxi, dyidyi, dzidzi));
 
         printf("at=%.20f\n", at.data()[itot*jtot+itot+itot/2]);
 
@@ -91,7 +90,9 @@ int main(int argc, char* argv[])
 
         for (int i=0; i<nloop; ++i)
         {
-            Kokkos::parallel_for(range_3d, diff(at, a, visc, dxidxi, dyidyi, dzidzi));
+            Kokkos::parallel_for(
+                    range_3d,
+                    diff(at, a, visc, dxidxi, dyidyi, dzidzi));
         }
 
         Kokkos::fence();
