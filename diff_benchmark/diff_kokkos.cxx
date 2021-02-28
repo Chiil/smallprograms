@@ -125,7 +125,7 @@ int main(int argc, char* argv[])
         printf("at=%.20f\n", at.data()[itot*jtot+itot+itot/2]);
 
         // Time performance.
-        std::clock_t start = std::clock(); 
+        Kokkos::Timer timer;
    
         for (int i=0; i<nloop; ++i)
         {
@@ -139,7 +139,7 @@ int main(int argc, char* argv[])
 
         Kokkos::fence();
   
-        double duration = (std::clock() - start ) / (double)CLOCKS_PER_SEC;
+        double duration = timer.seconds();
    
         printf("time/iter = %f s (%i iters)\n", duration/(double)nloop, nloop);
     }
