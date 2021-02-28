@@ -1,9 +1,4 @@
-#include <iostream>
-#include <iomanip>
-#include <cstdlib>
 #include <cstdio>
-#include <ctime>
-
 #include <Kokkos_core.hpp>
 
 namespace
