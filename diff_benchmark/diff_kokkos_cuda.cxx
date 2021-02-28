@@ -4,7 +4,7 @@
 namespace
 {
     // using Array_3d = Kokkos::View<double***, Kokkos::HostSpace>;
-    using Array_3d_gpu = Kokkos::View<double***, Kokkos::CudaSpace>;
+    using Array_3d_gpu = Kokkos::View<double***, Kokkos::LayoutRight, Kokkos::CudaSpace>;
     using Range_3d = Kokkos::MDRangePolicy<Kokkos::Rank<3>>;
 
     void init(double* const __restrict__ a, double* const __restrict__ at, const size_t ncells)
@@ -70,7 +70,7 @@ int main(int argc, char* argv[])
         Array_3d_gpu a_gpu ("a_gpu" , ktot, jtot, itot);
         Array_3d_gpu at_gpu("at_gpu", ktot, jtot, itot);
 
-        Range_3d range_3d({1, 1, 1}, {ktot-1, jtot-1, itot-1}, {8, 0, 0});
+        Range_3d range_3d({1, 1, 1}, {ktot-1, jtot-1, itot-1}, {0, 0, 0});
 
         // Array_3d a ("a" , ktot, jtot, itot);
         // Array_3d at("at", ktot, jtot, itot);
@@ -80,15 +80,15 @@ int main(int argc, char* argv[])
 
         init(a.data(), at.data(), ncells);
 
-        Kokkos::deep_copy(a, a_gpu);
-        Kokkos::deep_copy(at, at_gpu);
+        Kokkos::deep_copy(a_gpu, a);
+        Kokkos::deep_copy(at_gpu, at);
 
         // Check the results.
         Kokkos::parallel_for(
                 range_3d,
                 diff(at_gpu, a_gpu, visc, dxidxi, dyidyi, dzidzi));
 
-        Kokkos::deep_copy(at_gpu, at);
+        Kokkos::deep_copy(at, at_gpu);
 
         printf("at=%.20f\n", at.data()[itot*jtot+itot+itot/2]);
 
@@ -106,7 +106,7 @@ int main(int argc, char* argv[])
 
         double duration = timer.seconds();
 
-        printf("time/iter = %f s (%i iters)\n", duration/(double)nloop, nloop);
+        printf("time/iter = %E s (%i iters)\n", duration/(double)nloop, nloop);
     }
 
     Kokkos::finalize();
