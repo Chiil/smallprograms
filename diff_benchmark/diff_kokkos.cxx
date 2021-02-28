@@ -4,7 +4,7 @@
 namespace
 {
     using Array_3d = Kokkos::View<double***, Kokkos::LayoutRight>;
-    using Range_3d = Kokkos::MDRangePolicy<Kokkos::Rank<3>>;
+    using Range_3d = Kokkos::MDRangePolicy<Kokkos::Rank<3, Kokkos::IterateRight, Kokkos::IterateRight>>;
 
     void init(double* const __restrict__ a, double* const __restrict__ at, const size_t ncells)
     {
@@ -69,7 +69,7 @@ int main(int argc, char* argv[])
         Array_3d a ("a" , ktot, jtot, itot);
         Array_3d at("at", ktot, jtot, itot);
 
-        Range_3d range_3d({1, 1, 1}, {ktot-1, jtot-1, itot-1}, {8, 0, 0});
+        Range_3d range_3d({1, 1, 1}, {ktot-1, jtot-1, itot-1}, {0, 0, 0});
 
         init(a.data(), at.data(), ncells);
 

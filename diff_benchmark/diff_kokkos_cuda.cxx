@@ -105,6 +105,10 @@ int main(int argc, char* argv[])
         double duration = timer.seconds();
 
         printf("time/iter = %E s (%i iters)\n", duration/(double)nloop, nloop);
+
+        Kokkos::deep_copy(at, at_gpu);
+
+        printf("at=%.20f\n", at.data()[itot*jtot+itot+itot/4]);
     }
 
     Kokkos::finalize();
