@@ -72,6 +72,8 @@ int main(int argc, char* argv[])
     double duration = (std::clock() - start ) / (double)CLOCKS_PER_SEC;
    
     printf("time/iter = %f s (%i iters)\n",duration/(double)nloop, nloop);
+
+    printf("at=%.20f\n", at[itot*jtot+itot+itot/4]);
     
     return 0;
 }
