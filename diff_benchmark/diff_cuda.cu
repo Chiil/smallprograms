@@ -1,10 +1,7 @@
 #include <iostream>
-#include <iomanip>
-#include <cstdlib>
-#include <stdlib.h>
 #include <cstdio>
-#include <ctime>
-#include "math.h"
+#include <chrono>
+#include <cmath>
 
 void init(double* const __restrict__ a, double* const __restrict__ at, const int ncells)
 {
@@ -20,23 +17,26 @@ __global__ void diff(
         const double visc, const double dxidxi, const double dyidyi, const double dzidzi, 
         const int itot, const int jtot, const int ktot)
 {
-    const int i  = blockIdx.x*blockDim.x + threadIdx.x;
-    const int j  = blockIdx.y*blockDim.y + threadIdx.y;
-    const int k  = blockIdx.z;
+    const int i = blockIdx.x*blockDim.x + threadIdx.x + 1;
+    const int j = blockIdx.y*blockDim.y + threadIdx.y + 1;
+    const int k = blockIdx.z + 1;
 
     const int ii = 1;
     const int jj = itot;
     const int kk = itot*jtot;
 
-    const int ijk = i + j*jj + k*kk;
-    at[ijk] += visc * (
-            + ( (a[ijk+ii] - a[ijk   ]) 
-              - (a[ijk   ] - a[ijk-ii]) ) * dxidxi 
-            + ( (a[ijk+jj] - a[ijk   ]) 
-              - (a[ijk   ] - a[ijk-jj]) ) * dyidyi
-            + ( (a[ijk+kk] - a[ijk   ]) 
-              - (a[ijk   ] - a[ijk-kk]) ) * dzidzi
-            );
+    if (i < itot-1 && j < jtot-1 && k < ktot-1)
+    {
+        const int ijk = i + j*jj + k*kk;
+        at[ijk] += visc * (
+                + ( (a[ijk+ii] - a[ijk   ]) 
+                  - (a[ijk   ] - a[ijk-ii]) ) * dxidxi 
+                + ( (a[ijk+jj] - a[ijk   ]) 
+                  - (a[ijk   ] - a[ijk-jj]) ) * dyidyi
+                + ( (a[ijk+kk] - a[ijk   ]) 
+                  - (a[ijk   ] - a[ijk-kk]) ) * dzidzi
+                );
+    }
 }
 
 int main(int argc, char* argv[])
@@ -69,8 +69,8 @@ int main(int argc, char* argv[])
 
     const int blocki = 32;
     const int blockj = 32;
-    const int gridi = itot/blocki + (itot%blocki > 0);
-    const int gridj = jtot/blockj + (jtot%blockj > 0);
+    const int gridi = (itot-2)/blocki + ((itot-2)%blocki > 0);
+    const int gridj = (jtot-2)/blockj + ((jtot-2)%blockj > 0);
 
     dim3 grid_gpu(gridi, gridj, ktot);
     dim3 block_gpu(blocki, blockj, 1);
@@ -81,22 +81,24 @@ int main(int argc, char* argv[])
             0.1, 0.1, 0.1, 0.1,
             itot, jtot, ktot);
  
-    cudaMemcpy(at_cuda, at, ncells*sizeof(double), cudaMemcpyDeviceToHost);
+    cudaMemcpy(at, at_cuda, ncells*sizeof(double), cudaMemcpyDeviceToHost);
 
     printf("at=%.20f\n",at[itot*jtot+itot+itot/2]);
  
     // Time performance 
-    std::clock_t start = std::clock(); 
-   
+    auto start = std::chrono::high_resolution_clock::now();
+
     for (int i=0; i<nloop; ++i)
         diff<<<grid_gpu, block_gpu>>>(
                 at_cuda, a_cuda,
                 0.1, 0.1, 0.1, 0.1,
                 itot, jtot, ktot);
-  
-    double duration = (std::clock() - start ) / (double)CLOCKS_PER_SEC;
+    cudaDeviceSynchronize();
+
+    auto end = std::chrono::high_resolution_clock::now();
+    double duration = std::chrono::duration_cast<std::chrono::duration<double>>(end - start).count();
    
-    printf("time/iter = %f s (%i iters)\n",duration/(double)nloop, nloop);
+    printf("time/iter = %E s (%i iters)\n",duration/(double)nloop, nloop);
     
     return 0;
 }
