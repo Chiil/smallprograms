@@ -1,3 +1,5 @@
+#include <fstream>
+#include <iostream>
 #include <cstdio>
 #include <Kokkos_Core.hpp>
 
@@ -109,6 +111,18 @@ int main(int argc, char* argv[])
         Kokkos::deep_copy(at, at_gpu);
 
         printf("at=%.20f\n", at.data()[itot*jtot+itot+itot/4]);
+
+        std::ofstream binary_file("at_kokkos.bin", std::ios::out | std::ios::trunc | std::ios::binary);
+
+        /*
+        if (binary_file)
+            binary_file.write(reinterpret_cast<const char*>(at.data()), ncells*sizeof(double));
+        else
+        {
+            std::string error = "Cannot write file \"at_kokkos.bin\"";
+            throw std::runtime_error(error);
+        }
+        */
     }
 
     Kokkos::finalize();

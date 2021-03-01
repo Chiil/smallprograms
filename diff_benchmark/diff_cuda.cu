@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <cstdio>
 #include <chrono>
 #include <cmath>
@@ -7,7 +8,7 @@ void init(double* const __restrict__ a, double* const __restrict__ at, const int
 {
     for (int i=0; i<ncells; ++i)
     {
-        a[i]  = pow(i,2)/pow(i+1,2);
+        a[i] = pow(i,2)/pow(i+1,2);
         at[i] = 0.;
     }
 }
@@ -103,6 +104,18 @@ int main(int argc, char* argv[])
     cudaMemcpy(at, at_cuda, ncells*sizeof(double), cudaMemcpyDeviceToHost);
 
     printf("at=%.20f\n", at[itot*jtot+itot+itot/4]);
+
+    /*
+    std::ofstream binary_file("at_cuda.bin", std::ios::out | std::ios::trunc | std::ios::binary);
+
+    if (binary_file)
+        binary_file.write(reinterpret_cast<const char*>(at), ncells*sizeof(double));
+    else
+    {
+        std::string error = "Cannot write file \"at_cuda.bin\"";
+        throw std::runtime_error(error);
+    }
+    */
 
     return 0;
 }
