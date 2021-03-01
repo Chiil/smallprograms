@@ -6,14 +6,16 @@
 namespace
 {
     using Array_3d_cpu = Kokkos::View<double***, Kokkos::LayoutRight, Kokkos::HostSpace>;
-    using Array_3d_gpu = Kokkos::View<double***, Kokkos::LayoutRight, Kokkos::CudaSpace>;
-
     using Range_3d_cpu = Kokkos::MDRangePolicy<
         Kokkos::DefaultHostExecutionSpace,
         Kokkos::Rank<3>>;
+
+    #ifdef KOKKOS_ENABLE_CUDA
+    using Array_3d_gpu = Kokkos::View<double***, Kokkos::LayoutRight, Kokkos::CudaSpace>;
     using Range_3d_gpu = Kokkos::MDRangePolicy<
         Kokkos::Cuda,
         Kokkos::Rank<3, Kokkos::Iterate::Left, Kokkos::Iterate::Right>>;
+    #endif
 
     void init(double* const __restrict__ a, double* const __restrict__ at, const size_t ncells)
     {
@@ -76,7 +78,9 @@ int main(int argc, char* argv[])
         constexpr double dyidyi = 0.1;
         constexpr double dzidzi = 0.1;
 
+        Kokkos::Timer timer;
 
+        #ifdef KOKKOS_ENABLE_CUDA
         // SOLVE ON THE GPU.
         Array_3d_gpu a_gpu ("a_gpu" , ktot, jtot, itot);
         Array_3d_gpu at_gpu("at_gpu", ktot, jtot, itot);
@@ -92,7 +96,7 @@ int main(int argc, char* argv[])
         Kokkos::deep_copy(at_gpu, at_tmp);
 
         // Time performance.
-        Kokkos::Timer timer;
+        timer.reset();
 
         for (int i=0; i<nloop; ++i)
         {
@@ -103,14 +107,14 @@ int main(int argc, char* argv[])
 
         Kokkos::fence();
 
-        double duration = timer.seconds();
+        double duration_gpu = timer.seconds();
 
-        printf("time/iter (GPU) = %E s (%i iters)\n", duration/(double)nloop, nloop);
+        printf("time/iter (GPU) = %E s (%i iters)\n", duration_gpu/(double)nloop, nloop);
 
         Kokkos::deep_copy(at_tmp, at_gpu);
 
         printf("at=%.20f\n", at_tmp.data()[itot*jtot+itot+itot/4]);
-
+        #endif
 
         // SOLVE ON THE CPU.
         Array_3d_cpu a_cpu ("a_cpu" , ktot, jtot, itot);
@@ -132,9 +136,9 @@ int main(int argc, char* argv[])
 
         Kokkos::fence();
 
-        duration = timer.seconds();
+        double duration_cpu = timer.seconds();
 
-        printf("time/iter (CPU) = %E s (%i iters)\n", duration/(double)nloop, nloop);
+        printf("time/iter (CPU) = %E s (%i iters)\n", duration_cpu/(double)nloop, nloop);
 
         printf("at=%.20f\n", at_cpu.data()[itot*jtot+itot+itot/4]);
     }
