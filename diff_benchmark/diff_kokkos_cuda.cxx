@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
         Array_3d_gpu a_gpu ("a_gpu" , ktot, jtot, itot);
         Array_3d_gpu at_gpu("at_gpu", ktot, jtot, itot);
 
-        Range_3d range_3d({1, 1, 1}, {ktot-1, jtot-1, itot-1}, {0, 0, 0});
+        Range_3d range_3d({1, 1, 1}, {ktot-1, jtot-1, itot-1}, {1, 1, 64});
 
         Array_3d_gpu::HostMirror a = Kokkos::create_mirror_view(a_gpu);
         Array_3d_gpu::HostMirror at = Kokkos::create_mirror_view(at_gpu);

@@ -67,8 +67,8 @@ int main(int argc, char* argv[])
     cudaMemcpy(a_cuda, a, ncells*sizeof(double), cudaMemcpyHostToDevice);
     cudaMemcpy(at_cuda, at, ncells*sizeof(double), cudaMemcpyHostToDevice);
 
-    const int blocki = 32;
-    const int blockj = 32;
+    const int blocki = 64;
+    const int blockj = 1;
     const int gridi = (itot-2)/blocki + ((itot-2)%blocki > 0);
     const int gridj = (jtot-2)/blockj + ((jtot-2)%blockj > 0);
 
@@ -97,8 +97,12 @@ int main(int argc, char* argv[])
 
     auto end = std::chrono::high_resolution_clock::now();
     double duration = std::chrono::duration_cast<std::chrono::duration<double>>(end - start).count();
-   
+
     printf("time/iter = %E s (%i iters)\n",duration/(double)nloop, nloop);
-    
+
+    cudaMemcpy(at, at_cuda, ncells*sizeof(double), cudaMemcpyDeviceToHost);
+
+    printf("at=%.20f\n", at[itot*jtot+itot+itot/4]);
+
     return 0;
 }
