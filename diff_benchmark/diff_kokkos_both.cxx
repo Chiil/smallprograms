@@ -8,7 +8,9 @@ namespace
     using Array_3d_cpu = Kokkos::View<double***, Kokkos::LayoutRight, Kokkos::HostSpace>;
     using Array_3d_gpu = Kokkos::View<double***, Kokkos::LayoutRight, Kokkos::CudaSpace>;
 
-    using Range_3d_cpu = Kokkos::MDRangePolicy<Kokkos::OpenMP, Kokkos::Rank<3>>;
+    using Range_3d_cpu = Kokkos::MDRangePolicy<
+        Kokkos::OpenMP,
+        Kokkos::Rank<3>>;
     using Range_3d_gpu = Kokkos::MDRangePolicy<
         Kokkos::Cuda,
         Kokkos::Rank<3, Kokkos::Iterate::Left, Kokkos::Iterate::Right>>;
@@ -22,7 +24,7 @@ namespace
         }
     }
 
-    template<typename Array_3d>
+    template<class Array_3d>
     struct diff
     {
         Array_3d at;
@@ -39,7 +41,7 @@ namespace
             at(at_), a(a_), visc(visc_), dxidxi(dxidxi_), dyidyi(dyidyi_), dzidzi(dzidzi_) {};
 
         KOKKOS_INLINE_FUNCTION
-        void operator()(Array_3d::size_type k, Array_3d::size_type j, Array_3d::size_type i) const
+        void operator()(typename Array_3d::size_type k, typename Array_3d::size_type j, typename Array_3d::size_type i) const
         {
             at(k, j, i) += visc * (
                     + ( (a(k+1, j  , i  ) - a(k  , j  , i  ))
@@ -74,18 +76,20 @@ int main(int argc, char* argv[])
         constexpr double dyidyi = 0.1;
         constexpr double dzidzi = 0.1;
 
+
+        // SOLVE ON THE GPU.
         Array_3d_gpu a_gpu ("a_gpu" , ktot, jtot, itot);
         Array_3d_gpu at_gpu("at_gpu", ktot, jtot, itot);
 
-        Range_3d range_3d({1, 1, 1}, {ktot-1, jtot-1, itot-1}, {1, 1, 64});
+        Range_3d_gpu range_3d_gpu({1, 1, 1}, {ktot-1, jtot-1, itot-1}, {1, 1, 64});
 
-        Array_3d_gpu::HostMirror a_cpu = Kokkos::create_mirror_view(a_gpu);
-        Array_3d_gpu::HostMirror at_cpu = Kokkos::create_mirror_view(at_gpu);
+        Array_3d_gpu::HostMirror a_tmp = Kokkos::create_mirror_view(a_gpu);
+        Array_3d_gpu::HostMirror at_tmp = Kokkos::create_mirror_view(at_gpu);
 
-        init(a.data(), at.data(), ncells);
+        init(a_tmp.data(), at_tmp.data(), ncells);
 
-        Kokkos::deep_copy(a_gpu, a);
-        Kokkos::deep_copy(at_gpu, at);
+        Kokkos::deep_copy(a_gpu, a_tmp);
+        Kokkos::deep_copy(at_gpu, at_tmp);
 
         // Time performance.
         Kokkos::Timer timer;
@@ -101,7 +105,20 @@ int main(int argc, char* argv[])
 
         double duration = timer.seconds();
 
-        printf("time/iter = %E s (%i iters)\n", duration/(double)nloop, nloop);
+        printf("time/iter (GPU) = %E s (%i iters)\n", duration/(double)nloop, nloop);
+
+        Kokkos::deep_copy(at_tmp, at_gpu);
+
+        printf("at=%.20f\n", at_tmp.data()[itot*jtot+itot+itot/4]);
+
+
+        // SOLVE ON THE CPU.
+        Array_3d_cpu a_cpu ("a_cpu" , ktot, jtot, itot);
+        Array_3d_cpu at_cpu("at_cpu", ktot, jtot, itot);
+
+        Range_3d_cpu range_3d_cpu({1, 1, 1}, {ktot-1, jtot-1, itot-1}, {8, 0, 0});
+
+        init(a_cpu.data(), at_cpu.data(), ncells);
 
         // Time performance.
         timer.reset();
@@ -110,19 +127,16 @@ int main(int argc, char* argv[])
         {
             Kokkos::parallel_for(
                     range_3d_cpu,
-                    diff<Array_3d_cpu>(at_cpu, at_cpu, visc, dxidxi, dyidyi, dzidzi));
+                    diff<Array_3d_cpu>(at_cpu, a_cpu, visc, dxidxi, dyidyi, dzidzi));
         }
 
         Kokkos::fence();
 
-        double duration = timer.seconds();
+        duration = timer.seconds();
 
-        printf("time/iter = %E s (%i iters)\n", duration/(double)nloop, nloop);
+        printf("time/iter (CPU) = %E s (%i iters)\n", duration/(double)nloop, nloop);
 
-        // Kokkos::deep_copy(at, at_gpu);
-
-        // printf("at=%.20f\n", at.data()[itot*jtot+itot+itot/4]);
-
+        printf("at=%.20f\n", at_cpu.data()[itot*jtot+itot+itot/4]);
     }
 
     Kokkos::finalize();
