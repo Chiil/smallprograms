@@ -9,7 +9,7 @@ namespace
     using Array_3d_gpu = Kokkos::View<double***, Kokkos::LayoutRight, Kokkos::CudaSpace>;
 
     using Range_3d_cpu = Kokkos::MDRangePolicy<
-        Kokkos::OpenMP,
+        Kokkos::DefaultHostExecutionSpace,
         Kokkos::Rank<3>>;
     using Range_3d_gpu = Kokkos::MDRangePolicy<
         Kokkos::Cuda,
