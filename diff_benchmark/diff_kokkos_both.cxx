@@ -141,6 +141,18 @@ int main(int argc, char* argv[])
         printf("time/iter (CPU) = %E s (%i iters)\n", duration_cpu/(double)nloop, nloop);
 
         printf("at=%.20f\n", at_cpu.data()[itot*jtot+itot+itot/4]);
+
+        /*
+        std::ofstream binary_file("at_kokkos_cpu.bin", std::ios::out | std::ios::trunc | std::ios::binary);
+
+        if (binary_file)
+            binary_file.write(reinterpret_cast<const char*>(at_cpu.data()), ncells*sizeof(double));
+        else
+        {
+            std::string error = "Cannot write file \"at_cuda.bin\"";
+            throw std::runtime_error(error);
+        }
+        */
     }
 
     Kokkos::finalize();
