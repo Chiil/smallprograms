@@ -24,23 +24,7 @@ py::dict read_dict(const py::dict input_dict)
 
 PYBIND11_MODULE(test_dict, m)
 {
-    m.doc() = R"pbdoc(
-        Reading a Python dictionary in C++
-        -----------------------
-
-        .. currentmodule:: read_dict
-
-        .. autosummary::
-           :toctree: _generate
-
-           read_dict
-    )pbdoc";
-
-    m.def("read_dict", &read_dict, py::return_value_policy::move, R"pbdoc(
-        Read a dictionary in C++
-
-        Some other explanation about the read function.
-    )pbdoc");
-
+    m.doc() = "Creating an output dictionary based on an input dictionary.";
+    m.def("read_dict", &read_dict, py::return_value_policy::move, "Read a dictionary in C++");
     m.attr("__version__") = "v0.0.1";
 }
