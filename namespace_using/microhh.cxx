@@ -15,6 +15,14 @@ int main()
         Advec::init(swadvec);
 
         Advec::exec();
+
+        for (int i=0; i<Grid::grid_data.itot; ++i)
+        {
+            std::cout << i << ": " << Fields::ap.at("u")[i] 
+                           << ", " << Fields::ap.at("v")[i] 
+                           << ", " << Fields::ap.at("w")[i]
+                           << std::endl;
+        }
     }
     catch (std::exception& e)
     {

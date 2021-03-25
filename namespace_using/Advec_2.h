@@ -23,14 +23,6 @@ namespace Advec_2
 
         kernel(ap.at("u").data(), ap.at("v").data(), ap.at("w").data(),
                 grid_data.dx, grid_data.itot);
-
-        for (int i=0; i<grid_data.itot; ++i)
-        {
-            std::cout << i << ": " << ap.at("u")[i] 
-                           << ", " << ap.at("v")[i] 
-                           << ", " << ap.at("w")[i]
-                           << std::endl;
-        }
     }
 }
 #endif
