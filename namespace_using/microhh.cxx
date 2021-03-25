@@ -16,11 +16,11 @@ int main()
 
         Advec::exec();
 
-        for (int i=0; i<Grid::grid_data.itot; ++i)
+        for (int i=0; i<Grid::data.itot; ++i)
         {
-            std::cout << i << ": " << Fields::ap.at("u")[i] 
-                           << ", " << Fields::ap.at("v")[i] 
-                           << ", " << Fields::ap.at("w")[i]
+            std::cout << i << ": " << Fields::data.all_3d.at("u")[i] 
+                           << ", " << Fields::data.all_3d.at("v")[i] 
+                           << ", " << Fields::data.all_3d.at("w")[i]
                            << std::endl;
         }
     }

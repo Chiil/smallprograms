@@ -10,12 +10,12 @@ namespace Grid
         TF dx;
     };
 
-    Grid_data<FLOAT_TYPE> grid_data;
+    Grid_data<FLOAT_TYPE> data;
 
     void init()
     {
-        grid_data.itot = 3;
-        grid_data.dx = 10;
+        data.itot = 3;
+        data.dx = 10;
     }
 }
 #endif

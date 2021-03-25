@@ -6,23 +6,23 @@
 
 namespace Advec_2
 {
+    template<typename TF>
     void kernel(
-            double* u, const double* v, const double* w,
-            const double dx,
+            TF* u, const TF* v, const TF* w,
+            const TF dx,
             const int itot)
     {
-        std::cout << dx << std::endl;
         for (int i=0; i<itot; ++i)
             u[i] += v[i] + w[i]*dx;
     }
 
     void exec()
     {
-        using Grid::grid_data;
-        using Fields::ap;
+        auto& gd = Grid::data;
+        auto& fd = Fields::data;
 
-        kernel(ap.at("u").data(), ap.at("v").data(), ap.at("w").data(),
-                grid_data.dx, grid_data.itot);
+        kernel(fd.all_3d.at("u").data(), fd.all_3d.at("v").data(), fd.all_3d.at("w").data(),
+                gd.dx, gd.itot);
     }
 }
 #endif

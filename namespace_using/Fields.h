@@ -1,21 +1,26 @@
-#ifndef FIELDS
-#define FIELDS
+#ifndef FIELDS_H
+#define FIELDS_H
 
 #include <map>
 #include <vector>
 
 namespace Fields
 {
-    // Variables.
-    std::map<std::string, std::vector<double>> ap;
+    template<typename TF>
+    struct Fields_data
+    {
+        std::map<std::string, std::vector<TF>> all_3d;
+    };
+
+    Fields_data<FLOAT_TYPE> data;
 
     // Functions.
     void init()
     {
         int i = 0;
-        ap["u"] = std::vector<double>(3, ++i);
-        ap["v"] = std::vector<double>(3, ++i);
-        ap["w"] = std::vector<double>(3, ++i);
+        data.all_3d.emplace("u", std::vector<double>(3, ++i));
+        data.all_3d.emplace("v", std::vector<double>(3, ++i));
+        data.all_3d.emplace("w", std::vector<double>(3, ++i));
     }
 }
 #endif
