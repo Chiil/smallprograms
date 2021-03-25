@@ -6,8 +6,10 @@
 
 namespace Fields
 {
+    // Variables.
     std::map<std::string, std::vector<double>> ap;
 
+    // Functions.
     void init()
     {
         int i = 0;

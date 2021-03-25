@@ -10,6 +10,7 @@ int main()
         std::string swadvec;
         std::cin >> swadvec;
 
+        Grid::init();
         Fields::init();
         Advec::init(swadvec);
 
