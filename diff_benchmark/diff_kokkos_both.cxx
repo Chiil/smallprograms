@@ -5,19 +5,26 @@
 
 namespace
 {
-    using Array_3d_cpu = Kokkos::View<double***, Kokkos::LayoutRight, Kokkos::HostSpace>;
+    #ifdef SINGLE_PRECISION
+    using Real = float;
+    #else
+    using Real = double;
+    #endif
+    using Real_ptr = Real* const __restrict__;
+
+    using Array_3d_cpu = Kokkos::View<Real***, Kokkos::LayoutRight, Kokkos::HostSpace>;
     using Range_3d_cpu = Kokkos::MDRangePolicy<
         Kokkos::DefaultHostExecutionSpace,
         Kokkos::Rank<3>>;
 
     #ifdef KOKKOS_ENABLE_CUDA
-    using Array_3d_gpu = Kokkos::View<double***, Kokkos::LayoutRight, Kokkos::CudaSpace>;
+    using Array_3d_gpu = Kokkos::View<Real***, Kokkos::LayoutRight, Kokkos::CudaSpace>;
     using Range_3d_gpu = Kokkos::MDRangePolicy<
         Kokkos::Cuda,
         Kokkos::Rank<3, Kokkos::Iterate::Left, Kokkos::Iterate::Right>>;
     #endif
 
-    void init(double* const __restrict__ a, double* const __restrict__ at, const size_t ncells)
+    void init(Real_ptr a, Real_ptr at, const size_t ncells)
     {
         for (size_t i=0; i<ncells; ++i)
         {
@@ -31,15 +38,15 @@ namespace
     {
         Array_3d at;
         const Array_3d a;
-        const double visc;
-        const double dxidxi;
-        const double dyidyi;
-        const double dzidzi;
+        const Real visc;
+        const Real dxidxi;
+        const Real dyidyi;
+        const Real dzidzi;
 
         diff(
                 Array_3d at_, const Array_3d a_,
-                const double visc_,
-                const double dxidxi_, const double dyidyi_, const double dzidzi_) :
+                const Real visc_,
+                const Real dxidxi_, const Real dyidyi_, const Real dzidzi_) :
             at(at_), a(a_), visc(visc_), dxidxi(dxidxi_), dyidyi(dyidyi_), dzidzi(dzidzi_) {};
 
         KOKKOS_INLINE_FUNCTION
@@ -73,10 +80,10 @@ int main(int argc, char* argv[])
         const size_t ktot = std::stoi(argv[1]);
         const size_t ncells = itot*jtot*ktot;
 
-        constexpr double visc = 0.1;
-        constexpr double dxidxi = 0.1;
-        constexpr double dyidyi = 0.1;
-        constexpr double dzidzi = 0.1;
+        constexpr Real visc = 0.1;
+        constexpr Real dxidxi = 0.1;
+        constexpr Real dyidyi = 0.1;
+        constexpr Real dzidzi = 0.1;
 
         Kokkos::Timer timer;
 
@@ -146,7 +153,7 @@ int main(int argc, char* argv[])
         std::ofstream binary_file("at_kokkos_cpu.bin", std::ios::out | std::ios::trunc | std::ios::binary);
 
         if (binary_file)
-            binary_file.write(reinterpret_cast<const char*>(at_cpu.data()), ncells*sizeof(double));
+            binary_file.write(reinterpret_cast<const char*>(at_cpu.data()), ncells*sizeof(Real));
         else
         {
             std::string error = "Cannot write file \"at_cuda.bin\"";

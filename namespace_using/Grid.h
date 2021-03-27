@@ -1,16 +1,17 @@
 #ifndef GRID_H
 #define GRID_H
 
+#include "Types.h"
+
 namespace Grid
 {
-    template<typename TF>
     struct Grid_data
     {
         int itot;
-        TF dx;
+        Real dx;
     };
 
-    Grid_data<FLOAT_TYPE> data;
+    Grid_data data;
 
     void init()
     {

@@ -6,10 +6,9 @@
 
 namespace Advec_2
 {
-    template<typename TF>
     void kernel(
-            TF* u, const TF* v, const TF* w,
-            const TF dx,
+            Real_ptr u, const Real_ptr v, const Real_ptr w,
+            const Real dx,
             const int itot)
     {
         for (int i=0; i<itot; ++i)
