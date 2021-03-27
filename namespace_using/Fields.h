@@ -7,20 +7,15 @@
 
 namespace Fields
 {
-    struct Fields_data
-    {
-        std::map<std::string, std::vector<Real>> all_3d;
-    };
-
-    Fields_data data;
+    std::map<std::string, std::vector<Real>> all_3d;
 
     // Functions.
     void init()
     {
         int i = 0;
-        data.all_3d.emplace("u", std::vector<Real>(3, ++i));
-        data.all_3d.emplace("v", std::vector<Real>(3, ++i));
-        data.all_3d.emplace("w", std::vector<Real>(3, ++i));
+        all_3d.emplace("u", std::vector<Real>(3, ++i));
+        all_3d.emplace("v", std::vector<Real>(3, ++i));
+        all_3d.emplace("w", std::vector<Real>(3, ++i));
     }
 }
 #endif

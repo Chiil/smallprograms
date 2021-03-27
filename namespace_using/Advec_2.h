@@ -17,11 +17,12 @@ namespace Advec_2
 
     void exec()
     {
-        auto& gd = Grid::data;
-        auto& fd = Fields::data;
+        using Grid::dx, Grid::itot;
+        using Fields::all_3d;
 
-        kernel(fd.all_3d.at("u").data(), fd.all_3d.at("v").data(), fd.all_3d.at("w").data(),
-                gd.dx, gd.itot);
+        kernel(
+                all_3d.at("u").data(), all_3d.at("v").data(), all_3d.at("w").data(),
+                dx, itot);
     }
 }
 #endif

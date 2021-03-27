@@ -5,11 +5,12 @@
 #include "Advec_disabled.h"
 #include "Advec_2.h"
 
+
 namespace Advec
 {
     std::string swadvec;
 
-    void init(std::string swadvecin)
+    void init(const std::string& swadvecin)
     {
         swadvec = swadvecin;
     }
