@@ -38,7 +38,7 @@ py::dict read_dict(const py::dict input_dict)
     field = std::make_unique<Array>(itot, ktot);
 
     py::dict output_dict;
-    output_dict["field"] = py::array({ktot, itot}, field->data());
+    output_dict["field"] = py::array_t<double>({ktot, itot}, field->data(), py::none());
 
     return output_dict;
 }
@@ -54,7 +54,7 @@ PYBIND11_MODULE(test_dict, m)
 {
     m.doc() = "Creating an output dictionary based on an input dictionary.";
 
-    m.def("read_dict", &read_dict, py::return_value_policy::reference_internal, "Read a dictionary in C++ and return numpy output");
+    m.def("read_dict", &read_dict, py::return_value_policy::reference, "Read a dictionary in C++ and return numpy output");
     m.def("print_data", &print_data, "Print the output array on the C++ side");
 
     m.attr("__version__") = "v0.0.1";

@@ -8,6 +8,7 @@ print(field)
 
 field[:, :] = 2.*field[:, :]
 print(field)
+field.shape = (4, 2)
 
 test_dict.print_data()
 
