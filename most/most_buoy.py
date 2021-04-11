@@ -107,10 +107,10 @@ if (max(eval0_w - Ri) * min(eval0_w - Ri) > 0):
     zL0_w = np.nan
 else:
     zL0_w = np.interp(0., eval0_w - Ri, zL)
-B0_w = -zL0_w * fm(zsl / zL0_w)**3 * u0**3 / (kappa * zsl)
+B0_w = -zL0_w * fmw(zsl / zL0_w)**3 * u0**3 / (kappa * zsl)
 
 ustar_bd = u0 * fm(zsl / zL0_bd)
-ustar_w = u0 * fmw(zsl / zL0_bd)
+ustar_w = u0 * fmw(zsl / zL0_w)
 ustar_n = u0 * fm(np.inf)
 
 print(
