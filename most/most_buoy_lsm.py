@@ -7,8 +7,9 @@ theta0 = 300.
 u0 = 0.1
 z0m = 0.1
 z0h = 0.01
-zsl = 10
-Q_net = 1000.
+zsl = 5.
+
+Q_net = 440.
 
 
 # Constants.
@@ -69,7 +70,7 @@ def solve_sl(theta_s):
     Ri = zsl * kappa * db0 / u0**2
     
     if (max(eval0_w - Ri) * min(eval0_w - Ri) > 0):
-        zL0_w = np.nan
+        zL0_w = np.nan if (Ri < 0) else 10.
     else:
         zL0_w = np.interp(0., eval0_w - Ri, zL)
     B0_w = -zL0_w * fmw(zsl / zL0_w)**3 * u0**3 / (kappa * zsl)
@@ -81,15 +82,15 @@ def solve_sl(theta_s):
 
 
 def solve_theta_s(theta_s):
-    counter = 0
     while True:
         # Evaluate the surface energy balance error.
         L, ustar = solve_sl(theta_s)
         theta_star = fhw(L) * (theta0 - theta_s)
         H = - rho * cp * ustar * theta_star
-        eval_seb = Q_net - H
+        L_out = 5.67e-8 * theta_s**4
+        eval_seb = Q_net - H - L_out
 
-        print('theta_s, z/L, ustar, H, error: ', theta_s, zsl/L, ustar, H, eval_seb)
+        print('theta_s = {:4f}, z/L = {:4f}, ustar = {:4f}, H = {:4f}, L_out = {:4f}, error = {:4f}'.format(theta_s, zsl/L, ustar, H, L_out, eval_seb))
 
         if abs(eval_seb) < 1.e-8:
             return theta_s
@@ -100,15 +101,14 @@ def solve_theta_s(theta_s):
         L_eps, ustar_eps = solve_sl(theta_s_eps)
         theta_star_eps = fhw(L_eps) * (theta0 - theta_s_eps)
         H_eps = - rho * cp * ustar_eps * theta_star_eps
-        eval_seb_eps = Q_net - H_eps
+        L_out = 5.67e-8 * theta_s_eps**4
+        eval_seb_eps = Q_net - H_eps - L_out
         slope = (eval_seb_eps - eval_seb) / eps
 
         dtheta = - eval_seb / slope
-        print('dtheta', dtheta)
 
         max_step = 10.
         theta_s += max(-max_step, min(dtheta, max_step))
-        counter += 1
 
 
 # Solve for the surface temperature
