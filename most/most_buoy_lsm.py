@@ -9,7 +9,7 @@ z0m = 0.1
 z0h = 0.01
 zsl = 5.
 
-Q_net = 440.
+Q_net = 1000.
 
 
 # Constants.
@@ -111,5 +111,5 @@ def solve_theta_s(theta_s):
         theta_s += max(-max_step, min(dtheta, max_step))
 
 
-# Solve for the surface temperature
-solve_theta_s(300.)
+# Solve for the surface temperature, use the atmospheric temperature as the starting point.
+solve_theta_s(theta0)
