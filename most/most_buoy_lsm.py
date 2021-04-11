@@ -4,11 +4,11 @@ import numpy as np
 
 # Input parameters.
 theta0 = 300.
-u0 = 0.3
+u0 = 0.1
 z0m = 0.1
-z0h = 0.1
+z0h = 0.01
 zsl = 10
-Q_net = 300.
+Q_net = 1000.
 
 
 # Constants.
@@ -52,7 +52,7 @@ def eval_w(L):
     return zsl / L * fmw(L)**2 / fhw(L)
 
 
-zL = np.linspace(-100., 10., 10000)
+zL = np.linspace(-1000., 10., 100000)
 L = zsl / zL
 
 
@@ -90,8 +90,6 @@ def solve_theta_s(theta_s):
         eval_seb = Q_net - H
 
         print('theta_s, z/L, ustar, H, error: ', theta_s, zsl/L, ustar, H, eval_seb)
-        if counter >= 10:
-            break
 
         if abs(eval_seb) < 1.e-8:
             return theta_s
@@ -105,9 +103,13 @@ def solve_theta_s(theta_s):
         eval_seb_eps = Q_net - H_eps
         slope = (eval_seb_eps - eval_seb) / eps
 
-        theta_s -= eval_seb / slope
+        dtheta = - eval_seb / slope
+        print('dtheta', dtheta)
+
+        max_step = 10.
+        theta_s += max(-max_step, min(dtheta, max_step))
         counter += 1
 
 
 # Solve for the surface temperature
-solve_theta_s(307.3)
+solve_theta_s(300.)
