@@ -4,7 +4,7 @@ from timeit import default_timer as timer
 
 @jit(nopython=True, parallel=True, nogil=True)
 def diff(at, a, visc, dxidxi, dyidyi, dzidzi, itot, jtot, ktot):
-    for k in prange(kb, min(ktot-1, kb+8)):
+    for k in prange(1, ktot-1):
         for j in prange(1, jtot-1):
             for i in prange(1, itot-1):
                 at[k, j, i] += visc * ( \
