@@ -2,22 +2,33 @@
 import numpy as np
 
 
-# Input parameters.
-theta0 = 300.
-u0 = 5.
-z0m = 0.1
-z0h = 0.1
-zsl = 5.
-
-Q_net = 500.
-
-
 # Constants.
 kappa = 0.4
 g = 9.81
 theta_ref = 300.
 rho = 1.2
 cp = 1005.
+Lv = 2.5e6
+sigma = 5.67e-8
+
+
+# Input parameters.
+theta0 = 290.
+q0 = 0.005
+u0 = 0.001
+z0m = 0.1
+z0h = 0.01
+zsl = 10.
+albedo = 0.2
+emis = 0.8
+rs = 100.
+
+S_in = 0.
+S_out = albedo * S_in
+L_in = emis * sigma * theta0**4
+p = 1.e5
+
+rs = rs if S_in > 0. else 1e8
 
 
 # Integrated flux gradient relationships following Wilson.
@@ -81,17 +92,27 @@ def solve_sl(theta_s):
     return zsl/zL0_w, ustar_w
 
 
+def e_sat(T):
+    return 0.611e3 * np.exp(17.2694 * (T - 273.16) / (T - 35.86))
+
+
+def q_sat(T):
+    return 0.622 * e_sat(T) / p
+
+
 def solve_theta_s(theta_s):
     while True:
         # Evaluate the surface energy balance error.
         L, ustar = solve_sl(theta_s)
         theta_star = fhw(L) * (theta0 - theta_s)
-        H = - rho * cp * ustar * theta_star
-        L_out = 5.67e-8 * theta_s**4
-        eval_seb = Q_net - H - L_out
         ra = 1./(fmw(L)*fhw(L)*u0)
 
-        print('theta_s = {:4f}, z/L = {:4f}, ustar = {:4f}, ra = {:4f}, H = {:4f}, L_out = {:4f}, error = {:4f}'.format(theta_s, zsl/L, ustar, ra, H, L_out, eval_seb))
+        H = - rho * cp * ustar * theta_star
+        LE = rho * Lv / (ra + rs) * (q_sat(theta_s) - q0)
+        L_out = sigma * theta_s**4
+        eval_seb = S_in - S_out + L_in - L_out - H - LE
+
+        print('theta_s = {:4f}, z/L = {:4f}, ustar = {:4f}, ra = {:4f}, H = {:4f}, LE = {:4f}, L_out = {:4f}, error = {:4f}'.format(theta_s, zsl/L, ustar, ra, H, LE, L_out, eval_seb))
 
         if abs(eval_seb) < 1.e-8:
             return theta_s
@@ -101,9 +122,12 @@ def solve_theta_s(theta_s):
         theta_s_eps = theta_s + eps
         L_eps, ustar_eps = solve_sl(theta_s_eps)
         theta_star_eps = fhw(L_eps) * (theta0 - theta_s_eps)
+        ra_eps = 1./(fmw(L_eps)*fhw(L_eps)*u0)
+
         H_eps = - rho * cp * ustar_eps * theta_star_eps
-        L_out = 5.67e-8 * theta_s_eps**4
-        eval_seb_eps = Q_net - H_eps - L_out
+        LE_eps = rho * Lv / (ra_eps + rs) * (q_sat(theta_s_eps) - q0)
+        L_out_eps = 5.67e-8 * theta_s_eps**4
+        eval_seb_eps = S_in - S_out + L_in - L_out_eps - H_eps - LE_eps
         slope = (eval_seb_eps - eval_seb) / eps
 
         dtheta = - eval_seb / slope
