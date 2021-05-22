@@ -9,10 +9,23 @@ class Array
 {
     public:
         Array() { vec = std::make_shared<std::vector<T>>(); }
+
+        // Copy and copy assignment is default.
         Array(const Array<T>& a) = default;
-        Array(Array<T>&& a) = default;
         Array<T>& operator=(const Array<T>& a) = default;
-        Array<T>& operator=(Array<T>&& a) = default;
+
+        // Move is followed by an assignment to leave an empty object.
+        Array(Array<T>&& a)
+        {
+            this->vec = std::move(a.vec);
+            a.vec = std::make_shared<std::vector<T>>();
+        }
+
+        Array<T>& operator=(Array<T>&& a)
+        {
+            this->vec = std::move(a.vec);
+            a.vec = std::make_shared<std::vector<T>>();
+        }
 
         T* data() const { return vec->data(); }
         T& operator[](const int idx) const { return vec->at(idx); }
@@ -25,6 +38,8 @@ class Array
                 throw std::runtime_error("Cannot resize non-zero array");
         }
 
+        size_t size() const { return vec->size(); }
+
         Array<T> copy() const
         {
             Array<T> a_copy;
@@ -36,11 +51,6 @@ class Array
         std::shared_ptr<std::vector<T>> vec;
 };
 
-template<typename T>
-class Array_1d<T> : public Array<T>
-{
-    Array_1d(const size_t size) : Array<T>(
-}
 
 int main()
 {
@@ -57,6 +67,8 @@ int main()
     c[3] = 777;
     std::cout << a[3] << ", " << b[3] << ", " << c[3] <<  ", " << d[3] << std::endl;
 
+    Array<double> f(std::move(c));
+    std::cout << c.size() << std::endl;
+
     return 0;
 }
-
