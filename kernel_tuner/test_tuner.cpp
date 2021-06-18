@@ -3,6 +3,9 @@
 #include <chrono>
 
 
+struct Empty_settings {};
+
+
 template<class Func>
 class Tuner
 {
@@ -15,7 +18,7 @@ class Tuner
             return f(std::forward<Args>(args)...);
         }
 
-        template<class... Args>
+        template<class... Args, class Settings = Empty_settings>
         typename std::function<Func>::result_type tune(Args&&... args)
         {
             auto start = std::chrono::high_resolution_clock::now();
@@ -32,6 +35,7 @@ class Tuner
 };
 
 
+template<class Settings>
 void diff(double* const __restrict__ at, const double* const __restrict__ a, const double visc,
           const double dxidxi, const double dyidyi, const double dzidzi,
           const int itot, const int jtot, const int ktot)
@@ -40,7 +44,7 @@ void diff(double* const __restrict__ at, const double* const __restrict__ a, con
     const int jj = itot;
     const int kk = itot*jtot;
 
-    constexpr int k_block = 8;
+    constexpr int k_block = Settings::k_block;
 
     #pragma omp parallel for simd schedule(static)
     for (int kb=1; kb<ktot-1; kb+=k_block)
@@ -62,11 +66,13 @@ void diff(double* const __restrict__ at, const double* const __restrict__ a, con
 }
 
 
+struct Diff_settings { static constexpr int k_block = 8; };
+
 int main()
 {
-    int itot{128};
-    int jtot{128};
-    int ktot{128};
+    int itot{384};
+    int jtot{384};
+    int ktot{384};
 
     std::vector<double> at(itot*jtot*ktot);
     std::vector<double> a(itot*jtot*ktot);
@@ -76,7 +82,8 @@ int main()
     double dzidzi{1.};
     double visc{1.};
 
-    Tuner tuner{diff};
+    Tuner tuner{diff<Diff_settings>};
+
     tuner.run(at.data(), a.data(), visc, dxidxi, dyidyi, dzidzi, itot, jtot, ktot);
     tuner.tune(at.data(), a.data(), visc, dxidxi, dyidyi, dzidzi, itot, jtot, ktot);
 
