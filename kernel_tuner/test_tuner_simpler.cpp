@@ -28,7 +28,7 @@ void diff(double* const __restrict__ at, const double* const __restrict__ a, con
     const int jj = itot;
     const int kk = itot*jtot;
 
-    #pragma omp parallel for simd schedule(static)
+    #pragma omp parallel for simd
     for (int kb=1; kb<ktot-1; kb+=k_block)
         for (int k=kb; k<std::min(ktot-1, kb+k_block); ++k)
             for (int j=1; j<jtot-1; ++j)
@@ -48,11 +48,6 @@ void diff(double* const __restrict__ at, const double* const __restrict__ a, con
 }
 
 
-struct Diff_settings
-{
-    std::integer_sequence<int, 1, 2, 4, 8, 16, 24> k_blocks{};
-};
-
 int main()
 {
     int itot{384};
@@ -67,7 +62,13 @@ int main()
     double dzidzi{1.};
     double visc{1.};
 
-    measure(diff<8>, at.data(), a.data(), visc, dxidxi, dyidyi, dzidzi, itot, jtot, ktot);
+    auto lambda = [&]<int... Ks>(const std::integer_sequence<int, Ks...>)
+    {
+        ((measure(diff<Ks>, at.data(), a.data(), visc, dxidxi, dyidyi, dzidzi, itot, jtot, ktot)), ...);
+    };
+
+    constexpr std::integer_sequence<int, 1, 2, 4, 8, 16, 32, 64> k_blocks{};
+    lambda(k_blocks);
 
     return 0;
 }
