@@ -2,6 +2,13 @@
 #include <iostream>
 
 
+template<int I>
+void print()
+{
+    std::cout << I << std::endl;
+}
+
+
 template<int I, int J>
 void print()
 {
@@ -10,16 +17,23 @@ void print()
 
 
 template<int I, int... Js>
-void print_loop(std::integer_sequence<int, Js...>)
+void print(std::integer_sequence<int, Js...>)
 {
     (print<I, Js>(), ...);
+}
+
+
+template<int... Is>
+void test(std::integer_sequence<int, Is...> is)
+{
+    (print<Is>(), ...);
 }
 
 
 template<int... Is, int... Js>
 void test(std::integer_sequence<int, Is...> is, std::integer_sequence<int, Js...> js)
 {
-    (print_loop<Is, Js...>(js), ...);
+    (print<Is, Js...>(js), ...);
 }
 
 
@@ -29,6 +43,8 @@ int main()
     constexpr std::integer_sequence<int, 1, 2, 4> js{};
 
     test(is, js);
+
+    test(is);
 
     return 0;
 }
