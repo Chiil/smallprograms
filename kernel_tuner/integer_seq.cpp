@@ -40,7 +40,7 @@ constexpr void test(
         std::integer_sequence<int, Is...> is,
         std::integer_sequence<int, Js...> js)
 {
-    (print<Is, Js...>(js), ...);
+    (print<Is>(js), ...);
 }
 // End 2D.
 
@@ -65,7 +65,7 @@ constexpr void print(
         std::integer_sequence<int, Js...> js,
         std::integer_sequence<int, Ks...> ks)
 {
-    (print<I, Js, Ks...>(ks), ...);
+    (print<I, Js>(ks), ...);
 }
 
 
@@ -75,7 +75,7 @@ constexpr void test(
         std::integer_sequence<int, Js...> js,
         std::integer_sequence<int, Ks...> ks)
 {
-    (print<Is, Js..., Ks...>(js, ks), ...);
+    (print<Is>(js, ks), ...);
 }
 // End 3D.
 
