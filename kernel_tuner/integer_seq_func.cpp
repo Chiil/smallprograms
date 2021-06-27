@@ -3,6 +3,7 @@
 #include <array>
 
 
+// Test functions.
 struct Print
 {
     template<int I, int J, int K>
@@ -23,6 +24,7 @@ struct Print_double
 };
 
 
+// Tuner.
 template<class Func, int I, int J, int K, class... Args>
 void exec(
         std::array<int, 3>& fastest_idx,
@@ -67,7 +69,7 @@ void outer(
 
 
 template<class Func, int... Is, int... Js, int... Ks, class... Args>
-void test(
+std::array<int, 3> tune(
         std::integer_sequence<int, Is...> is,
         std::integer_sequence<int, Js...> js,
         std::integer_sequence<int, Ks...> ks,
@@ -82,6 +84,56 @@ void test(
         << fastest_idx[1] << ", "
         << fastest_idx[2] << ") = "
         << fastest << " (s) " << std::endl;
+
+    return fastest_idx;
+}
+
+
+// Executor.
+template<class Func, int I, int J, int K, class... Args>
+void exec_run(
+        const std::array<int, 3> idx,
+        Args... args)
+{
+    if (idx == std::array<int, 3>{I, J, K})
+    {
+        std::cout << "Running block ("
+            << I << ", "
+            << J << ", "
+            << K << ")" << std::endl;
+        Func::template exec<I, J, K>(args...);
+    }
+}
+
+
+template<class Func, int I, int J, int... Ks, class... Args>
+void inner_run(
+        const std::array<int, 3> idx,
+        std::integer_sequence<int, Ks...> ks,
+        Args... args)
+{
+    (exec_run<Func, I, J, Ks>(idx, args...), ...);
+}
+
+
+template<class Func, int I, int... Js, int... Ks, class... Args>
+void outer_run(
+        const std::array<int, 3> idx,
+        std::integer_sequence<int, Js...> js,
+        std::integer_sequence<int, Ks...> ks,
+        Args... args)
+{
+    (inner_run<Func, I, Js>(idx, ks, args...), ...);
+}
+template<class Func, int... Is, int... Js, int... Ks, class... Args>
+void run(
+        const std::array<int, 3> idx,
+        std::integer_sequence<int, Is...> is,
+        std::integer_sequence<int, Js...> js,
+        std::integer_sequence<int, Ks...> ks,
+        Args... args)
+{
+    (outer_run<Func, Is>(idx, js, ks, args...), ...);
 }
 
 
@@ -93,8 +145,10 @@ int main()
 
     double d = 3.;
 
-    test<Print>(is, js, ks);
-    test<Print_double>(is, js, ks, d);
+    auto print_idx = tune<Print>(is, js, ks);
+    auto print_double_idx = tune<Print_double>(is, js, ks, d);
+
+    run<Print_double>(print_double_idx, is, js, ks, d);
 
     return 0;
 }
