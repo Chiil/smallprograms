@@ -1,5 +1,6 @@
 #include <functional>
 #include <iostream>
+#include <array>
 
 
 struct Print
@@ -22,22 +23,46 @@ struct Print_double
 };
 
 
+template<class Func, int I, int J, int K, class... Args>
+void exec(
+        std::array<int, 3>& fastest_idx,
+        double& fastest,
+        Args... args)
+{
+    auto start = std::chrono::high_resolution_clock::now();
+    Func::template exec<I, J, K>(args...);
+    auto end = std::chrono::high_resolution_clock::now();
+    double duration =
+        std::chrono::duration_cast<std::chrono::duration<double>>(end - start).count();
+
+    if (duration < fastest)
+    {
+        fastest = duration;
+        fastest_idx = std::array<int, 3>{I, J, K};
+    }
+}
+
+
 template<class Func, int I, int J, int... Ks, class... Args>
 void inner(
+        std::array<int, 3>& fastest_idx,
+        double& fastest,
         std::integer_sequence<int, Ks...> ks,
         Args... args)
 {
-    (Func::template exec<I, J, Ks>(args...), ...);
+    (exec<Func, I, J, Ks>(fastest_idx, fastest, args...), ...);
 }
 
 
 template<class Func, int I, int... Js, int... Ks, class... Args>
 void outer(
+        std::array<int, 3>& fastest_idx,
+        double& fastest,
         std::integer_sequence<int, Js...> js,
         std::integer_sequence<int, Ks...> ks,
         Args... args)
 {
-    (inner<Func, I, Js>(ks, args...), ...);
+    (inner<Func, I, Js>(fastest_idx, fastest, ks, args...), ...);
 }
 
 
@@ -48,7 +73,15 @@ void test(
         std::integer_sequence<int, Ks...> ks,
         Args... args)
 {
-    (outer<Func, Is>(js, ks, args...), ...);
+    std::array<int, 3> fastest_idx{};
+    double fastest = 1.e100;
+    (outer<Func, Is>(fastest_idx, fastest, js, ks, args...), ...);
+
+    std::cout << "Fastest block: ("
+        << fastest_idx[0] << ", "
+        << fastest_idx[1] << ", "
+        << fastest_idx[2] << ") = "
+        << fastest << " (s) " << std::endl;
 }
 
 
