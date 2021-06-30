@@ -10,5 +10,8 @@
 # integer_seq_func: integer_seq_func.cpp
 # 	clang++ -O3 -Wall -std=c++17 integer_seq_func.cpp -o integer_seq_func
 #
-integer_seq_func_params: integer_seq_func_params.cpp
-	clang++ -O3 -Wall -std=c++17 integer_seq_func_params.cpp -o integer_seq_func_params
+# integer_seq_func_params: integer_seq_func_params.cpp
+# 	clang++ -O3 -Wall -std=c++17 integer_seq_func_params.cpp -o integer_seq_func_params
+
+integer_seq_recursive: integer_seq_recursive.cpp
+	clang++ -O3 -Wall -std=c++17 integer_seq_recursive.cpp -o integer_seq_recursive

@@ -8,7 +8,9 @@ struct Print_double
     template<int I, int J, int K, int C0>
     static void exec(const double d)
     {
-        std::cout << I << ", " << J << ", " << K << " = " << Print_double::alphas[C0]*d << std::endl;
+        std::cout << "Indices ("<< I << ", " << J << ", " << K << ") , "
+            << "Compile-time constants: (" << Print_double::alphas[C0] <<  "), "
+            << "Run-time variables: (" << d << ")" << std::endl;
     }
 
     static constexpr std::array<double, 3> alphas = {0.1, 0.2, 0.3};
@@ -79,14 +81,21 @@ void run(
 
 int main()
 {
+    // Block sizes.
     constexpr std::integer_sequence<int, 1, 2, 4, 8> is{};
     constexpr std::integer_sequence<int, 1, 2, 4> js{};
     constexpr std::integer_sequence<int, 32, 64> ks{};
+
+    // Indices generated for compile-time non-integer constants;
     constexpr auto alphas{std::make_integer_sequence<int, Print_double::alphas.size()>{}};
 
+    // Runtime variable for testing.
     double d = 3.;
 
+    // Dummy configuration used for running (this should come out of tuner).
     std::array<int, 3> print_double_idx = {1, 2, 32};
+
+    // Function launcher.
     run<Print_double>(print_double_idx, is, js, ks, alphas, d);
 
     return 0;
