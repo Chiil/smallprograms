@@ -8,7 +8,7 @@ struct Print_double
     template<int I, int J, int K, int C0>
     static void exec(const double d)
     {
-        std::cout << I << ", " << J << ", " << K << " = " << Print_double::alphas[C0] << std::endl;
+        std::cout << I << ", " << J << ", " << K << " = " << Print_double::alphas[C0]*d << std::endl;
     }
 
     static constexpr std::array<double, 3> alphas = {0.1, 0.2, 0.3};
@@ -82,7 +82,7 @@ int main()
     constexpr std::integer_sequence<int, 1, 2, 4, 8> is{};
     constexpr std::integer_sequence<int, 1, 2, 4> js{};
     constexpr std::integer_sequence<int, 32, 64> ks{};
-    constexpr std::integer_sequence<int, 0, 1, 2> alphas{};
+    constexpr auto alphas{std::make_integer_sequence<int, Print_double::alphas.size()>{}};
 
     double d = 3.;
 
