@@ -7,5 +7,8 @@
 # integer_seq: integer_seq.cpp
 # 	g++-11 -O3 -Wall -std=c++17 integer_seq.cpp -o integer_seq
 #
-integer_seq_func: integer_seq_func.cpp
-	clang++ -O3 -Wall -std=c++17 integer_seq_func.cpp -o integer_seq_func
+# integer_seq_func: integer_seq_func.cpp
+# 	clang++ -O3 -Wall -std=c++17 integer_seq_func.cpp -o integer_seq_func
+#
+integer_seq_func_params: integer_seq_func_params.cpp
+	clang++ -O3 -Wall -std=c++17 integer_seq_func_params.cpp -o integer_seq_func_params
