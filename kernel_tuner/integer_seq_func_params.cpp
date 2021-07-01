@@ -6,7 +6,7 @@
 struct Print_double
 {
     template<int I, int J, int K, int C0>
-    static void exec(const double d)
+    static void exec(const double d = 0.5)
     {
         std::cout << "Indices ("<< I << ", " << J << ", " << K << ") , "
             << "Compile-time constants: (" << Print_double::alphas[C0] <<  "), "
@@ -14,6 +14,17 @@ struct Print_double
     }
 
     static constexpr std::array<double, 3> alphas = {0.1, 0.2, 0.3};
+};
+
+
+struct Print_double_no_alpha
+{
+    template<int I, int J, int K, int C0>
+    static void exec(const double d = 4.)
+    {
+        std::cout << "Indices ("<< I << ", " << J << ", " << K << ") , "
+            << "Run-time variables: (" << d << ")" << std::endl;
+    }
 };
 
 
@@ -79,6 +90,19 @@ void run(
 }
 
 
+template<class Func, int... Is, int... Js, int... Ks, class... Args>
+void run(
+        const std::array<int, 3> idx,
+        std::integer_sequence<int, Is...> is,
+        std::integer_sequence<int, Js...> js,
+        std::integer_sequence<int, Ks...> ks,
+        Args... args)
+{
+    std::integer_sequence<int, 0> c0s{};
+    (outer_run<Func, Is>(idx, js, ks, c0s, args...), ...);
+}
+
+
 int main()
 {
     // Block sizes.
@@ -97,6 +121,9 @@ int main()
 
     // Function launcher.
     run<Print_double>(print_double_idx, is, js, ks, alphas, d);
+    run<Print_double>(print_double_idx, is, js, ks);
+    run<Print_double_no_alpha>(print_double_idx, is, js, ks, d);
+    run<Print_double_no_alpha>(print_double_idx, is, js, ks);
 
     return 0;
 }
