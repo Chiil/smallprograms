@@ -5,7 +5,7 @@ function diff(
         visc::Float64, dxidxi::Float64, dyidyi::Float64, dzidzi::Float64,
         itot::Int64, jtot::Int64, ktot::Int64)
 
-    @threads for k in 2:ktot-1
+    for k in 2:ktot-1
         for j in 2:jtot-1
             @simd for i in 2:itot-1
                 @inbounds at[i, j, k] += visc * (
