@@ -21,9 +21,9 @@ end
 
 
 function diff_view(
-        at::Array{Float64, 3}, a::Array{Float64, 3},
-        visc::Float64, dxidxi::Float64, dyidyi::Float64, dzidzi::Float64,
-        itot::Int64, jtot::Int64, ktot::Int64)
+        at, a,
+        visc, dxidxi, dyidyi, dzidzi,
+        itot, jtot, ktot)
 
     at_c = view(at, 2:itot-1, 2:jtot-1, 2:ktot-1)
 
@@ -38,7 +38,7 @@ function diff_view(
     @turbo at_c .+= visc .* (
             (a_w .- 2. .* a_c .+ a_e) .* dxidxi .+
             (a_s .- 2. .* a_c .+ a_n) .* dyidyi .+
-            (a_b .- 2. .* a_c .+ a_n) .* dzidzi )
+            (a_b .- 2. .* a_c .+ a_t) .* dzidzi )
 end
 
 
