@@ -1,4 +1,5 @@
 using BenchmarkTools
+using LoopVectorization
 
 
 function diff(
@@ -6,10 +7,10 @@ function diff(
         visc, dxidxi, dyidyi, dzidzi,
         itot, jtot, ktot)
 
-    for k in 2:ktot-1
+    @turbo for k in 2:ktot-1
         for j in 2:jtot-1
-            @simd for i in 2:itot-1
-                @inbounds at[i, j, k] += visc * (
+            for i in 2:itot-1
+                at[i, j, k] += visc * (
                     (a[i-1, j  , k  ] - 2.f0 * a[i, j, k] + a[i+1, j  , k  ]) * dxidxi +
                     (a[i  , j-1, k  ] - 2.f0 * a[i, j, k] + a[i  , j+1, k  ]) * dyidyi +
                     (a[i  , j  , k-1] - 2.f0 * a[i, j, k] + a[i  , j  , k+1]) * dzidzi )
@@ -34,9 +35,10 @@ function diff_view(
     a_b = view(a, 2:itot-1, 2:jtot-1, 1:ktot-2)
     a_t = view(a, 2:itot-1, 2:jtot-1, 3:ktot  )
 
-    at_c .+= visc .* ( (a_w .- 2. .* a_c .+ a_e) .* dxidxi .+
-                       (a_s .- 2. .* a_c .+ a_n) .* dyidyi .+
-                       (a_b .- 2. .* a_c .+ a_n) .* dzidzi )
+    @turbo at_c .+= visc .* (
+            (a_w .- 2. .* a_c .+ a_e) .* dxidxi .+
+            (a_s .- 2. .* a_c .+ a_n) .* dyidyi .+
+            (a_b .- 2. .* a_c .+ a_n) .* dzidzi )
 end
 
 
@@ -57,10 +59,10 @@ dzidzi = 0.1
         visc, dxidxi, dyidyi, dzidzi,
         itot, jtot, ktot)
 
-#@btime diff_view(
-#        at, a,
-#        visc, dxidxi, dyidyi, dzidzi,
-#        itot, jtot, ktot)
+@btime diff_view(
+        at, a,
+        visc, dxidxi, dyidyi, dzidzi,
+        itot, jtot, ktot)
 
 a_f = rand(Float32, (itot, jtot, ktot))
 at_f = zeros(Float32, (itot, jtot, ktot))

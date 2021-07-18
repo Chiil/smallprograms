@@ -15,13 +15,13 @@ def diff(at, a, visc, dxidxi, dyidyi, dzidzi, itot, jtot, ktot):
                         + ( (a[k  , j  , i+1] - a[k  , j  , i  ]) \
                           - (a[k  , j  , i  ] - a[k  , j  , i-1]) ) * dzidzi )
 
-#float_type = np.float32
+# float_type = np.float32
 float_type = np.float64
 
-nloop = 10;
-itot = 512;
-jtot = 512;
-ktot = 512;
+nloop = 30;
+itot = 384;
+jtot = 384;
+ktot = 384;
 ncells = itot*jtot*ktot;
 
 at = np.zeros((ktot, jtot, itot), dtype=float_type)
