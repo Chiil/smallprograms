@@ -2,7 +2,7 @@ using BenchmarkTools
 using LoopVectorization
 
 
-function diff(
+function diff!(
         at, a,
         visc, dxidxi, dyidyi, dzidzi,
         itot, jtot, ktot)
@@ -20,7 +20,7 @@ function diff(
 end
 
 
-function diff_view(
+function diff_view!(
         at, a,
         visc, dxidxi, dyidyi, dzidzi,
         itot, jtot, ktot)
@@ -54,15 +54,18 @@ dxidxi = 0.1
 dyidyi = 0.1
 dzidzi = 0.1
 
-@btime diff(
-        at, a,
-        visc, dxidxi, dyidyi, dzidzi,
-        itot, jtot, ktot)
+@btime diff!(
+        # at, a,
+        # visc, dxidxi, dyidyi, dzidzi,
+        # itot, jtot, ktot)
+        $at, $a,
+        $visc, $dxidxi, $dyidyi, $dzidzi,
+        $itot, $jtot, $ktot)
 
-@btime diff_view(
-        at, a,
-        visc, dxidxi, dyidyi, dzidzi,
-        itot, jtot, ktot)
+@btime diff_view!(
+        $at, $a,
+        $visc, $dxidxi, $dyidyi, $dzidzi,
+        $itot, $jtot, $ktot)
 
 a_f = rand(Float32, (itot, jtot, ktot))
 at_f = zeros(Float32, (itot, jtot, ktot))
@@ -72,7 +75,7 @@ dxidxi_f = Float32(dxidxi)
 dyidyi_f = Float32(dyidyi)
 dzidzi_f = Float32(dzidzi)
 
-@btime diff(
-        at_f, a_f,
-        visc_f, dxidxi_f, dyidyi_f, dzidzi_f,
-        itot, jtot, ktot)
+@btime diff!(
+        $at_f, $a_f,
+        $visc_f, $dxidxi_f, $dyidyi_f, $dzidzi_f,
+        $itot, $jtot, $ktot)
