@@ -35,9 +35,9 @@ function diff_view(
     a_b = view(a, 2:itot-1, 2:jtot-1, 1:ktot-2)
     a_t = view(a, 2:itot-1, 2:jtot-1, 3:ktot  )
 
-    at_c .+= @views visc .* ( (a_w .- 2. .* a_c .+ a_e) .* dxidxi .+
-                              (a_s .- 2. .* a_c .+ a_n) .* dyidyi .+
-                              (a_b .- 2. .* a_c .+ a_n) .* dzidzi )
+    at_c .+= visc .* ( (a_w .- 2. .* a_c .+ a_e) .* dxidxi .+
+                       (a_s .- 2. .* a_c .+ a_n) .* dyidyi .+
+                       (a_b .- 2. .* a_c .+ a_n) .* dzidzi )
 end
 
 
