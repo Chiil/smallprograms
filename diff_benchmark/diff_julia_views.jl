@@ -1,11 +1,12 @@
+## Packages
 using BenchmarkTools
 using LoopVectorization
 
-
+## Diffusion kernel
 function diff_view!(
-        at::AbstractArray{T}, a::AbstractArray{T},
+        at, a,
         visc, dxidxi, dyidyi, dzidzi,
-        itot, jtot, ktot) where T <: Number
+        itot, jtot, ktot)
 
     at_c = view(at, 2:itot-1, 2:jtot-1, 2:ktot-1)
 
@@ -18,42 +19,41 @@ function diff_view!(
     a_t = view(a, 2:itot-1, 2:jtot-1, 3:ktot  )
 
     @tturbo unroll=8 @. at_c += visc * (
-            (a_w - T(2) * a_c + a_e) * dxidxi +
-            (a_s - T(2) * a_c + a_n) * dyidyi +
-            (a_b - T(2) * a_c + a_t) * dzidzi )
+            (a_w - 2 * a_c + a_e) * dxidxi +
+            (a_s - 2 * a_c + a_n) * dyidyi +
+            (a_b - 2 * a_c + a_t) * dzidzi )
 end
 
-
+## Set the grid size.
 itot = 384
 jtot = 384
 ktot = 384
 
-
-# Solve the problem in double precision.
-a = rand(Float64, (itot, jtot, ktot))
-at = zeros(Float64, (itot, jtot, ktot))
-
+## Solve the problem in double precision.
 visc = 0.1
 dxidxi = 0.1
 dyidyi = 0.1
 dzidzi = 0.1
 
+a = rand(Float64, (itot, jtot, ktot))
+at = zeros(Float64, (itot, jtot, ktot))
 
-# Solve the problem in single precision.
 @btime diff_view!(
         $at, $a,
         $visc, $dxidxi, $dyidyi, $dzidzi,
         $itot, $jtot, $ktot)
 
-a_f = rand(Float32, (itot, jtot, ktot))
-at_f = zeros(Float32, (itot, jtot, ktot))
-
+## Solve the problem in single precision.
 visc_f = Float32(visc)
 dxidxi_f = Float32(dxidxi)
 dyidyi_f = Float32(dyidyi)
 dzidzi_f = Float32(dzidzi)
 
+a_f = rand(Float32, (itot, jtot, ktot))
+at_f = zeros(Float32, (itot, jtot, ktot))
+
 @btime diff_view!(
         $at_f, $a_f,
         $visc_f, $dxidxi_f, $dyidyi_f, $dzidzi_f,
         $itot, $jtot, $ktot)
+
