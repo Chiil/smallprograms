@@ -3,9 +3,9 @@ using LoopVectorization
 
 
 function diff_view!(
-        at, a,
+        at::AbstractArray{T}, a::AbstractArray{T},
         visc, dxidxi, dyidyi, dzidzi,
-        itot, jtot, ktot)
+        itot, jtot, ktot) where T <: Number
 
     at_c = view(at, 2:itot-1, 2:jtot-1, 2:ktot-1)
 
@@ -17,10 +17,10 @@ function diff_view!(
     a_b = view(a, 2:itot-1, 2:jtot-1, 1:ktot-2)
     a_t = view(a, 2:itot-1, 2:jtot-1, 3:ktot  )
 
-    @tturbo @. at_c += visc * (
-            (a_w - 2. * a_c + a_e) * dxidxi +
-            (a_s - 2. * a_c + a_n) * dyidyi +
-            (a_b - 2. * a_c + a_t) * dzidzi )
+    @tturbo unroll=8 @. at_c += visc * (
+            (a_w - T(2) * a_c + a_e) * dxidxi +
+            (a_s - T(2) * a_c + a_n) * dyidyi +
+            (a_b - T(2) * a_c + a_t) * dzidzi )
 end
 
 
