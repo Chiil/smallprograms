@@ -12,9 +12,9 @@ function diff!(
         for j in 2:jtot-1
             for i in 2:itot-1
                 at[i, j, k] += visc * (
-                    (a[i-1, j  , k  ] - 2 * a[i, j, k] + a[i+1, j  , k  ]) * dxidxi +
-                    (a[i  , j-1, k  ] - 2 * a[i, j, k] + a[i  , j+1, k  ]) * dyidyi +
-                    (a[i  , j  , k-1] - 2 * a[i, j, k] + a[i  , j  , k+1]) * dzidzi )
+                    ( (a[i+1, j  , k  ] - a[i, j, k]) - (a[i, j, k] - a[i-1, j  , k  ]) ) * dxidxi +
+                    ( (a[i  , j+1, k  ] - a[i, j, k]) - (a[i, j, k] - a[i  , j-1, k  ]) ) * dyidyi +
+                    ( (a[i  , j  , k+1] - a[i, j, k]) - (a[i, j, k] - a[i  , j  , k-1]) ) * dzidzi )
             end
         end
     end

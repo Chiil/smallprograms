@@ -19,9 +19,9 @@ function diff_view!(
     a_t = view(a, 2:itot-1, 2:jtot-1, 3:ktot  )
 
     @tturbo unroll=8 @. at_c += visc * (
-            (a_w - 2 * a_c + a_e) * dxidxi +
-            (a_s - 2 * a_c + a_n) * dyidyi +
-            (a_b - 2 * a_c + a_t) * dzidzi )
+        ( (a_e - a_c) - (a_c - a_w) ) * dxidxi +
+        ( (a_n - a_c) - (a_c - a_s) ) * dyidyi +
+        ( (a_t - a_c) - (a_c - a_b) ) * dzidzi )
 end
 
 ## Set the grid size.
@@ -56,4 +56,3 @@ at_f = zeros(Float32, (itot, jtot, ktot))
         $at_f, $a_f,
         $visc_f, $dxidxi_f, $dyidyi_f, $dzidzi_f,
         $itot, $jtot, $ktot)
-
