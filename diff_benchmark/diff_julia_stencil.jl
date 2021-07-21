@@ -9,12 +9,17 @@ end
 
 function process_rhs(args, arrays, i, j, k)
     for n in size(args)
-        if typeof(args[n]) == Expr
-            args[n].args = process_rhs(args[n].args, arrays, i, j, k)
-        elseif typeof(args[n]) == Symbol
-            args[n] = make_notation(args[n], arrays, i, j, k)
+        arg = args[n]
+        if typeof(arg) == Expr
+            args[n].args = process_rhs(arg.args, arrays, i, j, k)
+        elseif typeof(arg) == Symbol
+            #if symbol == "gradx"
+                args[n] = make_notation(arg, arrays, i, j, k)
+            # else
+            #     args[n] = make_notation(arg, arrays, i, j, k)
+            # end
         else
-            throw(ArgumentError(args[n], "Dunnowhatodo"))
+            throw(ArgumentError(arg, "Dunnowhatodo"))
         end
     end
     return args[:]
@@ -56,8 +61,7 @@ function diff!(
         visc, dxi, dyi, dzi,
         itot, jtot, ktot) where T <: Number
 
-    # @fd (at, a) at += visc * (a + a)
-    @fd (at, a) at += 2*a
+    @fd (at, a) at += gradx( a )
 end
 
 ## Set the grid size.
