@@ -8,48 +8,42 @@ function make_notation(a, arrays, i, j, k)
 end
 
 function process_rhs(args, arrays, i, j, k)
-    dump(args)
     for n in size(args)
         if typeof(args[n]) == Expr
-            args[n] = process_rhs(args[n].args, arrays, i, j, k)
+            args[n].args = process_rhs(args[n].args, arrays, i, j, k)
         elseif typeof(args[n]) == Symbol
             args[n] = make_notation(args[n], arrays, i, j, k)
-            println("Symbol: ", args[n])
         else
             throw(ArgumentError(args[n], "Dunnowhatodo"))
         end
     end
-    dump(args)
-    return args
+    return args[:]
 end
 
 macro fd(arrays, e)
-    dump(e)
     i = 0; j = 0; k = 0;
 
+    eo = copy(e)
+
     # Set the left hand side
-    lhs = make_notation(e.args[1], arrays.args, i, j, k)
-
-    # Store the head
-    op = e.head
-
-    # Construct the RHS from the tree
-    rhs_args = copy(e.args[2:end])
+    eo.args[1] = make_notation(eo.args[1], arrays.args, i, j, k)
 
     # Recursively work through args
-    rhs = process_rhs(rhs_args, arrays.args, i, j, k)
+    eo.args[2:end] = process_rhs(eo.args[2:end], arrays.args, i, j, k)
 
-    eo_stencil = Expr(op, lhs, rhs)
-    eo = quote
+    dump(e)
+    dump(eo)
+
+    eo_loop = quote
         @tturbo unroll=8 for k in 2:ktot-1
             for j in 2:jtot-1
                 for i in 2:itot-1
-                    $eo_stencil
+                    $eo
                 end
             end
         end
     end
-    print(eo)
+    println(eo_loop)
 end
 
 ## Packages
@@ -62,7 +56,8 @@ function diff!(
         visc, dxi, dyi, dzi,
         itot, jtot, ktot) where T <: Number
 
-    @fd (at, a) at += visc * a
+    # @fd (at, a) at += visc * (a + a)
+    @fd (at, a) at += 2*a
 end
 
 ## Set the grid size.
