@@ -1,3 +1,7 @@
+## Packages
+using BenchmarkTools
+using LoopVectorization
+
 ## Macros
 function make_notation(a, arrays, i, j, k)
     if a in arrays
@@ -7,22 +11,31 @@ function make_notation(a, arrays, i, j, k)
     end
 end
 
-function process_rhs(args, arrays, i, j, k)
-    for n in size(args)
+function process_args(args, arrays, i, j, k)
+    n = 1
+    while n <= length(args)
         arg = args[n]
-        if typeof(arg) == Expr
+        if isa(arg, Expr)
             args[n].args = process_rhs(arg.args, arrays, i, j, k)
-        elseif typeof(arg) == Symbol
-            #if symbol == "gradx"
+            n += 1
+            continue
+        elseif isa(arg, Symbol)
+            if String(arg) == "gradx"
+                println("Before: ", args)
+                args[n] = Expr(:call, :+, args[n+1], args[n+1])
+                deleteat!(args, n+1)
+                println("After: ", args)
+            else
                 args[n] = make_notation(arg, arrays, i, j, k)
-            # else
-            #     args[n] = make_notation(arg, arrays, i, j, k)
-            # end
+                n += 1
+                continue
+            end
         else
             throw(ArgumentError(arg, "Dunnowhatodo"))
         end
     end
-    return args[:]
+
+    return args
 end
 
 macro fd(arrays, e)
@@ -30,15 +43,10 @@ macro fd(arrays, e)
 
     eo = copy(e)
 
-    # Set the left hand side
-    eo.args[1] = make_notation(eo.args[1], arrays.args, i, j, k)
+    # Recursively work through the args
+    eo.args = process_args(eo.args, arrays.args, i, j, k)
 
-    # Recursively work through args
-    eo.args[2:end] = process_rhs(eo.args[2:end], arrays.args, i, j, k)
-
-    dump(e)
-    dump(eo)
-
+    println("eo = ", eo)
     eo_loop = quote
         @tturbo unroll=8 for k in 2:ktot-1
             for j in 2:jtot-1
@@ -48,12 +56,9 @@ macro fd(arrays, e)
             end
         end
     end
-    println(eo_loop)
-end
 
-## Packages
-using BenchmarkTools
-using LoopVectorization
+    return eo_loop
+end
 
 ## Diffusion kernel
 function diff!(
