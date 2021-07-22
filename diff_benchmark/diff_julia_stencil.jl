@@ -16,15 +16,13 @@ function process_args(args, arrays, i, j, k)
     while n <= length(args)
         arg = args[n]
         if isa(arg, Expr)
-            args[n].args = process_rhs(arg.args, arrays, i, j, k)
+            args[n].args = process_args(arg.args, arrays, i, j, k)
             n += 1
             continue
         elseif isa(arg, Symbol)
             if String(arg) == "gradx"
-                println("Before: ", args)
-                args[n] = Expr(:call, :+, args[n+1], args[n+1])
-                deleteat!(args, n+1)
-                println("After: ", args)
+                args[n] = args[n+1]
+                insert!(args, n, Symbol("-"))
             else
                 args[n] = make_notation(arg, arrays, i, j, k)
                 n += 1
@@ -66,7 +64,7 @@ function diff!(
         visc, dxi, dyi, dzi,
         itot, jtot, ktot) where T <: Number
 
-    @fd (at, a) at += gradx( a )
+    @fd (at, a) at += gradx( a ) * gradx( a )
 end
 
 ## Set the grid size.
