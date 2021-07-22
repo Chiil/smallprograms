@@ -22,36 +22,36 @@ end
 function process_expr(ex, arrays, i)
     n = 1
 
-    # if (isa(ex.args[1], Symbol) && ex.args[1] == Symbol("gradx"))
-    #     ex.args[1] = Symbol("gradx_dxi")
-    #     ex = :( $ex * dxi )
-    # end
+    if (isa(ex.args[1], Symbol) && ex.args[1] == Symbol("gradx"))
+        ex.args[1] = Symbol("gradx_dxi")
+        ex = :( $ex * dxi )
+    end
 
     args = ex.args
     while n <= length(args)
         if isa(args[n], Expr)
-            process_expr(args[n], arrays, i)
+            args[n] = process_expr(args[n], arrays, i)
             n += 1
         elseif isa(args[n], Symbol)
-            if args[n] == Symbol("gradx")
+            if args[n] == Symbol("gradx_dxi")
                 if isa(args[n+1], Expr)
                     args[n] = copy(args[n+1])
-                    process_expr(args[n  ], arrays, i+0.5)
-                    process_expr(args[n+1], arrays, i-0.5)
+                    args[n  ] = process_expr(args[n  ], arrays, i+0.5)
+                    args[n+1] = process_expr(args[n+1], arrays, i-0.5)
                 elseif isa(args[n+1], Symbol)
                     args[n] = args[n+1]
                     args[n  ] = make_index(args[n  ], arrays, i+0.5)
                     args[n+1] = make_index(args[n+1], arrays, i-0.5)
                 end
-                args[n  ] = :( $(args[n  ]) * dxi )
-                args[n+1] = :( $(args[n+1]) * dxi )
+                args[n  ] = :( $(args[n  ])  )
+                args[n+1] = :( $(args[n+1])  )
                 insert!(args, n, Symbol("-"))
                 n += 3
             elseif args[n] == Symbol("interpx")
                 if isa(args[n+1], Expr)
                     args[n] = copy(args[n+1])
-                    process_expr(args[n  ], arrays, i+0.5)
-                    process_expr(args[n+1], arrays, i-0.5)
+                    args[n  ] = process_expr(args[n  ], arrays, i+0.5)
+                    args[n+1] = process_expr(args[n+1], arrays, i-0.5)
                 elseif isa(args[n+1], Symbol)
                     args[n] = args[n+1]
                     args[n  ] = make_index(args[n  ], arrays, i+0.5)
@@ -70,10 +70,12 @@ function process_expr(ex, arrays, i)
             n += 1
         end
     end
+
+    return ex
 end
 
 macro fd(arrays, ex)
-    process_expr(ex, arrays.args, 0)
+    ex = process_expr(ex, arrays.args, 0)
     return ex
 end
 
@@ -82,7 +84,7 @@ macro fd_loop(ranges, arrays, ex)
     js = ranges.args[2].args[2]; je = ranges.args[2].args[3]
     ks = ranges.args[3].args[2]; ke = ranges.args[3].args[3]
 
-    process_expr(ex, arrays.args, 0)
+    ex = process_expr(ex, arrays.args, 0)
 
     ex_loop = quote
         @tturbo unroll=8 for k in $ks:$ke
