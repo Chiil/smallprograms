@@ -1,3 +1,8 @@
+## Packages
+using BenchmarkTools
+using LoopVectorization
+
+## Macros
 function make_index(a, arrays, i)
     if a in arrays
         if i < 0
@@ -17,10 +22,10 @@ end
 function process_expr(ex, arrays, i)
     n = 1
 
-    if (isa(ex.args[1], Symbol) && ex.args[1] == Symbol("gradx"))
-        ex.args[1] = Symbol("gradx_dxi")
-        ex = :( $ex * dxi )
-    end
+    # if (isa(ex.args[1], Symbol) && ex.args[1] == Symbol("gradx"))
+    #     ex.args[1] = Symbol("gradx_dxi")
+    #     ex = :( $ex * dxi )
+    # end
 
     args = ex.args
     while n <= length(args)
@@ -28,7 +33,7 @@ function process_expr(ex, arrays, i)
             process_expr(args[n], arrays, i)
             n += 1
         elseif isa(args[n], Symbol)
-            if args[n] == Symbol("gradx_dxi")
+            if args[n] == Symbol("gradx")
                 if isa(args[n+1], Expr)
                     args[n] = copy(args[n+1])
                     process_expr(args[n  ], arrays, i+0.5)
@@ -69,8 +74,53 @@ end
 
 macro fd(arrays, ex)
     process_expr(ex, arrays.args, 0)
-    println(ex)
+    return ex
 end
 
-@fd (at, a) at += gradx( interpx( a ) )
-# @fd (at, a) at += gradx( gradx( a ) )
+macro fd_loop(ranges, arrays, ex)
+    is = ranges.args[1].args[2]; ie = ranges.args[1].args[3]
+    js = ranges.args[2].args[2]; je = ranges.args[2].args[3]
+    ks = ranges.args[3].args[2]; ke = ranges.args[3].args[3]
+
+    process_expr(ex, arrays.args, 0)
+
+    ex_loop = quote
+        @tturbo unroll=8 for k in $ks:$ke
+            for j in $js:$je
+                for i in $is:$ie
+                    $ex
+                end
+            end
+        end
+    end
+    println(ex_loop)
+    return ex_loop
+end
+
+## Diffusion kernel
+function diff!(
+        at, a,
+        visc, dxi, dyi, dzi,
+        itot, jtot, ktot)
+
+    @fd_loop (2:itot-1, 2:jtot-2, 2:ktot-1) (at, a) at += gradx( gradx(a) )
+end
+
+## Set the grid size.
+itot = 384
+jtot = 384
+ktot = 384
+
+## Solve the problem in double precision.
+visc = 0.1
+dxi = sqrt(0.1)
+dyi = sqrt(0.1)
+dzi = sqrt(0.1)
+
+a = rand(Float64, (itot, jtot, ktot))
+at = zeros(Float64, (itot, jtot, ktot))
+
+@btime diff!(
+        at, a,
+        visc, dxi, dyi, dzi,
+        itot, jtot, ktot)
