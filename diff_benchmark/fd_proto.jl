@@ -22,16 +22,17 @@ function process_expr_args(args, arrays, i)
             n += 1
         elseif isa(args[n], Symbol)
             if args[n] == Symbol("gradx")
-                args[n] = args[n+1]
-                if isa(args[n], Expr)
-                    process_expr_args(args[n  ].args, arrays, i+1)
-                    process_expr_args(args[n+1].args, arrays, i-1)
-                elseif isa(args[n], Symbol)
-                    args[n  ] = make_index(args[n  ], arrays, i+1)
-                    args[n+1] = make_index(args[n+1], arrays, i-1)
+                if isa(args[n+1], Expr)
+                    args[n] = copy(args[n+1])
+                    process_expr_args(args[n  ].args, arrays, i+1/2)
+                    process_expr_args(args[n+1].args, arrays, i-1/2)
+                elseif isa(args[n+1], Symbol)
+                    args[n] = args[n+1]
+                    args[n  ] = make_index(args[n  ], arrays, i+1/2)
+                    args[n+1] = make_index(args[n+1], arrays, i-1/2)
                 end
                 insert!(args, n, Symbol("-"))
-                break 
+                n += 3
             else
                 args[n] = make_index(args[n], arrays, i)
                 n += 1
@@ -48,4 +49,5 @@ macro fd(arrays, ex)
     println(ex)
 end
 
+@fd (at, a) at += gradx( a )
 @fd (at, a) at += gradx( gradx( a ) )
