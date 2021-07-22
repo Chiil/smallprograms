@@ -132,27 +132,7 @@ end
 
 macro fd(arrays, ex)
     ex = process_expr(ex, arrays.args, 0, 0, 0)
-    return ex
-end
-
-macro fd_loop(ranges, arrays, ex)
-    is = ranges.args[1].args[2]; ie = ranges.args[1].args[3]
-    js = ranges.args[2].args[2]; je = ranges.args[2].args[3]
-    ks = ranges.args[3].args[2]; ke = ranges.args[3].args[3]
-
-    ex = process_expr(ex, arrays.args, 0, 0, 0)
-
-    ex_loop = quote
-        @tturbo unroll=8 for k in $ks:$ke
-            for j in $js:$je
-                for i in $is:$ie
-                    $ex
-                end
-            end
-        end
-    end
-    println(ex_loop)
-    return ex_loop
+    return esc(ex)
 end
 
 ## Diffusion kernel

@@ -151,7 +151,6 @@ macro fd_loop(ranges, arrays, ex)
             end
         end
     end
-    println(ex_loop)
     return ex_loop
 end
 
