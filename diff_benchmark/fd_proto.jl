@@ -17,9 +17,10 @@ end
 function process_expr(ex, arrays, i)
     n = 1
 
-    # if (isa(ex.args[1], Symbol) && ex.args[1] == Symbol("gradx"))
-    #     ex = :( $ex * dxi )
-    # end
+    if (isa(ex.args[1], Symbol) && ex.args[1] == Symbol("gradx"))
+        ex.args[1] = Symbol("gradx_dxi")
+        ex = :( $ex * dxi )
+    end
 
     args = ex.args
     while n <= length(args)
@@ -27,7 +28,7 @@ function process_expr(ex, arrays, i)
             process_expr(args[n], arrays, i)
             n += 1
         elseif isa(args[n], Symbol)
-            if args[n] == Symbol("gradx")
+            if args[n] == Symbol("gradx_dxi")
                 if isa(args[n+1], Expr)
                     args[n] = copy(args[n+1])
                     process_expr(args[n  ], arrays, i+0.5)
@@ -37,6 +38,8 @@ function process_expr(ex, arrays, i)
                     args[n  ] = make_index(args[n  ], arrays, i+0.5)
                     args[n+1] = make_index(args[n+1], arrays, i-0.5)
                 end
+                args[n  ] = :( $(args[n  ]) * dxi )
+                args[n+1] = :( $(args[n+1]) * dxi )
                 insert!(args, n, Symbol("-"))
                 n += 3
             elseif args[n] == Symbol("interpx")
@@ -49,6 +52,8 @@ function process_expr(ex, arrays, i)
                     args[n  ] = make_index(args[n  ], arrays, i+0.5)
                     args[n+1] = make_index(args[n+1], arrays, i-0.5)
                 end
+                args[n  ] = :( 0.5f0 * $(args[n  ]) )
+                args[n+1] = :( 0.5f0 * $(args[n+1]) )
                 insert!(args, n, Symbol("+"))
                 n += 3
  
