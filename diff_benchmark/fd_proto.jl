@@ -7,13 +7,35 @@ function make_index(a, arrays, i, j, k)
     if a in arrays
         if i < 0
             i_int = convert(Int, abs(i))
-            return :( $a[i-$i_int] )
+            ex_i = :( i-$i_int )
         elseif i > 0 
             i_int = convert(Int, abs(i))
-            return :( $a[i+$i_int] )
+            ex_i = :( i+$i_int )
         else
-            return :( $a[i] )
+            ex_i = :( i )
         end
+
+        if j < 0
+            j_int = convert(Int, abs(j))
+            ex_j = :( j-$j_int )
+        elseif j > 0 
+            j_int = convert(Int, abs(j))
+            ex_j = :( j+$j_int )
+        else
+            ex_j = :( j )
+        end
+
+        if k < 0
+            k_int = convert(Int, abs(k))
+            ex_k = :( k-$k_int )
+        elseif k > 0 
+            k_int = convert(Int, abs(k))
+            ex_k = :( k+$k_int )
+        else
+            ex_k = :( k )
+        end
+
+        return :( $a[ $ex_i, $ex_j, $ex_k] )
     else
         return :( $a )
     end
