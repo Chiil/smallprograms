@@ -45,8 +45,14 @@ function process_expr(ex, arrays, i, j, k)
     n = 1
 
     if (isa(ex.args[1], Symbol) && ex.args[1] == Symbol("gradx"))
-        ex.args[1] = Symbol("gradx_dxi")
+        ex.args[1] = Symbol("gradx_")
         ex = :( $ex * dxi )
+    elseif (isa(ex.args[1], Symbol) && ex.args[1] == Symbol("grady"))
+        ex.args[1] = Symbol("grady_")
+        ex = :( $ex * dyi )
+    elseif (isa(ex.args[1], Symbol) && ex.args[1] == Symbol("gradz"))
+        ex.args[1] = Symbol("gradz_")
+        ex = :( $ex * dzi )
     end
 
     args = ex.args
@@ -55,7 +61,7 @@ function process_expr(ex, arrays, i, j, k)
             args[n] = process_expr(args[n], arrays, i, j, k)
             n += 1
         elseif isa(args[n], Symbol)
-            if args[n] == Symbol("gradx_dxi")
+            if args[n] == Symbol("gradx_")
                 if isa(args[n+1], Expr)
                     args[n] = copy(args[n+1])
                     args[n  ] = process_expr(args[n  ], arrays, i+0.5, j, k)
@@ -64,6 +70,34 @@ function process_expr(ex, arrays, i, j, k)
                     args[n] = args[n+1]
                     args[n  ] = make_index(args[n  ], arrays, i+0.5, j, k)
                     args[n+1] = make_index(args[n+1], arrays, i-0.5, j, k)
+                end
+                args[n  ] = :( $(args[n  ])  )
+                args[n+1] = :( $(args[n+1])  )
+                insert!(args, n, Symbol("-"))
+                n += 3
+            elseif args[n] == Symbol("grady_")
+                if isa(args[n+1], Expr)
+                    args[n] = copy(args[n+1])
+                    args[n  ] = process_expr(args[n  ], arrays, i, j+0.5, k)
+                    args[n+1] = process_expr(args[n+1], arrays, i, j-0.5, k)
+                elseif isa(args[n+1], Symbol)
+                    args[n] = args[n+1]
+                    args[n  ] = make_index(args[n  ], arrays, i, j+0.5, k)
+                    args[n+1] = make_index(args[n+1], arrays, i, j-0.5, k)
+                end
+                args[n  ] = :( $(args[n  ])  )
+                args[n+1] = :( $(args[n+1])  )
+                insert!(args, n, Symbol("-"))
+                n += 3
+            elseif args[n] == Symbol("gradz_")
+                if isa(args[n+1], Expr)
+                    args[n] = copy(args[n+1])
+                    args[n  ] = process_expr(args[n  ], arrays, i, j, k+0.5)
+                    args[n+1] = process_expr(args[n+1], arrays, i, j, k-0.5)
+                elseif isa(args[n+1], Symbol)
+                    args[n] = args[n+1]
+                    args[n  ] = make_index(args[n  ], arrays, i, j, k+0.5)
+                    args[n+1] = make_index(args[n+1], arrays, i, j, k-0.5)
                 end
                 args[n  ] = :( $(args[n  ])  )
                 args[n+1] = :( $(args[n+1])  )
@@ -127,7 +161,7 @@ function diff!(
         visc, dxi, dyi, dzi,
         itot, jtot, ktot)
 
-    @fd_loop (2:itot-1, 2:jtot-2, 2:ktot-1) (at, a) at += gradx( gradx(a) )
+    @fd_loop (2:itot-1, 2:jtot-2, 2:ktot-1) (at, a) at += visc * (gradx(gradx(a)) + grady(grady(a)) + gradz(gradz(a)))
 end
 
 ## Set the grid size.
