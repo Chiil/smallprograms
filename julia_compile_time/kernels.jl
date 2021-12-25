@@ -1,13 +1,9 @@
 ## This is the module that will be part of the package.
 module Kernels
 
-export kernel!
+export @make_kernel
 
-const do_a = true
-const do_b = true
-const do_c = true
-
-macro make_kernel()
+macro make_kernel(do_a, do_b, do_c)
     ex_rhs_list = []
 
     if do_a
@@ -45,8 +41,6 @@ macro make_kernel()
     return esc(ex)
 end
 
-@make_kernel
-
 end
 
 
@@ -56,5 +50,9 @@ using .Kernels
 
 n = 2^16
 at = rand(n); a = rand(n); b = rand(n); c = rand(n)
+
+do_a = true; do_b = true; do_c = true
+
+@eval @make_kernel($do_a, $do_b, $do_c)
 
 @btime kernel!($at, $a, $b, $c)
