@@ -3,9 +3,9 @@ module Kernels
 
 export kernel!
 
-const do_a = false
+const do_a = true
 const do_b = true
-const do_c = false
+const do_c = true
 
 macro make_kernel()
     ex_rhs_list = []
@@ -36,7 +36,7 @@ macro make_kernel()
 
         ex = quote 
             function kernel!(at, a, b, c)
-                at[:] += $ex_rhs
+                @. at[:] += $ex_rhs
             end
         end
     end
