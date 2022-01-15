@@ -1,5 +1,5 @@
 ## User input.
-npx = 4; npy = 4
+npx = 4; npy = 2
 itot = 256; jtot = 192; ktot = 128
 
 imax = itot ÷ npx; jmax = jtot ÷ npy; kmax = ktot ÷ npx
@@ -11,7 +11,7 @@ using BenchmarkTools
 
 MPI.Init()
 
-dims = [npx, npy]; periodic = [1, 1]; reorder = true
+dims = [npy, npx]; periodic = [1, 1]; reorder = true
 commxy = MPI.Cart_create(MPI.COMM_WORLD, dims, periodic, reorder)
 mpiid = MPI.Comm_rank(commxy)
 commx = MPI.Cart_sub(commxy, [false, true])
@@ -31,15 +31,15 @@ function transpose_zx(data_new, data)
     end
     
     # Transpose zx
-    reqs = Vector{MPI.Request}(undef, 2*npx)
-    for i in 1:npx
-        tag = 1
-        r = @view recvbuf[:, :, :, i]; s = @view sendbuf[:, :, :, i]
-        reqs[2*(i-1)+1] = MPI.Irecv!(r, i-1, tag, commx)
-        reqs[2*(i-1)+2] = MPI.Isend( s, i-1, tag, commx)
-    end
-    MPI.Waitall!(reqs)
-    # MPI.Alltoall!(MPI.UBuffer(sendbuf, imax*jmax*kmax), MPI.UBuffer(recvbuf, imax*jmax*kmax), commx)
+    # reqs = Vector{MPI.Request}(undef, 2*npx)
+    # for i in 1:npx
+    #     tag = 1
+    #     r = @view recvbuf[:, :, :, i]; s = @view sendbuf[:, :, :, i]
+    #     reqs[2*(i-1)+1] = MPI.Irecv!(r, i-1, tag, commx)
+    #     reqs[2*(i-1)+2] = MPI.Isend( s, i-1, tag, commx)
+    # end
+    # MPI.Waitall!(reqs)
+    MPI.Alltoall!(MPI.UBuffer(sendbuf, imax*jmax*kmax), MPI.UBuffer(recvbuf, imax*jmax*kmax), commx)
     
     # Unload the buffer
     for i in 1:npx
@@ -56,6 +56,6 @@ for n in 1:10
     if mpiid == 0 println("Elapsed: $dt (s)") end
 end
 
-# print("$mpiid: $(data_new[:, 1, 1])\n")
+print("$mpiid: $(data_new[:, 1, 1])\n")
 
 MPI.Finalize()
