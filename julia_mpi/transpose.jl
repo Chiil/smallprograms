@@ -1,6 +1,6 @@
 ## User input.
 npx = 4; npy = 4
-itot = 8; jtot = 8; ktot = 8
+itot = 256; jtot = 192; ktot = 128
 
 imax = itot ÷ npx; jmax = jtot ÷ npy; kmax = ktot ÷ npx
 
@@ -56,6 +56,6 @@ for n in 1:10
     if mpiid == 0 println("Elapsed: $dt (s)") end
 end
 
-print("$mpiid: $data_new\n")
+# print("$mpiid: $(data_new[:, 1, 1])\n")
 
 MPI.Finalize()
