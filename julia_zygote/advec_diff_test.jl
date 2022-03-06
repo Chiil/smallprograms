@@ -34,9 +34,17 @@ end
 ## Loss function.
 function loss(y, y_ref)
     loss_sum = 0.
+
     y_next = integrate(y, u_param[1], visc_param[1])
     y_ref_next = integrate(y_ref, u_ref, visc_ref)
-    loss_sum += Flux.Losses.mse(y_next, y_ref_next)
+    loss_sum += sum( (y_next .- y_ref_next).^2 )
+
+    for i in 2:10
+        y_next = integrate(y_next, u_param[1], visc_param[1])
+        y_ref_next = integrate(y_ref_next, u_ref, visc_ref)
+        loss_sum += sum( (y_next .- y_ref_next).^2 )
+    end
+
     return loss_sum
 end
 
@@ -50,7 +58,7 @@ opt = ADAM(0.1)
 
 ## Optimize steps.
 # Find the optimal velocity and viscosity.
-for i in 1:100
+for i in 1:20
     grads = gradient(() -> loss(y, y_ref), θ)
     for p in (u_param, visc_param,)
         update!(opt, p, grads[p])
