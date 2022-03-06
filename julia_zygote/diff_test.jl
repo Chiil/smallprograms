@@ -28,8 +28,8 @@ end
 
 
 ## Loss function.
-function loss(y, y_ref)
-    return sum( (integrate(y, visc_param[1]) .- integrate(y_ref, visc_ref)).^2 )
+function loss(y, y_ref_next)
+    return sum( (integrate(y, visc_param[1]) .- y_ref_next).^2 )
 end
 
 
@@ -40,9 +40,10 @@ opt = ADAM(0.1)
 
 
 ## Optimize steps.
+# Integrate the reference one step ahead.
 y_ref[:] .= integrate(y_ref, visc_ref)
-y[:] .= integrate(y, visc_param[1])
 
+# Find the optimal viscosity.
 for i in 1:100
     grads = gradient(() -> loss(y, y_ref), θ)
     for p in (visc_param,)
@@ -50,12 +51,16 @@ for i in 1:100
     end
 end
 
+# Integrate in time.
+y[:] .= integrate(y, visc_param[1])
+
+# Print and plot status.
 println("visc_param = $visc_param, loss = $(loss(y, y_ref))")
 
 plt.figure()
 plt.subplot(211)
 plt.plot(x, y, "C0-")
 plt.plot(x, y_ref, "k:")
-plt.plot(x, y_ref0, color="#bbbbbb")
-plt.subplot(211)
+plt.plot(x, y_ref0, linestyle=":", color="#bbbbbb")
+plt.subplot(212)
 plt.plot(x, y - y_ref, "C1-")
