@@ -6,7 +6,7 @@ using PyPlot
 pygui(true)
 
 
-## Init arrays
+## Init arrays.
 x = 0:1.0:100 |> collect
 sigma = 5.
 y_ref = @. exp( -(x-20)^2 / sigma^2)
@@ -14,7 +14,7 @@ y = copy(y_ref)
 y_ref0 = copy(y_ref)
 
 
-## Function to optimize.
+## Constants.
 const visc_ref = 0.4
 const u_ref = 0.8
 const dt = 1.
@@ -22,6 +22,8 @@ const dx = x[2] - x[1]
 const dxidxi = 1/(dx^2)
 const dxi2 = 1/(2dx)
 
+
+## Function to optimize.
 function integrate(y, u, visc)
     yl = @view y[1:end-2]; yc = @view y[2:end-1]; yr = @view y[3:end]
     advec = - u .* (yr .- yl) .* dxi2
