@@ -14,9 +14,15 @@ y = copy(y_ref)
 y_ref0 = copy(y_ref)
 
 
-## Constants.
-const visc_ref = 0.4
+## Constants for learning.
+const n_unroll = 10
+const n_epoch = 100
+const learning_rate = 0.1
+
+
+## Constants for physics.
 const u_ref = 0.8
+const visc_ref = 0.4
 const dt = 0.25
 const dx = x[2] - x[1]
 const dxidxi = 1/(dx^2)
@@ -37,12 +43,9 @@ end
 ## Loss function.
 function loss(y, y_ref)
     loss_sum = 0.
+    y_next = copy(y); y_ref_next = copy(y_ref)
 
-    y_next = integrate(y, u_param[1], visc_param[1])
-    y_ref_next = integrate(y_ref, u_ref, visc_ref)
-    loss_sum += sum( (y_next .- y_ref_next).^2 )
-
-    for i in 2:10
+    for i in 1:n_unroll
         y_next = integrate(y_next, u_param[1], visc_param[1])
         y_ref_next = integrate(y_ref_next, u_ref, visc_ref)
         loss_sum += sum( (y_next .- y_ref_next).^2 )
@@ -55,13 +58,13 @@ end
 ## Set up optimizer.
 u_param = [0.]
 visc_param = [0.]
-opt = ADAM(0.1)
+opt = ADAM(learning_rate)
 θ = params(u_param, visc_param)
 
 
 ## Optimize steps.
 # Find the optimal velocity and viscosity.
-for i in 1:20
+for i in 1:n_epoch
     grads = gradient(() -> loss(y, y_ref), θ)
     for p in (u_param, visc_param,)
         update!(opt, p, grads[p])
