@@ -15,8 +15,8 @@ y_ref0 = copy(y_ref)
 
 
 ## Constants for learning.
-const n_unroll = 10
-#const n_epoch = 100
+# const n_unroll = 10
+# const n_epoch = 100
 const learning_rate = 0.1
 
 
@@ -36,14 +36,18 @@ function integrate_ref(y, u, visc)
     advec = - u .* (yr .- yl) .* dxi2
     diff = visc .* (yl .- 2yc .+ yr) .* dxidxi
     y_new = yc .+ dt .* (advec .+ diff)
+
+    # Return statement includes a neumann BC of zero on both sides.
     return vcat(y_new[1], y_new, y_new[end])
 end
 
-cnn_layer = Conv((3,), 1=>1, relu)
+mlmodel = Chain(
+    Conv((3,), 1=>1, relu)
+)
 
 function integrate(y)
-    y_cnn = reshape(y, (length(y), 1, 1))
-    dydt = cnn_layer(Float32.(y_cnn))
+    y_ml = reshape(y, (length(y), 1, 1))
+    dydt = mlmodel(Float32.(y_ml))
     yc = @view y[2:end-1]
     y_new = yc .+ dt .* dydt
     return vcat(y_new[1], y_new, y_new[end])
@@ -55,7 +59,8 @@ function loss(y, y_ref)
     loss_sum = 0.
     y_next = copy(y); y_ref_next = copy(y_ref)
 
-    for i in 1:n_unroll
+    # for i in 1:n_unroll
+    for i in 1:3
         y_next = integrate(y_next)
         y_ref_next = integrate_ref(y_ref_next, u_ref, visc_ref)
         loss_sum += sum( (y_next .- y_ref_next).^2 )
@@ -67,12 +72,13 @@ end
 
 ## Set up optimizer.
 opt = ADAM(learning_rate)
-θ = params(cnn_layer)
+θ = params(mlmodel)
 
 
 ## Optimize steps.
 # Find the optimal velocity and viscosity.
-for i in 1:1000
+# for i in 1:n_epoch
+for i in 1:10
     grads = gradient(() -> loss(y, y_ref), θ)
     update!(opt, θ, grads)
 end
@@ -84,6 +90,8 @@ println("params = $θ, loss = $(loss(y, y_ref))")
 y[:] .= integrate(y)
 y_ref[:] .= integrate_ref(y_ref, u_ref, visc_ref)
 
+
+## Plot the actual values.
 plt.figure()
 plt.subplot(211)
 plt.plot(x, y, "C0-")
@@ -91,4 +99,3 @@ plt.plot(x, y_ref, "k:")
 plt.plot(x, y_ref0, linestyle=":", color="#bbbbbb")
 plt.subplot(212)
 plt.plot(x, y - y_ref, "C1-")
-
