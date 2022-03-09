@@ -15,8 +15,9 @@ y_ref0 = copy(y_ref)
 
 
 ## Constants for learning.
-# const n_unroll = 10
-# const n_epoch = 100
+const n_unroll = 4
+const n_epoch = 1000
+const n_timestep = 10
 const learning_rate = 0.1
 
 
@@ -42,7 +43,7 @@ function integrate_ref(y, u, visc)
 end
 
 mlmodel = Chain(
-    Conv((3,), 1=>1, relu)
+    Conv((3,), 1=>1, identity)
 )
 
 function integrate(y)
@@ -59,8 +60,7 @@ function loss(y, y_ref)
     loss_sum = 0.
     y_next = copy(y); y_ref_next = copy(y_ref)
 
-    # for i in 1:n_unroll
-    for i in 1:3
+    for i in 1:n_unroll
         y_next = integrate(y_next)
         y_ref_next = integrate_ref(y_ref_next, u_ref, visc_ref)
         loss_sum += sum( (y_next .- y_ref_next).^2 )
@@ -75,20 +75,21 @@ opt = ADAM(learning_rate)
 θ = params(mlmodel)
 
 
-## Optimize steps.
-# Find the optimal velocity and viscosity.
-# for i in 1:n_epoch
-for i in 1:10
-    grads = gradient(() -> loss(y, y_ref), θ)
-    update!(opt, θ, grads)
+## Optimize steps while integrating model.
+for _ in 1:n_timestep
+    # Find the optimal velocity and viscosity.
+    for i in 1:n_epoch
+        grads = gradient(() -> loss(y, y_ref), θ)
+        update!(opt, θ, grads)
+    end
+
+    # Print and plot status.
+    println("params = $θ, loss = $(loss(y, y_ref))")
+
+    # Integrate in time.
+    y[:] .= integrate(y)
+    y_ref[:] .= integrate_ref(y_ref, u_ref, visc_ref)
 end
-
-# Print and plot status.
-println("params = $θ, loss = $(loss(y, y_ref))")
-
-# Integrate in time.
-y[:] .= integrate(y)
-y_ref[:] .= integrate_ref(y_ref, u_ref, visc_ref)
 
 
 ## Plot the actual values.
