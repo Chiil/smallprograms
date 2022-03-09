@@ -22,7 +22,7 @@ const learning_rate = 0.1
 
 
 ## Constants for physics.
-const u_ref = 0.
+const u_ref = 0.8
 const visc_ref = 0.4
 const dt = 0.25
 const dx = x[2] - x[1]
