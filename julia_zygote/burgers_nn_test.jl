@@ -6,51 +6,51 @@ using PyPlot
 pygui(true)
 
 
+## Constants for learning.
+const n_unroll = 4
+const n_epoch = 1000
+const n_timestep = 10
+const learning_rate = 0.01
+
+
+## Constants for physics.
+const visc_ref = 0.4
+const dt = 0.25
+const dx = 0.5
+const dxidxi = 1/(dx^2)
+const dxi2 = 1/(2dx)
+
+
 ## Init arrays.
-x = 0:0.5:100 |> collect
+x = dx/2:dx:100-dx/2 |> collect
 sigma = 5.
 u_ref = @. exp( -(x-20)^2 / sigma^2)
 u = copy(u_ref)
 u_ref0 = copy(u_ref)
 
 
-## Constants for learning.
-const n_unroll = 4
-const n_epoch = 1000
-const n_timestep = 10
-const learning_rate = 0.1
-
-
-## Constants for physics.
-const visc_ref = 0.4
-const dt = 0.25
-const dx = x[2] - x[1]
-const dxidxi = 1/(dx^2)
-const dxi2 = 1/(2dx)
-println("CFL = $(u_ref*dt/dx), dn = $(visc_ref*dt/dx^2)")
-
-
 ## Functions.
 function integrate_ref(u, visc)
-    ul = @view u[1:end-2]; uc = @view u[2:end-1]; ur = @view u[3:end]
+    u_gc = vcat(u[end], u, u[1])
+    ul = @view u_gc[1:end-2]; uc = @view u_gc[2:end-1]; ur = @view u_gc[3:end]
     advec = - uc .* (ur .- ul) .* dxi2
     diff = visc .* (ul .- 2uc .+ ur) .* dxidxi
-    u_new = uc .+ dt .* (advec .+ diff)
-
-    # Return statement includes a neumann BC of zero on both sides.
-    return vcat(u_new[1], u_new, u_new[end])
+    return uc .+ dt .* (advec .+ diff)
 end
 
-mlmodel = Chain(
-    Conv((3,), 1=>1, identity)
+m = Chain(
+    Conv((7,), 1=>1, leakyrelu),
+    Conv((7,), 1=>1, leakyrelu),
+    Conv((7,), 1=>1),
 )
+const m_gc = 3 + 3 + 3
 
 function integrate(u)
-    u_ml = reshape(u, (length(u), 1, 1))
-    dudt = mlmodel(Float32.(u_ml))
-    uc = @view u[2:end-1]
-    u_new = uc .+ dt .* dudt
-    return vcat(u_new[1], u_new, u_new[end])
+    u_ml = vcat(u[end-m_gc+1:end]..., u, u[1:m_gc]...)
+    u_ml = reshape(u_ml, (length(u_ml), 1, 1))
+    dudt = m(Float32.(u_ml))
+    u_new = u .+ dt .* dudt
+    return u_new
 end
 
 
@@ -71,7 +71,7 @@ end
 
 ## Set up optimizer.
 opt = ADAM(learning_rate)
-θ = params(mlmodel)
+θ = params(m)
 
 
 ## Optimize steps while integrating model.
