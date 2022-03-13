@@ -95,14 +95,14 @@ for _ in 1:n_timestep
     end
 
     # Set the field to solve back to the reference field.
-    u_[:] .= u_ref[:]
+    u[:] .= u_ref[:]
 end
 
 
 ## Run freely.
 for _ in 1:n_timestep
+    u[:] .= integrate(u)
     u_ref[:] .= integrate_ref(u_ref, visc_ref)
-    u_[:] .= u_ref[:]
 end
 
 
