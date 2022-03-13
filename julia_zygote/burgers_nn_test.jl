@@ -21,8 +21,11 @@ const dxidxi = 1/(dx^2)
 const dxi2 = 1/(2dx)
 
 
-## Init arrays.
+## Init grid.
 x = dx/2:dx:100-dx/2 |> collect
+
+
+## Init fields.
 sigma = 5.
 u_ref = @. exp( -(x-20)^2 / sigma^2)
 u = copy(u_ref)
@@ -31,7 +34,7 @@ u_ref0 = copy(u_ref)
 
 ## Functions.
 function integrate_ref(u, visc)
-    u_gc = vcat(u[end], u, u[1])
+    u_gc = [ u[end]; u; u[1] ]
     ul = @view u_gc[1:end-2]; uc = @view u_gc[2:end-1]; ur = @view u_gc[3:end]
     advec = - uc .* (ur .- ul) .* dxi2
     diff = visc .* (ul .- 2uc .+ ur) .* dxidxi
@@ -46,7 +49,7 @@ m = Chain(
 const m_gc = 3 + 3 + 3
 
 function integrate(u)
-    u_ml = vcat(u[end-m_gc+1:end]..., u, u[1:m_gc]...)
+    u_ml = [ u[end-m_gc+1:end]; u; u[1:m_gc] ]
     u_ml = reshape(u_ml, (length(u_ml), 1, 1))
     dudt = m(Float32.(u_ml))
     u_new = u .+ dt .* dudt
@@ -85,9 +88,21 @@ for _ in 1:n_timestep
     # Print and plot status.
     println("params = $θ, loss = $(loss(u, u_ref))")
 
-    # Integrate in time.
-    u[:] .= integrate(u)
+    # Integrate in time n_unroll steps further to avoid overlap of data.
+    # CvH: not sure if this is necessary...
+    for i in 1:n_unroll
+        u_ref[:] .= integrate_ref(u_ref, visc_ref)
+    end
+
+    # Set the field to solve back to the reference field.
+    u_[:] .= u_ref[:]
+end
+
+
+## Run freely.
+for _ in 1:n_timestep
     u_ref[:] .= integrate_ref(u_ref, visc_ref)
+    u_[:] .= u_ref[:]
 end
 
 

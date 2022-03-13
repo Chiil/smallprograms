@@ -39,7 +39,7 @@ function integrate_ref(y, u, visc)
     y_new = yc .+ dt .* (advec .+ diff)
 
     # Return statement includes a neumann BC of zero on both sides.
-    return vcat(y_new[1], y_new, y_new[end])
+    return [y_new[1]; y_new; y_new[end]]
 end
 
 mlmodel = Chain(
@@ -51,7 +51,7 @@ function integrate(y)
     dydt = mlmodel(Float32.(y_ml))
     yc = @view y[2:end-1]
     y_new = yc .+ dt .* dydt
-    return vcat(y_new[1], y_new, y_new[end])
+    return [y_new[1]; y_new; y_new[end]]
 end
 
 
