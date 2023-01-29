@@ -72,7 +72,7 @@ end
 
 ## Set up optimizer.
 opt = ADAM(learning_rate)
-θ = params(mlmodel)
+θ = Flux.params(mlmodel)
 
 
 ## Optimize steps while integrating model.
