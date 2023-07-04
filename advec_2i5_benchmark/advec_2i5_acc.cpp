@@ -63,14 +63,14 @@ void init(double* const __restrict__ a, const int ncells)
 
 
 void advec_2i5(
-        double* const restrict ut,
-        const double* const restrict u,
-        const double* const restrict v,
-        const double* const restrict w,
-        const double* const restrict dzi,
+        double* const __restrict__ ut,
+        const double* const __restrict__ u,
+        const double* const __restrict__ v,
+        const double* const __restrict__ w,
+        const double* const __restrict__ dzi,
         const double dx, const double dy,
-        const double* const restrict rhoref,
-        const double* const restrict rhorefh,
+        const double* const __restrict__ rhoref,
+        const double* const __restrict__ rhorefh,
         const int istart, const int iend,
         const int jstart, const int jend,
         const int kstart, const int kend,
@@ -91,133 +91,136 @@ void advec_2i5(
     const double dxi = double(1.)/dx;
     const double dyi = double(1.)/dy;
 
-    #pragma acc parallel loop independent present(ut, u, v, w, dzi, rhoref, rhorefh) collapse(3)
-    for (int k=kstart; k<kend; ++k)
+    #pragma acc parallel present(ut, u, v, w, dzi, rhoref, rhorefh)
+    {
+        #pragma acc loop independent tile(TILE_I, TILE_J, TILE_K)
+        for (int k=kstart; k<kend; ++k)
+            for (int j=jstart; j<jend; ++j)
+                #pragma ivdep
+                for (int i=istart; i<iend; ++i)
+                {
+                    const int ijk = i + j*jj1 + k*kk1;
+                    ut[ijk] +=
+                            // u*du/dx
+                            - ( interp2(u[ijk        ], u[ijk+ii1]) * interp6_ws(u[ijk-ii2], u[ijk-ii1], u[ijk    ], u[ijk+ii1], u[ijk+ii2], u[ijk+ii3])
+                              - interp2(u[ijk-ii1    ], u[ijk    ]) * interp6_ws(u[ijk-ii3], u[ijk-ii2], u[ijk-ii1], u[ijk    ], u[ijk+ii1], u[ijk+ii2]) ) * dxi
+
+                            + ( std::abs(interp2(u[ijk        ], u[ijk+ii1])) * interp5_ws(u[ijk-ii2], u[ijk-ii1], u[ijk    ], u[ijk+ii1], u[ijk+ii2], u[ijk+ii3])
+                              - std::abs(interp2(u[ijk-ii1    ], u[ijk    ])) * interp5_ws(u[ijk-ii3], u[ijk-ii2], u[ijk-ii1], u[ijk    ], u[ijk+ii1], u[ijk+ii2]) ) * dxi
+
+                            // v*du/dy
+                            - ( interp2(v[ijk-ii1+jj1], v[ijk+jj1]) * interp6_ws(u[ijk-jj2], u[ijk-jj1], u[ijk    ], u[ijk+jj1], u[ijk+jj2], u[ijk+jj3])
+                              - interp2(v[ijk-ii1    ], v[ijk    ]) * interp6_ws(u[ijk-jj3], u[ijk-jj2], u[ijk-jj1], u[ijk    ], u[ijk+jj1], u[ijk+jj2]) ) * dyi
+
+                            + ( std::abs(interp2(v[ijk-ii1+jj1], v[ijk+jj1])) * interp5_ws(u[ijk-jj2], u[ijk-jj1], u[ijk    ], u[ijk+jj1], u[ijk+jj2], u[ijk+jj3])
+                              - std::abs(interp2(v[ijk-ii1    ], v[ijk    ])) * interp5_ws(u[ijk-jj3], u[ijk-jj2], u[ijk-jj1], u[ijk    ], u[ijk+jj1], u[ijk+jj2]) ) * dyi;
+                }
+
+        // Vertical terms interior with full 5/6th order vertical
+        #pragma acc loop independent tile(TILE_I, TILE_J, TILE_K)
+        for (int k=kstart+3; k<kend-3; ++k)
+            for (int j=jstart; j<jend; ++j)
+                #pragma ivdep
+                for (int i=istart; i<iend; ++i)
+                {
+                    const int ijk = i + j*jj1 + k*kk1;
+                    ut[ijk] +=
+                            // w*du/dz
+                            - ( rhorefh[k+1] * interp2(w[ijk-ii1+kk1], w[ijk+kk1]) * interp6_ws(u[ijk-kk2], u[ijk-kk1], u[ijk    ], u[ijk+kk1], u[ijk+kk2], u[ijk+kk3])
+                              - rhorefh[k  ] * interp2(w[ijk-ii1    ], w[ijk    ]) * interp6_ws(u[ijk-kk3], u[ijk-kk2], u[ijk-kk1], u[ijk    ], u[ijk+kk1], u[ijk+kk2]) ) / rhoref[k] * dzi[k]
+
+                            + ( rhorefh[k+1] * std::abs(interp2(w[ijk-ii1+kk1], w[ijk+kk1])) * interp5_ws(u[ijk-kk2], u[ijk-kk1], u[ijk    ], u[ijk+kk1], u[ijk+kk2], u[ijk+kk3])
+                              - rhorefh[k  ] * std::abs(interp2(w[ijk-ii1    ], w[ijk    ])) * interp5_ws(u[ijk-kk3], u[ijk-kk2], u[ijk-kk1], u[ijk    ], u[ijk+kk1], u[ijk+kk2]) ) / rhoref[k] * dzi[k];
+                }
+
+        // Calculate vertical terms with reduced order near boundaries
+        int k = kstart;
+        #pragma acc loop independent tile(TILE_I, TILE_J)
         for (int j=jstart; j<jend; ++j)
             #pragma ivdep
             for (int i=istart; i<iend; ++i)
             {
                 const int ijk = i + j*jj1 + k*kk1;
                 ut[ijk] +=
-                        // u*du/dx
-                        - ( interp2(u[ijk        ], u[ijk+ii1]) * interp6_ws(u[ijk-ii2], u[ijk-ii1], u[ijk    ], u[ijk+ii1], u[ijk+ii2], u[ijk+ii3])
-                          - interp2(u[ijk-ii1    ], u[ijk    ]) * interp6_ws(u[ijk-ii3], u[ijk-ii2], u[ijk-ii1], u[ijk    ], u[ijk+ii1], u[ijk+ii2]) ) * dxi
-
-                        + ( std::abs(interp2(u[ijk        ], u[ijk+ii1])) * interp5_ws(u[ijk-ii2], u[ijk-ii1], u[ijk    ], u[ijk+ii1], u[ijk+ii2], u[ijk+ii3])
-                          - std::abs(interp2(u[ijk-ii1    ], u[ijk    ])) * interp5_ws(u[ijk-ii3], u[ijk-ii2], u[ijk-ii1], u[ijk    ], u[ijk+ii1], u[ijk+ii2]) ) * dxi
-
-                        // v*du/dy
-                        - ( interp2(v[ijk-ii1+jj1], v[ijk+jj1]) * interp6_ws(u[ijk-jj2], u[ijk-jj1], u[ijk    ], u[ijk+jj1], u[ijk+jj2], u[ijk+jj3])
-                          - interp2(v[ijk-ii1    ], v[ijk    ]) * interp6_ws(u[ijk-jj3], u[ijk-jj2], u[ijk-jj1], u[ijk    ], u[ijk+jj1], u[ijk+jj2]) ) * dyi
-
-                        + ( std::abs(interp2(v[ijk-ii1+jj1], v[ijk+jj1])) * interp5_ws(u[ijk-jj2], u[ijk-jj1], u[ijk    ], u[ijk+jj1], u[ijk+jj2], u[ijk+jj3])
-                          - std::abs(interp2(v[ijk-ii1    ], v[ijk    ])) * interp5_ws(u[ijk-jj3], u[ijk-jj2], u[ijk-jj1], u[ijk    ], u[ijk+jj1], u[ijk+jj2]) ) * dyi;
+                        // w*du/dz -> second order interpolation for fluxtop, fluxbot = 0. as w=0
+                        - ( rhorefh[k+1] * interp2(w[ijk-ii1+kk1], w[ijk+kk1]) * interp2(u[ijk    ], u[ijk+kk1]) ) / rhoref[k] * dzi[k];
             }
 
-    // Vertical terms interior with full 5/6th order vertical
-    #pragma acc parallel loop independent present(ut, u, v, w, dzi, rhoref, rhorefh) collapse(3)
-    for (int k=kstart+3; k<kend-3; ++k)
+        k = kstart+1;
+        #pragma acc loop independent tile(TILE_I, TILE_J)
         for (int j=jstart; j<jend; ++j)
             #pragma ivdep
             for (int i=istart; i<iend; ++i)
             {
                 const int ijk = i + j*jj1 + k*kk1;
                 ut[ijk] +=
-                        // w*du/dz
+                        // w*du/dz -> second order interpolation for fluxbot, fourth order for fluxtop
+                        - ( rhorefh[k+1] * interp2(w[ijk-ii1+kk1], w[ijk+kk1]) * interp4_ws(u[ijk-kk1], u[ijk    ], u[ijk+kk1], u[ijk+kk2])
+                          - rhorefh[k  ] * interp2(w[ijk-ii1    ], w[ijk    ]) * interp2(   u[ijk-kk1], u[ijk    ]) ) / rhoref[k] * dzi[k]
+
+                        + ( rhorefh[k+1] * std::abs(interp2(w[ijk-ii1+kk1], w[ijk+kk1])) * interp3_ws(u[ijk-kk1], u[ijk    ], u[ijk+kk1], u[ijk+kk2]) ) / rhoref[k] * dzi[k];
+            }
+
+
+        k = kstart+2;
+        #pragma acc loop independent tile(TILE_I, TILE_J)
+        for (int j=jstart; j<jend; ++j)
+            #pragma ivdep
+            for (int i=istart; i<iend; ++i)
+            {
+                const int ijk = i + j*jj1 + k*kk1;
+                ut[ijk] +=
+                        // w*du/dz -> fourth order interpolation for fluxbot
                         - ( rhorefh[k+1] * interp2(w[ijk-ii1+kk1], w[ijk+kk1]) * interp6_ws(u[ijk-kk2], u[ijk-kk1], u[ijk    ], u[ijk+kk1], u[ijk+kk2], u[ijk+kk3])
-                          - rhorefh[k  ] * interp2(w[ijk-ii1    ], w[ijk    ]) * interp6_ws(u[ijk-kk3], u[ijk-kk2], u[ijk-kk1], u[ijk    ], u[ijk+kk1], u[ijk+kk2]) ) / rhoref[k] * dzi[k]
+                          - rhorefh[k  ] * interp2(w[ijk-ii1    ], w[ijk    ]) * interp4_ws(u[ijk-kk2], u[ijk-kk1], u[ijk    ], u[ijk+kk1]) ) / rhoref[k] * dzi[k]
 
                         + ( rhorefh[k+1] * std::abs(interp2(w[ijk-ii1+kk1], w[ijk+kk1])) * interp5_ws(u[ijk-kk2], u[ijk-kk1], u[ijk    ], u[ijk+kk1], u[ijk+kk2], u[ijk+kk3])
+                          - rhorefh[k  ] * std::abs(interp2(w[ijk-ii1    ], w[ijk    ])) * interp3_ws(u[ijk-kk2], u[ijk-kk1], u[ijk    ], u[ijk+kk1]) ) / rhoref[k] * dzi[k];
+            }
+
+        k = kend-3;
+        #pragma acc loop independent tile(TILE_I, TILE_J)
+        for (int j=jstart; j<jend; ++j)
+            #pragma ivdep
+            for (int i=istart; i<iend; ++i)
+            {
+                const int ijk = i + j*jj1 + k*kk1;
+                ut[ijk] +=
+                        // w*du/dz -> fourth order interpolation for fluxtop
+                        - ( rhorefh[k+1] * interp2(w[ijk-ii1+kk1], w[ijk+kk1]) * interp4_ws(u[ijk-kk1   ], u[ijk    ], u[ijk+kk1], u[ijk+kk2])
+                          - rhorefh[k  ] * interp2(w[ijk-ii1    ], w[ijk    ]) * interp6_ws(u[ijk-kk3], u[ijk-kk2], u[ijk-kk1], u[ijk    ], u[ijk+kk1], u[ijk+kk2]) ) / rhoref[k] * dzi[k]
+
+                        + ( rhorefh[k+1] * std::abs(interp2(w[ijk-ii1+kk1], w[ijk+kk1])) * interp3_ws(u[ijk-kk1], u[ijk    ], u[ijk+kk1], u[ijk+kk2])
                           - rhorefh[k  ] * std::abs(interp2(w[ijk-ii1    ], w[ijk    ])) * interp5_ws(u[ijk-kk3], u[ijk-kk2], u[ijk-kk1], u[ijk    ], u[ijk+kk1], u[ijk+kk2]) ) / rhoref[k] * dzi[k];
             }
 
-    // Calculate vertical terms with reduced order near boundaries
-    int k = kstart;
-    #pragma acc parallel loop independent present(ut, u, v, w, dzi, rhoref, rhorefh) collapse(2)
-    for (int j=jstart; j<jend; ++j)
-        #pragma ivdep
-        for (int i=istart; i<iend; ++i)
-        {
-            const int ijk = i + j*jj1 + k*kk1;
-            ut[ijk] +=
-                    // w*du/dz -> second order interpolation for fluxtop, fluxbot = 0. as w=0
-                    - ( rhorefh[k+1] * interp2(w[ijk-ii1+kk1], w[ijk+kk1]) * interp2(u[ijk    ], u[ijk+kk1]) ) / rhoref[k] * dzi[k];
-        }
+        k = kend-2;
+        #pragma acc loop independent tile(TILE_I, TILE_J)
+        for (int j=jstart; j<jend; ++j)
+            #pragma ivdep
+            for (int i=istart; i<iend; ++i)
+            {
+                const int ijk = i + j*jj1 + k*kk1;
+                ut[ijk] +=
+                        // w*du/dz -> second order interpolation for fluxtop, fourth order for fluxbot
+                        - ( rhorefh[k+1] * interp2(w[ijk-ii1+kk1], w[ijk+kk1]) * interp2(u[ijk    ], u[ijk+kk1])
+                          - rhorefh[k  ] * interp2(w[ijk-ii1    ], w[ijk    ]) * interp4_ws(u[ijk-kk2], u[ijk-kk1], u[ijk    ], u[ijk+kk1]) ) / rhoref[k] * dzi[k]
 
-    k = kstart+1;
-    #pragma acc parallel loop independent present(ut, u, v, w, dzi, rhoref, rhorefh) collapse(2)
-    for (int j=jstart; j<jend; ++j)
-        #pragma ivdep
-        for (int i=istart; i<iend; ++i)
-        {
-            const int ijk = i + j*jj1 + k*kk1;
-            ut[ijk] +=
-                    // w*du/dz -> second order interpolation for fluxbot, fourth order for fluxtop
-                    - ( rhorefh[k+1] * interp2(w[ijk-ii1+kk1], w[ijk+kk1]) * interp4_ws(u[ijk-kk1], u[ijk    ], u[ijk+kk1], u[ijk+kk2])
-                      - rhorefh[k  ] * interp2(w[ijk-ii1    ], w[ijk    ]) * interp2(   u[ijk-kk1], u[ijk    ]) ) / rhoref[k] * dzi[k]
+                        - ( rhorefh[k  ] * std::abs(interp2(w[ijk-ii1    ], w[ijk    ])) * interp3_ws(u[ijk-kk2], u[ijk-kk1], u[ijk    ], u[ijk+kk1]) ) / rhoref[k] * dzi[k];
+            }
 
-                    + ( rhorefh[k+1] * std::abs(interp2(w[ijk-ii1+kk1], w[ijk+kk1])) * interp3_ws(u[ijk-kk1], u[ijk    ], u[ijk+kk1], u[ijk+kk2]) ) / rhoref[k] * dzi[k];
-        }
-
-
-    k = kstart+2;
-    #pragma acc parallel loop independent present(ut, u, v, w, dzi, rhoref, rhorefh) collapse(2)
-    for (int j=jstart; j<jend; ++j)
-        #pragma ivdep
-        for (int i=istart; i<iend; ++i)
-        {
-            const int ijk = i + j*jj1 + k*kk1;
-            ut[ijk] +=
-                    // w*du/dz -> fourth order interpolation for fluxbot
-                    - ( rhorefh[k+1] * interp2(w[ijk-ii1+kk1], w[ijk+kk1]) * interp6_ws(u[ijk-kk2], u[ijk-kk1], u[ijk    ], u[ijk+kk1], u[ijk+kk2], u[ijk+kk3])
-                      - rhorefh[k  ] * interp2(w[ijk-ii1    ], w[ijk    ]) * interp4_ws(u[ijk-kk2], u[ijk-kk1], u[ijk    ], u[ijk+kk1]) ) / rhoref[k] * dzi[k]
-
-                    + ( rhorefh[k+1] * std::abs(interp2(w[ijk-ii1+kk1], w[ijk+kk1])) * interp5_ws(u[ijk-kk2], u[ijk-kk1], u[ijk    ], u[ijk+kk1], u[ijk+kk2], u[ijk+kk3])
-                      - rhorefh[k  ] * std::abs(interp2(w[ijk-ii1    ], w[ijk    ])) * interp3_ws(u[ijk-kk2], u[ijk-kk1], u[ijk    ], u[ijk+kk1]) ) / rhoref[k] * dzi[k];
-        }
-
-    k = kend-3;
-    #pragma acc parallel loop independent present(ut, u, v, w, dzi, rhoref, rhorefh) collapse(2)
-    for (int j=jstart; j<jend; ++j)
-        #pragma ivdep
-        for (int i=istart; i<iend; ++i)
-        {
-            const int ijk = i + j*jj1 + k*kk1;
-            ut[ijk] +=
-                    // w*du/dz -> fourth order interpolation for fluxtop
-                    - ( rhorefh[k+1] * interp2(w[ijk-ii1+kk1], w[ijk+kk1]) * interp4_ws(u[ijk-kk1   ], u[ijk    ], u[ijk+kk1], u[ijk+kk2])
-                      - rhorefh[k  ] * interp2(w[ijk-ii1    ], w[ijk    ]) * interp6_ws(u[ijk-kk3], u[ijk-kk2], u[ijk-kk1], u[ijk    ], u[ijk+kk1], u[ijk+kk2]) ) / rhoref[k] * dzi[k]
-
-                    + ( rhorefh[k+1] * std::abs(interp2(w[ijk-ii1+kk1], w[ijk+kk1])) * interp3_ws(u[ijk-kk1], u[ijk    ], u[ijk+kk1], u[ijk+kk2])
-                      - rhorefh[k  ] * std::abs(interp2(w[ijk-ii1    ], w[ijk    ])) * interp5_ws(u[ijk-kk3], u[ijk-kk2], u[ijk-kk1], u[ijk    ], u[ijk+kk1], u[ijk+kk2]) ) / rhoref[k] * dzi[k];
-        }
-
-    k = kend-2;
-    #pragma acc parallel loop independent present(ut, u, v, w, dzi, rhoref, rhorefh) collapse(2)
-    for (int j=jstart; j<jend; ++j)
-        #pragma ivdep
-        for (int i=istart; i<iend; ++i)
-        {
-            const int ijk = i + j*jj1 + k*kk1;
-            ut[ijk] +=
-                    // w*du/dz -> second order interpolation for fluxtop, fourth order for fluxbot
-                    - ( rhorefh[k+1] * interp2(w[ijk-ii1+kk1], w[ijk+kk1]) * interp2(u[ijk    ], u[ijk+kk1])
-                      - rhorefh[k  ] * interp2(w[ijk-ii1    ], w[ijk    ]) * interp4_ws(u[ijk-kk2], u[ijk-kk1], u[ijk    ], u[ijk+kk1]) ) / rhoref[k] * dzi[k]
-
-                    - ( rhorefh[k  ] * std::abs(interp2(w[ijk-ii1    ], w[ijk    ])) * interp3_ws(u[ijk-kk2], u[ijk-kk1], u[ijk    ], u[ijk+kk1]) ) / rhoref[k] * dzi[k];
-        }
-
-    k = kend-1;
-    #pragma acc parallel loop independent present(ut, u, v, w, dzi, rhoref, rhorefh) collapse(2)
-    for (int j=jstart; j<jend; ++j)
-        #pragma ivdep
-        for (int i=istart; i<iend; ++i)
-        {
-            const int ijk = i + j*jj1 + k*kk1;
-            ut[ijk] +=
-                    // w*du/dz -> second order interpolation for fluxbot, fluxtop=0 as w=0
-                    - ( -rhorefh[k] * interp2(w[ijk-ii1    ], w[ijk    ]) * interp2(u[ijk-kk1], u[ijk    ]) ) / rhoref[k] * dzi[k];
-        }
+        k = kend-1;
+        #pragma acc loop independent tile(TILE_I, TILE_J)
+        for (int j=jstart; j<jend; ++j)
+            #pragma ivdep
+            for (int i=istart; i<iend; ++i)
+            {
+                const int ijk = i + j*jj1 + k*kk1;
+                ut[ijk] +=
+                        // w*du/dz -> second order interpolation for fluxbot, fluxtop=0 as w=0
+                        - ( -rhorefh[k] * interp2(w[ijk-ii1    ], w[ijk    ]) * interp2(u[ijk-kk1], u[ijk    ]) ) / rhoref[k] * dzi[k];
+            }
+    }
 }
 
 
@@ -284,8 +287,8 @@ int main(int argc, char* argv[])
             jstride, kstride);
 
     // Update the data.
-    #pragma acc update self(ut[0:ncells])
-    printf("ut=%.20f\n", ut[itot*jtot+itot+itot/2]);
+    // #pragma acc update self(ut[0:ncells])
+    // printf("ut=%.20f\n", ut[itot*jtot+itot+itot/2]);
 
     // Time performance
     auto start = std::chrono::high_resolution_clock::now();
@@ -306,19 +309,17 @@ int main(int argc, char* argv[])
     // Remove data from the GPU.
     #pragma acc exit data copyout(ut[0:ncells])
 
-    printf("ut=%.20f\n", ut[itot*jtot+itot+itot/4]);
+    // printf("ut=%.20f\n", ut[itot*jtot+itot+itot/4]);
 
-    /*
-    std::ofstream binary_file("at_acc.bin", std::ios::out | std::ios::trunc | std::ios::binary);
+    std::ofstream binary_file("ut_acc.bin", std::ios::out | std::ios::trunc | std::ios::binary);
 
     if (binary_file)
-        binary_file.write(reinterpret_cast<const char*>(at), ncells*sizeof(double));
+        binary_file.write(reinterpret_cast<const char*>(ut), ncells*sizeof(double));
     else
     {
         std::string error = "Cannot write file \"at_acc.bin\"";
         throw std::runtime_error(error);
     }
-    */
 
     return 0;
 }

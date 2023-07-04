@@ -244,9 +244,9 @@ int main(int argc, char* argv[])
     // Send data to the GPU.
     #pragma acc enter data copyin(ut[0:ncells], u[0:ncells], v[0:ncells], w[0:ncells], dzi[0:kcells], rhoref[0:kcells], rhorefh[0:kcells])
 
-    const int blocki = 32;
-    const int blockj = 1;
-    const int blockk = 1;
+    const int blocki = TILE_I;
+    const int blockj = TILE_J;
+    const int blockk = TILE_K;
     const int gridi = itot/blocki + (itot%blocki > 0);
     const int gridj = jtot/blockj + (jtot%blockj > 0);
     const int gridk = ktot/blockk + (ktot%blockk > 0);
@@ -264,8 +264,8 @@ int main(int argc, char* argv[])
     cudaDeviceSynchronize();
 
     // Update the data.
-    #pragma acc update self(ut[0:ncells])
-    printf("ut=%.20f\n", ut[itot*jtot+itot+itot/2]);
+    // #pragma acc update self(ut[0:ncells])
+    // printf("ut=%.20f\n", ut[itot*jtot+itot+itot/2]);
 
     // Time performance
     cudaDeviceSynchronize();
@@ -289,19 +289,17 @@ int main(int argc, char* argv[])
     // Remove data from the GPU.
     #pragma acc exit data copyout(ut[0:ncells])
 
-    printf("ut=%.20f\n", ut[itot*jtot+itot+itot/4]);
+    // printf("ut=%.20f\n", ut[itot*jtot+itot+itot/4]);
 
-    /*
-    std::ofstream binary_file("at_acc.bin", std::ios::out | std::ios::trunc | std::ios::binary);
+    std::ofstream binary_file("ut_cuda.bin", std::ios::out | std::ios::trunc | std::ios::binary);
 
     if (binary_file)
-        binary_file.write(reinterpret_cast<const char*>(at), ncells*sizeof(double));
+        binary_file.write(reinterpret_cast<const char*>(ut), ncells*sizeof(double));
     else
     {
-        std::string error = "Cannot write file \"at_acc.bin\"";
+        std::string error = "Cannot write file \"ut_cuda.bin\"";
         throw std::runtime_error(error);
     }
-    */
 
     return 0;
 }
