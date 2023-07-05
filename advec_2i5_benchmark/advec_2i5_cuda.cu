@@ -13,51 +13,51 @@ namespace
 
 #define CUDA_MACRO __device__
 
-CUDA_MACRO inline double interp2(const double a, const double b)
+CUDA_MACRO inline float interp2(const float a, const float b)
 {
-    return double(0.5) * (a + b);
+    return float(0.5) * (a + b);
 }
 
 
-CUDA_MACRO inline double interp4_ws(const double a, const double b, const double c, const double d)
+CUDA_MACRO inline float interp4_ws(const float a, const float b, const float c, const float d)
 {
-    constexpr double c0 = double(7./12.);
-    constexpr double c1 = double(1./12.);
+    constexpr float c0 = float(7./12.);
+    constexpr float c1 = float(1./12.);
     return c0*(b+c) - c1*(a+d);
 }
 
 
-CUDA_MACRO inline double interp3_ws(const double a, const double b, const double c, const double d)
+CUDA_MACRO inline float interp3_ws(const float a, const float b, const float c, const float d)
 {
-    constexpr double c0 = double(3./12.);
-    constexpr double c1 = double(1./12.);
+    constexpr float c0 = float(3./12.);
+    constexpr float c1 = float(1./12.);
     return c0*(c-b) - c1*(d-a);
 }
 
 
-CUDA_MACRO inline double interp6_ws(
-        const double a, const double b, const double c, const double d, const double e, const double f)
+CUDA_MACRO inline float interp6_ws(
+        const float a, const float b, const float c, const float d, const float e, const float f)
 {
-    constexpr double c0 = double(37./60.);
-    constexpr double c1 = double(8./60.);
-    constexpr double c2 = double(1./60.);
+    constexpr float c0 = float(37./60.);
+    constexpr float c1 = float(8./60.);
+    constexpr float c2 = float(1./60.);
 
     return c0*(c+d) - c1*(b+e) + c2*(a+f);
 }
 
 
-CUDA_MACRO inline double interp5_ws(
-        const double a, const double b, const double c, const double d, const double e, const double f)
+CUDA_MACRO inline float interp5_ws(
+        const float a, const float b, const float c, const float d, const float e, const float f)
 {
-    constexpr double c0 = double(10./60.);
-    constexpr double c1 = double(5./60.);
-    constexpr double c2 = double(1./60.);
+    constexpr float c0 = float(10./60.);
+    constexpr float c1 = float(5./60.);
+    constexpr float c2 = float(1./60.);
 
     return c0*(d-c) - c1*(e-b) + c2*(f-a);
 }
 
 
-void init(double* const __restrict__ a, const int ncells)
+void init(float* const __restrict__ a, const int ncells)
 {
     static int i = 0;
     for (int n=0; n<ncells; ++n)
@@ -70,14 +70,14 @@ void init(double* const __restrict__ a, const int ncells)
 
 __global__
 void advec_2i5(
-        double* const restrict ut,
-        const double* const restrict u,
-        const double* const restrict v,
-        const double* const restrict w,
-        const double* const restrict dzi,
-        const double dx, const double dy,
-        const double* const restrict rhoref,
-        const double* const restrict rhorefh,
+        float* const restrict ut,
+        const float* const restrict u,
+        const float* const restrict v,
+        const float* const restrict w,
+        const float* const restrict dzi,
+        const float dx, const float dy,
+        const float* const restrict rhoref,
+        const float* const restrict rhorefh,
         const int istart, const int iend,
         const int jstart, const int jend,
         const int kstart, const int kend,
@@ -95,8 +95,8 @@ void advec_2i5(
     const int kk2 = 2*kk;
     const int kk3 = 3*kk;
 
-    const double dxi = double(1.)/dx;
-    const double dyi = double(1.)/dy;
+    const float dxi = float(1.)/dx;
+    const float dyi = float(1.)/dy;
 
     const int i = blockIdx.x*blockDim.x + threadIdx.x + istart;
     const int j = blockIdx.y*blockDim.y + threadIdx.y + jstart;
@@ -219,17 +219,17 @@ int main(int argc, char* argv[])
     const int jstride = icells;
     const int kstride = icells*jcells;
 
-    double* ut  = new double[ncells];
-    double* u = new double[ncells];
-    double* v = new double[ncells];
-    double* w = new double[ncells];
-    double* dzi  = new double[kcells];
+    float* ut  = new float[ncells];
+    float* u = new float[ncells];
+    float* v = new float[ncells];
+    float* w = new float[ncells];
+    float* dzi  = new float[kcells];
 
-    double* rhoref = new double[kcells];
-    double* rhorefh = new double[kcells];
+    float* rhoref = new float[kcells];
+    float* rhorefh = new float[kcells];
 
-    const double dxi = 0.1;
-    const double dyi = 0.1;
+    const float dxi = 0.1;
+    const float dyi = 0.1;
    
     init(ut, ncells);
 
@@ -282,9 +282,9 @@ int main(int argc, char* argv[])
     cudaDeviceSynchronize();
     auto end = std::chrono::high_resolution_clock::now();
 
-    double duration = std::chrono::duration_cast<std::chrono::duration<double>>(end - start).count();
+    float duration = std::chrono::duration_cast<std::chrono::duration<float>>(end - start).count();
 
-    printf("time/iter = %E s (%i iters)\n",duration/(double)nloop, nloop);
+    printf("time/iter = %E s (%i iters)\n",duration/(float)nloop, nloop);
 
     // Remove data from the GPU.
     #pragma acc exit data copyout(ut[0:ncells])
@@ -294,7 +294,7 @@ int main(int argc, char* argv[])
     std::ofstream binary_file("ut_cuda.bin", std::ios::out | std::ios::trunc | std::ios::binary);
 
     if (binary_file)
-        binary_file.write(reinterpret_cast<const char*>(ut), ncells*sizeof(double));
+        binary_file.write(reinterpret_cast<const char*>(ut), ncells*sizeof(float));
     else
     {
         std::string error = "Cannot write file \"ut_cuda.bin\"";
