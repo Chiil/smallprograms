@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstdio>
+#include <cstdlib>
 #include <chrono>
 #include <cmath>
 
@@ -57,14 +58,17 @@ CUDA_MACRO inline float interp5_ws(
 }
 
 
-void init(float* const __restrict__ a, const int ncells)
+void init_zero(float* const __restrict__ a, const int ncells)
 {
-    static int i = 0;
     for (int n=0; n<ncells; ++n)
-    {
-        a[n] = pow(i,2)/pow(i+1,2);
-        ++i;
-    }
+        a[n] = float(0.);
+}
+
+
+void init_rand(float* const __restrict__ a, const int ncells)
+{
+    for (int n=0; n<ncells; ++n)
+        a[n] = float(std::rand() % 1000) + float(0.001);
 }
 
 
@@ -100,7 +104,7 @@ void advec_2i5(
 
     const int i = blockIdx.x*blockDim.x + threadIdx.x + istart;
     const int j = blockIdx.y*blockDim.y + threadIdx.y + jstart;
-    const int k = blockIdx.z + kstart;
+    const int k = blockIdx.z*blockDim.z + threadIdx.z + kstart;
 
     if (i < iend && j < jend && k < kend)
     {
@@ -219,6 +223,8 @@ int main(int argc, char* argv[])
     const int jstride = icells;
     const int kstride = icells*jcells;
 
+    // const int ijk_check = (istart + itot/2) + (jstart + jtot/2)*jstride + (kstart + ktot/2)*kstride;
+
     float* ut  = new float[ncells];
     float* u = new float[ncells];
     float* v = new float[ncells];
@@ -231,15 +237,17 @@ int main(int argc, char* argv[])
     const float dxi = 0.1;
     const float dyi = 0.1;
    
-    init(ut, ncells);
+    init_zero(ut, ncells);
 
-    init(u, ncells);
-    init(v, ncells);
-    init(w, ncells);
+    std::srand(123);
 
-    init(dzi, kcells);
-    init(rhoref, kcells);
-    init(rhorefh, kcells);
+    init_rand(u, ncells);
+    init_rand(v, ncells);
+    init_rand(w, ncells);
+
+    init_rand(dzi, kcells);
+    init_rand(rhoref, kcells);
+    init_rand(rhorefh, kcells);
 
     // Send data to the GPU.
     #pragma acc enter data copyin(ut[0:ncells], u[0:ncells], v[0:ncells], w[0:ncells], dzi[0:kcells], rhoref[0:kcells], rhorefh[0:kcells])
@@ -265,7 +273,7 @@ int main(int argc, char* argv[])
 
     // Update the data.
     // #pragma acc update self(ut[0:ncells])
-    // printf("ut=%.20f\n", ut[itot*jtot+itot+itot/2]);
+    // printf("ut=%.20f\n", ut[ijk_check]);
 
     // Time performance
     cudaDeviceSynchronize();
@@ -287,9 +295,8 @@ int main(int argc, char* argv[])
     printf("time/iter = %E s (%i iters)\n",duration/(float)nloop, nloop);
 
     // Remove data from the GPU.
-    #pragma acc exit data copyout(ut[0:ncells])
-
-    // printf("ut=%.20f\n", ut[itot*jtot+itot+itot/4]);
+    // #pragma acc exit data copyout(ut[0:ncells])
+    // printf("ut=%.20f\n", ut[ijk_check]);
 
     std::ofstream binary_file("ut_cuda.bin", std::ios::out | std::ios::trunc | std::ios::binary);
 
