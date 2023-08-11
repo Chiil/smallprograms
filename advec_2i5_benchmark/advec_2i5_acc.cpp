@@ -315,8 +315,7 @@ int main(int argc, char* argv[])
     printf("time/iter = %E s (%i iters)\n",duration/(float)nloop, nloop);
 
     // Remove data from the GPU.
-    // #pragma acc exit data copyout(ut[0:ncells])
-    // printf("ut=%.20f\n", ut[ijk_check]);
+    #pragma acc exit data copyout(ut[0:ncells]) delete(u[0:ncells], v[0:ncells], w[0:ncells], dzi[0:kcells], rhoref[0:kcells], rhorefh[0:kcells])
 
     std::ofstream binary_file("ut_acc.bin", std::ios::out | std::ios::trunc | std::ios::binary);
 
