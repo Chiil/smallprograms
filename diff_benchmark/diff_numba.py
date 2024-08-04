@@ -1,5 +1,5 @@
 import numpy as np
-from numba import njit, prange, cuda
+from numba import jit, prange
 from timeit import default_timer as timer
 
 itot = 384;
@@ -21,8 +21,12 @@ def diff(at, a, visc, dxidxi, dyidyi, dzidzi):
                         )
 
 float_type = np.float32
+# float_type = np.float64
 
 nloop = 30;
+itot = 384;
+jtot = 384;
+ktot = 384;
 ncells = itot*jtot*ktot;
 
 at = np.zeros((ktot, jtot, itot), dtype=float_type)
