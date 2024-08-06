@@ -6,6 +6,7 @@ from functools import partial
 from timeit import default_timer as timer
 
 
+# Numpy-like operation.
 @partial(jit, static_argnums=(6, 7, 8))
 def diff(at, a, visc, dxidxi, dyidyi, dzidzi, itot, jtot, ktot):
     i_c = jnp.s_[1:ktot-1, 1:jtot-1, 1:itot-1]
@@ -30,48 +31,94 @@ def diff(at, a, visc, dxidxi, dyidyi, dzidzi, itot, jtot, ktot):
     return at_new
 
 
-itot = 384;
-jtot = 384;
-ktot = 384;
+# Using convolve.
+@partial(jit, static_argnums=(3, 4, 5))
+def diff2(at, a, diff_weights, itot, jtot, ktot):
+
+    at_diff = jax.scipy.signal.convolve(a, diff_weights, mode='valid')
+    at_new = at.at[1:ktot-1, 1:jtot-1, 1:itot-1].add(at_diff)
+
+    return at_new
+
+
+itot = 64;
+jtot = 64;
+ktot = 64;
 
 float_type = jnp.float32
 
 nloop = 30;
 ncells = itot*jtot*ktot;
 
-at = jnp.zeros((ktot, jtot, itot), dtype=float_type)
-
-index = jnp.arange(ncells, dtype=float_type)
+dxidxi = float_type(0.1)
+dyidyi = float_type(0.1)
+dzidzi = float_type(0.1)
+visc = float_type(0.1)
 
 @jit
 def init_a(index):
     return (index/(index+1))**2
 
+
+## FIRST EXPERIMENT.
+at = jnp.zeros((ktot, jtot, itot), dtype=float_type)
+index = jnp.arange(ncells, dtype=float_type)
 a = init_a(index)
 del(index)
-
 a = a.reshape(ktot, jtot, itot)
 
-# Check results
-c = float_type(0.1)
-
-# a_gpu = jax.device_put(a)
-# at_gpu = jax.device_put(at)
-
-# at_gpu = diff(at_gpu, a_gpu, c, c, c, c).block_until_ready()
-at = diff(at, a, c, c, c, c, itot, jtot, ktot).block_until_ready()
-
-# at = jax.device_get(at_gpu)
-print("at={0}".format(at.flatten()[itot*jtot+itot+itot//2]))
+at = diff(at, a, visc, dxidxi, dyidyi, dzidzi, itot, jtot, ktot).block_until_ready()
+print("(first check) at={0}".format(at.flatten()[itot*jtot+itot+itot//2]))
 
 # Time the loop
 start = timer()
 for i in range(nloop):
-    at = diff(at, a, c, c, c, c, itot, jtot, ktot).block_until_ready()
+    at = diff(at, a, visc, dxidxi, dyidyi, dzidzi, itot, jtot, ktot).block_until_ready()
 end = timer()
 
 print("Time/iter: {0} s ({1} iters)".format((end-start)/nloop, nloop))
+print("at={0}".format(at.flatten()[itot*jtot+itot+itot//4]))
 
-# at = jax.device_get(at_gpu)
+
+## SECOND EXPERIMENT.
+at = jnp.zeros((ktot, jtot, itot), dtype=float_type)
+index = jnp.arange(ncells, dtype=float_type)
+a = init_a(index)
+del(index)
+a = a.reshape(ktot, jtot, itot)
+
+diff_weights = jnp.array(
+        [
+            [
+                [ 0, 0, 0],
+                [ 0, dzidzi, 0],
+                [ 0, 0, 0]
+            ],
+            [
+                [ 0, dyidyi, 0],
+                [ dxidxi, -(dxidxi + dyidyi + dzidzi), dxidxi],
+                [ 0, dyidyi, 0]
+            ],
+            [
+                [ 0, 0, 0],
+                [ 0, dzidzi, 0],
+                [ 0, 0, 0]
+            ]
+        ])
+
+diff_weights *= visc
+
+print(diff_weights[0, :, :])
+
+at = diff2(at, a, diff_weights, itot, jtot, ktot).block_until_ready()
+print("(first check) at={0}".format(at.flatten()[itot*jtot+itot+itot//2]))
+
+# Time the loop
+start = timer()
+for i in range(nloop):
+    at = diff2(at, a, diff_weights, itot, jtot, ktot).block_until_ready()
+end = timer()
+
+print("Time/iter: {0} s ({1} iters)".format((end-start)/nloop, nloop))
 print("at={0}".format(at.flatten()[itot*jtot+itot+itot//4]))
 
