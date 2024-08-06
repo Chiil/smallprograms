@@ -3,10 +3,10 @@
 
 namespace
 {
-    using Array_3d = Kokkos::View<double***, Kokkos::LayoutRight>;
+    using Array_3d = Kokkos::View<float***, Kokkos::LayoutRight>;
     using Range_3d = Kokkos::MDRangePolicy<Kokkos::Rank<3>>;
 
-    void init(double* const __restrict__ a, double* const __restrict__ at, const size_t ncells)
+    void init(float* const __restrict__ a, float* const __restrict__ at, const size_t ncells)
     {
         for (size_t i=0; i<ncells; ++i)
         {
@@ -19,15 +19,15 @@ namespace
     {
         Array_3d at;
         const Array_3d a;
-        const double visc;
-        const double dxidxi;
-        const double dyidyi;
-        const double dzidzi;
+        const float visc;
+        const float dxidxi;
+        const float dyidyi;
+        const float dzidzi;
 
         diff(
                 Array_3d at_, const Array_3d a_,
-                const double visc_,
-                const double dxidxi_, const double dyidyi_, const double dzidzi_) :
+                const float visc_,
+                const float dxidxi_, const float dyidyi_, const float dzidzi_) :
             at(at_), a(a_), visc(visc_), dxidxi(dxidxi_), dyidyi(dyidyi_), dzidzi(dzidzi_) {};
 
         KOKKOS_INLINE_FUNCTION
@@ -61,10 +61,10 @@ int main(int argc, char* argv[])
         const size_t ktot = std::stoi(argv[1]);
         const size_t ncells = itot*jtot*ktot;
 
-        constexpr double visc = 0.1;
-        constexpr double dxidxi = 0.1;
-        constexpr double dyidyi = 0.1;
-        constexpr double dzidzi = 0.1;
+        constexpr float visc = 0.1;
+        constexpr float dxidxi = 0.1;
+        constexpr float dyidyi = 0.1;
+        constexpr float dzidzi = 0.1;
 
         Array_3d a ("a" , ktot, jtot, itot);
         Array_3d at("at", ktot, jtot, itot);
