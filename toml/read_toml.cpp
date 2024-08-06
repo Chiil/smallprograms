@@ -5,35 +5,45 @@
 
 int main()
 {
-    toml::table tbl = toml::parse_file("test.toml");
-    std::cout << tbl << std::endl;
-
-    auto cross_xy = tbl["cross"]["cross_xy"];
-
-    std::cout << cross_xy << std::endl;
-
     std::map<std::string, std::vector<int>> cross_xy_map;
 
-    for (const auto& [name, values_ptr] : *cross_xy.as_table())
+    try
     {
-        auto values = *values_ptr.as_array();
+        toml::table tbl = toml::parse_file("test.toml");
 
-        std::string map_name(name.str());
+        auto cross_xy = tbl["cross"]["cross_xy"].as_array();
 
-        std::vector<int> map_values;
-        for (const auto& value : values)
+        if (cross_xy == nullptr)
+            throw std::runtime_error("Item not found");
+        else
         {
-            int value_int = value.as_integer()->get();
-            map_values.push_back(value_int);
+            for (auto& c : *cross_xy)
+            {
+                
+                std::string name(c[0]);
+                std::cout << name << std::endl;
+            }
         }
-
-        cross_xy_map.emplace(map_name, map_values);
     }
 
-    for (const auto& [name, values] : cross_xy_map)
+    catch (const toml::parse_error& e)
     {
-        for (const auto& value : values)
-            std::cout << name << ": " << value << std::endl;
+        std::cout << "Caught exception: " << e.description() << std::endl;
+        return 1;
     }
+
+    catch (const std::exception& e)
+    {
+        std::cout << "Caught exception: " << e.what() << std::endl;
+        return 1;
+    }
+
+    catch (...)
+    {
+        std::cout << "Uncaught exception, debugging needed!" << std::endl;
+        return 1;
+    }
+
+    return 0;
 }
 
