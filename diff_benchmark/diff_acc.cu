@@ -4,7 +4,7 @@
 #include <chrono>
 #include <cmath>
 
-void init(double* const __restrict__ a, double* const __restrict__ at, const int ncells)
+void init(float* const __restrict__ a, float* const __restrict__ at, const int ncells)
 {
     for (int i=0; i<ncells; ++i)
     {
@@ -13,8 +13,8 @@ void init(double* const __restrict__ a, double* const __restrict__ at, const int
     }
 }
 
-void diff(double* const __restrict__ at, const double* const __restrict__ a, const double visc,
-          const double dxidxi, const double dyidyi, const double dzidzi,
+void diff(float* const __restrict__ at, const float* const __restrict__ a, const float visc,
+          const float dxidxi, const float dyidyi, const float dzidzi,
           const int itot, const int jtot, const int ktot)
 {
     const int ii = 1;
@@ -52,8 +52,8 @@ int main(int argc, char* argv[])
     const int ktot = std::stoi(argv[1]);
     const int ncells = itot*jtot*ktot;
 
-    double *a  = new double[ncells];
-    double *at = new double[ncells];
+    float *a  = new float[ncells];
+    float *at = new float[ncells];
    
     init(a, at, ncells);
 
@@ -82,7 +82,7 @@ int main(int argc, char* argv[])
         auto end = std::chrono::high_resolution_clock::now();
         double duration = std::chrono::duration_cast<std::chrono::duration<double>>(end - start).count();
 
-        printf("time/iter = %E s (%i iters)\n",duration/(double)nloop, nloop);
+        printf("time/iter = %E s (%i iters)\n",duration/(float)nloop, nloop);
     }
 
     printf("at=%.20f\n", at[itot*jtot+itot+itot/4]);

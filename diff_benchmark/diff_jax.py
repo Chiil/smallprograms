@@ -41,9 +41,9 @@ def diff2(at, a, diff_weights, itot, jtot, ktot):
     return at_new
 
 
-itot = 64;
-jtot = 64;
-ktot = 64;
+itot = 384;
+jtot = 384;
+ktot = 384;
 
 float_type = jnp.float32
 

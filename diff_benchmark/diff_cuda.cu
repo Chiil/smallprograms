@@ -4,7 +4,7 @@
 #include <chrono>
 #include <cmath>
 
-void init(double* const __restrict__ a, double* const __restrict__ at, const int ncells)
+void init(float* const __restrict__ a, float* const __restrict__ at, const int ncells)
 {
     for (int i=0; i<ncells; ++i)
     {
@@ -14,8 +14,8 @@ void init(double* const __restrict__ a, double* const __restrict__ at, const int
 }
 
 __global__ void diff(
-        double* const __restrict__ at, const double* const __restrict__ a,
-        const double visc, const double dxidxi, const double dyidyi, const double dzidzi, 
+        float* const __restrict__ at, const float* const __restrict__ a,
+        const float visc, const float dxidxi, const float dyidyi, const float dzidzi, 
         const int itot, const int jtot, const int ktot)
 {
     const int i = blockIdx.x*blockDim.x + threadIdx.x + 1;
@@ -54,19 +54,19 @@ int main(int argc, char* argv[])
     const int ktot = std::stoi(argv[1]);
     const int ncells = itot*jtot*ktot;
 
-    double *a  = new double[ncells];
-    double *at = new double[ncells];
+    float *a  = new float[ncells];
+    float *at = new float[ncells];
    
     init(a, at, ncells);
 
-    double *a_cuda;
-    double *at_cuda;
+    float *a_cuda;
+    float *at_cuda;
 
-    cudaMalloc(&a_cuda, ncells*sizeof(double));
-    cudaMalloc(&at_cuda, ncells*sizeof(double));
+    cudaMalloc(&a_cuda, ncells*sizeof(float));
+    cudaMalloc(&at_cuda, ncells*sizeof(float));
 
-    cudaMemcpy(a_cuda, a, ncells*sizeof(double), cudaMemcpyHostToDevice);
-    cudaMemcpy(at_cuda, at, ncells*sizeof(double), cudaMemcpyHostToDevice);
+    cudaMemcpy(a_cuda, a, ncells*sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(at_cuda, at, ncells*sizeof(float), cudaMemcpyHostToDevice);
 
     const int blocki = 64;
     const int blockj = 1;
@@ -82,7 +82,7 @@ int main(int argc, char* argv[])
             0.1, 0.1, 0.1, 0.1,
             itot, jtot, ktot);
  
-    cudaMemcpy(at, at_cuda, ncells*sizeof(double), cudaMemcpyDeviceToHost);
+    cudaMemcpy(at, at_cuda, ncells*sizeof(float), cudaMemcpyDeviceToHost);
 
     printf("at=%.20f\n",at[itot*jtot+itot+itot/2]);
  
@@ -101,7 +101,7 @@ int main(int argc, char* argv[])
 
     printf("time/iter = %E s (%i iters)\n",duration/(double)nloop, nloop);
 
-    cudaMemcpy(at, at_cuda, ncells*sizeof(double), cudaMemcpyDeviceToHost);
+    cudaMemcpy(at, at_cuda, ncells*sizeof(float), cudaMemcpyDeviceToHost);
 
     printf("at=%.20f\n", at[itot*jtot+itot+itot/4]);
 
@@ -109,7 +109,7 @@ int main(int argc, char* argv[])
     std::ofstream binary_file("at_cuda.bin", std::ios::out | std::ios::trunc | std::ios::binary);
 
     if (binary_file)
-        binary_file.write(reinterpret_cast<const char*>(at), ncells*sizeof(double));
+        binary_file.write(reinterpret_cast<const char*>(at), ncells*sizeof(float));
     else
     {
         std::string error = "Cannot write file \"at_cuda.bin\"";
