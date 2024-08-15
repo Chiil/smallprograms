@@ -35,9 +35,9 @@ def diff(at, a, u, v, w, dxi, dyi, dzi, itot, jtot, ktot):
     return at_new
 
 
-itot = 770;
-jtot = 770;
-ktot = 770;
+itot = 384;
+jtot = 384;
+ktot = 384;
 
 float_type = jnp.float32
 
