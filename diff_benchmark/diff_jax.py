@@ -1,5 +1,6 @@
 import jax
 import jax.numpy as jnp
+import numpy as np
 from jax import jit
 from functools import partial
 
@@ -78,47 +79,3 @@ end = timer()
 
 print("Time/iter: {0} s ({1} iters)".format((end-start)/nloop, nloop))
 print("at={0}".format(at.flatten()[itot*jtot+itot+itot//4]))
-
-
-## SECOND EXPERIMENT.
-at = jnp.zeros((ktot, jtot, itot), dtype=float_type)
-index = jnp.arange(ncells, dtype=float_type)
-a = init_a(index)
-del(index)
-a = a.reshape(ktot, jtot, itot)
-
-diff_weights = jnp.array(
-        [
-            [
-                [ 0, 0, 0],
-                [ 0, dzidzi, 0],
-                [ 0, 0, 0]
-            ],
-            [
-                [ 0, dyidyi, 0],
-                [ dxidxi, -(dxidxi + dyidyi + dzidzi), dxidxi],
-                [ 0, dyidyi, 0]
-            ],
-            [
-                [ 0, 0, 0],
-                [ 0, dzidzi, 0],
-                [ 0, 0, 0]
-            ]
-        ])
-
-diff_weights *= visc
-
-print(diff_weights[0, :, :])
-
-at = diff2(at, a, diff_weights, itot, jtot, ktot).block_until_ready()
-print("(first check) at={0}".format(at.flatten()[itot*jtot+itot+itot//2]))
-
-# Time the loop
-start = timer()
-for i in range(nloop):
-    at = diff2(at, a, diff_weights, itot, jtot, ktot).block_until_ready()
-end = timer()
-
-print("Time/iter: {0} s ({1} iters)".format((end-start)/nloop, nloop))
-print("at={0}".format(at.flatten()[itot*jtot+itot+itot//4]))
-

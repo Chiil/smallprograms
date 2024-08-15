@@ -1,10 +1,7 @@
 import numpy as np
-from numba import jit, prange
+from numba import njit, prange
 from timeit import default_timer as timer
 
-itot = 384;
-jtot = 384;
-ktot = 384;
 
 @njit
 def diff(at, a, visc, dxidxi, dyidyi, dzidzi):
@@ -23,11 +20,13 @@ def diff(at, a, visc, dxidxi, dyidyi, dzidzi):
 float_type = np.float32
 # float_type = np.float64
 
-nloop = 30;
 itot = 384;
 jtot = 384;
 ktot = 384;
+
 ncells = itot*jtot*ktot;
+
+nloop = 30;
 
 at = np.zeros((ktot, jtot, itot), dtype=float_type)
 
@@ -47,3 +46,4 @@ for i in range(nloop):
 end = timer()
 
 print("Time/iter: {0} s ({1} iters)".format((end-start)/nloop, nloop))
+print("at={0}".format(at.flatten()[itot*jtot+itot+itot//4]))
