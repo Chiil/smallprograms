@@ -2,7 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from numba import njit
 
-N = 3
+N = 1
+Ns = N // 2
 
 # @njit
 def int_u(a_new, a, istart, iend, jstart, jend, igc, jgc):
@@ -19,17 +20,49 @@ def int_u(a_new, a, istart, iend, jstart, jend, igc, jgc):
 
 
 # @njit
+# def int_c(a_new, a, istart, iend, jstart, jend, igc, jgc):
+#     for jc in range(jstart, jend):
+#         for ic in range(istart, iend):
+#             i = (ic-igc)*N + igc + N//2
+#             j = (jc-jgc)*N + jgc + N//2
+# 
+#             for jj in range(N):
+#                 for ii in range(N):
+#                     fi = ii/N
+#                     fj = jj/N
+#                     a_new[j+jj, i+ii] += (1-fi)*(1-fj)*a[jc, ic] + fi*(1-fj)*a[jc, ic+1] + (1-fi)*fj*a[jc+1, ic] + fi*fj*a[jc+1, ic+1]
+
+
+# @njit
 def int_c(a_new, a, istart, iend, jstart, jend, igc, jgc):
     for jc in range(jstart, jend):
         for ic in range(istart, iend):
             i = (ic-igc)*N + igc + N//2
             j = (jc-jgc)*N + jgc + N//2
 
-            for jj in range(N):
-                for ii in range(N):
-                    fi = ii/N
-                    fj = jj/N
-                    a_new[j+jj, i+ii] += (1-fi)*(1-fj)*a[jc, ic] + fi*(1-fj)*a[jc, ic+1] + (1-fi)*fj*a[jc+1, ic] + fi*fj*a[jc+1, ic+1]
+            for jj in range(-Ns, 0):
+                for ii in range(-Ns, 0):
+                    fi = 1 + ii/N
+                    fj = 1 + jj/N
+                    a_new[j+jj, i+ii] += (1-fi)*(1-fj)*a[jc-1, ic-1] + fi*(1-fj)*a[jc-1, ic] + (1-fi)*fj*a[jc, ic-1] + fi*fj*a[jc, ic]
+
+            for jj in range(-Ns, 0):
+                for ii in range(0, Ns+1):
+                    fi = 1 - ii/N
+                    fj = 1 + jj/N
+                    a_new[j+jj, i+ii] += fi*(1-fj)*a[jc-1, ic] + (1-fi)*(1-fj)*a[jc-1, ic+1] + fi*fj*a[jc, ic] + (1-fi)*fj*a[jc, ic+1]
+
+            for jj in range(0, Ns+1):
+                for ii in range(-Ns, 0):
+                    fi = 1 + ii/N
+                    fj = 1 - jj/N
+                    a_new[j+jj, i+ii] += (1-fi)*fj*a[jc, ic-1] + fi*fj*a[jc, ic] + (1-fi)*(1-fj)*a[jc+1, ic-1] + fi*(1-fj)*a[jc+1, ic]
+
+            for jj in range(0, Ns+1):
+                for ii in range(0, Ns+1):
+                    fi = 1 - ii/N
+                    fj = 1 - jj/N
+                    a_new[j+jj, i+ii] += fi*fj*a[jc, ic] + (1-fi)*fj*a[jc, ic+1] + fi*(1-fj)*a[jc+1, ic] + (1-fi)*(1-fj)*a[jc+1, ic+1]
 
 
 ## Set up the grids
