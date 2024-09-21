@@ -5,68 +5,39 @@ from numba import njit
 N = 9
 Ns = N // 2
 
-# @njit
-def int_u(a_new, a, istart, iend, jstart, jend, igc, jgc):
+@njit
+def interpolate(a_new, a, istart, iend, jstart, jend, igc, jgc, T_is_u, T_is_v):
+    Ni = 0 if T_is_u else Ns
+    Nj = 0 if T_is_v else Ns
+
     for jc in range(jstart, jend):
         for ic in range(istart, iend):
-            i = (ic-igc)*N + igc
-            j = (jc-jgc)*N + jgc + Ns
+            i = (ic-igc)*N + igc + Ni
+            j = (jc-jgc)*N + jgc + Nj
 
-            # for jj in range(-Ns, 0):
-            #     for ii in range(-Ns, 0):
-            #         fi = 1 + ii/N
-            #         fj = 1 + jj/N
-            #         a_new[j+jj, i+ii] += (1-fi)*(1-fj)*a[jc-1, ic-1] + fi*(1-fj)*a[jc-1, ic] + (1-fi)*fj*a[jc, ic-1] + fi*fj*a[jc, ic]
-
-            for jj in range(-Ns, 0):
-                for ii in range(0, N):
-                    fi = 1 - ii/N
-                    fj = 1 + jj/N
-                    a_new[j+jj, i+ii] += fi*(1-fj)*a[jc-1, ic] + (1-fi)*(1-fj)*a[jc-1, ic+1] + fi*fj*a[jc, ic] + (1-fi)*fj*a[jc, ic+1]
-
-            # for jj in range(0, Ns+1):
-            #     for ii in range(-Ns, 0):
-            #         fi = 1 + ii/N
-            #         fj = 1 - jj/N
-            #         a_new[j+jj, i+ii] += (1-fi)*fj*a[jc, ic-1] + fi*fj*a[jc, ic] + (1-fi)*(1-fj)*a[jc+1, ic-1] + fi*(1-fj)*a[jc+1, ic]
-
-            for jj in range(0, Ns+1):
-                for ii in range(0, N):
-                    fi = 1 - ii/N
-                    fj = 1 - jj/N
-                    a_new[j+jj, i+ii] += fi*fj*a[jc, ic] + (1-fi)*fj*a[jc, ic+1] + fi*(1-fj)*a[jc+1, ic] + (1-fi)*(1-fj)*a[jc+1, ic+1]
-
-
-# @njit
-def int_c(a_new, a, istart, iend, jstart, jend, igc, jgc):
-    for jc in range(jstart, jend):
-        for ic in range(istart, iend):
-            i = (ic-igc)*N + igc + Ns
-            j = (jc-jgc)*N + jgc + Ns
-
-            for jj in range(-Ns, 0):
-                for ii in range(-Ns, 0):
+            for jj in range(-Nj, 0):
+                for ii in range(-Ni, 0):
                     fi = 1 + ii/N
                     fj = 1 + jj/N
-                    a_new[j+jj, i+ii] += (1-fi)*(1-fj)*a[jc-1, ic-1] + fi*(1-fj)*a[jc-1, ic] + (1-fi)*fj*a[jc, ic-1] + fi*fj*a[jc, ic]
+                    a_new[j+jj, i+ii] = (1-fi)*(1-fj)*a[jc-1, ic-1] + fi*(1-fj)*a[jc-1, ic] + (1-fi)*fj*a[jc, ic-1] + fi*fj*a[jc, ic]
 
-            for jj in range(-Ns, 0):
-                for ii in range(0, Ns+1):
+            for jj in range(-Nj, 0):
+                for ii in range(0, N-Ni):
                     fi = 1 - ii/N
                     fj = 1 + jj/N
-                    a_new[j+jj, i+ii] += fi*(1-fj)*a[jc-1, ic] + (1-fi)*(1-fj)*a[jc-1, ic+1] + fi*fj*a[jc, ic] + (1-fi)*fj*a[jc, ic+1]
+                    a_new[j+jj, i+ii] = fi*(1-fj)*a[jc-1, ic] + (1-fi)*(1-fj)*a[jc-1, ic+1] + fi*fj*a[jc, ic] + (1-fi)*fj*a[jc, ic+1]
 
-            for jj in range(0, Ns+1):
-                for ii in range(-Ns, 0):
+            for jj in range(0, N-Nj):
+                for ii in range(-Ni, 0):
                     fi = 1 + ii/N
                     fj = 1 - jj/N
-                    a_new[j+jj, i+ii] += (1-fi)*fj*a[jc, ic-1] + fi*fj*a[jc, ic] + (1-fi)*(1-fj)*a[jc+1, ic-1] + fi*(1-fj)*a[jc+1, ic]
+                    a_new[j+jj, i+ii] = (1-fi)*fj*a[jc, ic-1] + fi*fj*a[jc, ic] + (1-fi)*(1-fj)*a[jc+1, ic-1] + fi*(1-fj)*a[jc+1, ic]
 
-            for jj in range(0, Ns+1):
-                for ii in range(0, Ns+1):
+            for jj in range(0, N-Nj):
+                for ii in range(0, N-Ni):
                     fi = 1 - ii/N
                     fj = 1 - jj/N
-                    a_new[j+jj, i+ii] += fi*fj*a[jc, ic] + (1-fi)*fj*a[jc, ic+1] + fi*(1-fj)*a[jc+1, ic] + (1-fi)*(1-fj)*a[jc+1, ic+1]
+                    a_new[j+jj, i+ii] = fi*fj*a[jc, ic] + (1-fi)*fj*a[jc, ic+1] + fi*(1-fj)*a[jc+1, ic] + (1-fi)*(1-fj)*a[jc+1, ic+1]
 
 
 ## Set up the grids
@@ -87,13 +58,16 @@ x_new = np.arange(-dx_new/2, xsize+dx_new, dx_new)
 yh_new = np.arange(-dy_new, ysize+dy_new/2, dy_new)
 y_new = np.arange(-dy_new/2, ysize+dy_new, dy_new)
 
-u_int = np.zeros((len(y_new), len(xh_new)))
-s_int = np.zeros((len(y_new), len(x_new)))
+u_new = np.empty((len(y_new), len(xh_new)))
+s_new = np.empty((len(y_new), len(x_new)))
+
+u_new[:] = np.nan
+s_new[:] = np.nan
 
 
 ## U
 u = np.sin(2*(2*np.pi)/xsize * xh[None, :]) * 0.5*np.sin(5*(2*np.pi)/ysize * y[:, None])
-int_u(u_int, u, 1, len(xh)-1, 1, len(y)-1, 1, 1)
+interpolate(u_new, u, 1, len(xh)-1, 1, len(y)-1, 1, 1, True, False)
 
 xh_plot = np.array([ 0, *x[1:-1], xsize])
 y_plot = yh[1:]
@@ -105,20 +79,20 @@ plt.figure()
 plt.subplot(121)
 plt.pcolormesh(xh_plot, y_plot, u[1:-1, 1:])
 plt.subplot(122)
-plt.pcolormesh(xh_new_plot, y_new_plot, u_int[1:-1, 1:])
+plt.pcolormesh(xh_new_plot, y_new_plot, u_new[1:-1, 1:])
 plt.xlim(0, xsize)
 plt.ylim(0, ysize)
 
 plt.figure()
-plt.plot(xh_new, u_int[1+N//2, :])
+plt.plot(xh_new, u_new[1+N//2, :])
 plt.plot(xh, u[1, :], 'k:')
-plt.plot(y_new, u_int[:, 1+N])
+plt.plot(y_new, u_new[:, 1+N])
 plt.plot(y, u[:, 2], 'k:')
 
 
 ## C
 s = np.sin(2*(2*np.pi)/xsize * x[None, :]) * 0.5*np.sin(5*(2*np.pi)/ysize * y[:, None])
-int_c(s_int, s, 1, len(x)-1, 1, len(y)-1, 1, 1)
+interpolate(s_new, s, 1, len(x)-1, 1, len(y)-1, 1, 1, False, False)
 
 x_plot = xh[1:]
 x_new_plot = xh_new[1:]
@@ -127,12 +101,12 @@ plt.figure()
 plt.subplot(121)
 plt.pcolormesh(x_plot, y_plot, s[1:-1, 1:-1])
 plt.subplot(122)
-plt.pcolormesh(x_new_plot, y_new_plot, s_int[1:-1, 1:-1])
+plt.pcolormesh(x_new_plot, y_new_plot, s_new[1:-1, 1:-1])
 
 plt.figure()
-plt.plot(x_new, s_int[1+N//2, :])
+plt.plot(x_new, s_new[1+N//2, :])
 plt.plot(x, s[1, :], 'k:')
-plt.plot(y_new, s_int[:, 1+N//2])
+plt.plot(y_new, s_new[:, 1+N//2])
 plt.plot(y, s[:, 1], 'k:')
 
 plt.show()
