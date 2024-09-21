@@ -2,14 +2,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 from numba import njit
 
-N = 5
+N = 3
 
 @njit
-def int_u(a_new, a, istart, iend, jstart, jend):
+def int_u(a_new, a, istart, iend, jstart, jend, igc, jgc):
     for jc in range(jstart, jend):
         for ic in range(istart, iend):
-            i = (ic-istart)*N + istart
-            j = (jc-jstart)*N + jstart + N//2
+            i = (ic-igc)*N + igc
+            j = (jc-jgc)*N + jgc + N//2
 
             for jj in range(N):
                 for ii in range(N):
@@ -27,7 +27,6 @@ def int_c(a_new, a, istart, iend, jstart, jend, igc, jgc):
 
             for jj in range(N):
                 for ii in range(N):
-                    print(i+ii, j+jj)
                     fi = ii/N
                     fj = jj/N
                     a_new[j+jj, i+ii] += (1-fi)*(1-fj)*a[jc, ic] + fi*(1-fj)*a[jc, ic+1] + (1-fi)*fj*a[jc+1, ic] + fi*fj*a[jc+1, ic+1]
@@ -76,8 +75,7 @@ plt.ylim(0, ysize)
 
 ## C
 s = np.sin(2*(2*np.pi)/xsize * x[None, :]) * 0.5*np.sin(5*(2*np.pi)/ysize * y[:, None])
-# int_c(s_int, s, 1, len(x)-1, 1, len(y)-1)
-int_c(s_int, s, 0, len(x)-1, 0, len(y)-1, 1, 1)
+int_c(s_int, s, 1, len(x)-1, 1, len(y)-1, 1, 1)
 
 x_plot = xh[1:]
 x_new_plot = xh_new[1:]
@@ -88,5 +86,9 @@ plt.pcolormesh(x_plot, y_plot, s[1:-1, 1:-1])
 plt.subplot(122)
 plt.pcolormesh(x_new_plot, y_new_plot, s_int[1:-1, 1:-1])
 
-plt.show()
+print(y[1], y_new[1+N//2])
+plt.figure()
+plt.plot(x_new, s_int[1+N//2, :])
+plt.plot(x, s[1, :], 'k:')
 
+plt.show()
