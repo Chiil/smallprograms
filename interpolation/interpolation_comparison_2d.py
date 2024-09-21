@@ -2,32 +2,35 @@ import matplotlib.pyplot as plt
 import numpy as np
 from numba import njit
 
-N = 1
+N = 5
 
-# @njit
+@njit
 def int_u(a_new, a, istart, iend, jstart, jend):
     for jc in range(jstart, jend):
         for ic in range(istart, iend):
-            i = (ic-istart)*N + istart + N//2
+            i = (ic-istart)*N + istart
             j = (jc-jstart)*N + jstart + N//2
 
-            a_new[j, i] = a[jc, ic]
-            for jj in range(1, N//2+1):
-                for ii in range(1, N//2+1):
-                    fac = ii/N
-                    a_new[j-jj, i-ii] = a[jc, ic] # (1-fac)*a[j, ic] + fac*a[j, ic-1]
-                    a_new[j-jj, i+ii] = a[jc, ic] # (1-fac)*a[j, ic] + fac*a[j, ic+1]
-                    a_new[j+jj, i-ii] = a[jc, ic] # (1-fac)*a[j, ic] + fac*a[j, ic-1]
-                    a_new[j+jj, i+ii] = a[jc, ic] # (1-fac)*a[j, ic] + fac*a[j, ic+1]
+            for jj in range(N):
+                for ii in range(N):
+                    fi = ii/N
+                    fj = jj/N
+                    a_new[j+jj, i+ii] = (1-fi)*(1-fj)*a[jc, ic] + fi*(1-fj)*a[jc, ic+1] + (1-fi)*fj*a[jc+1, ic] + fi*fj*a[jc+1, ic+1]
 
-# @njit
-def int_c(a_new, a, istart, iend, jstart, jend):
-    for ic in range(istart, iend):
-        i = (ic-istart)*N + istart
-        a_new[i] = a[ic]
-        for ii in range(1, N):
-            fac = ii/N
-            a_new[i+ii] = (1-fac)*a[ic] + fac*a[ic+1]
+
+@njit
+def int_c(a_new, a, istart, iend, jstart, jend, igc, jgc):
+    for jc in range(jstart, jend):
+        for ic in range(istart, iend):
+            i = (ic-igc)*N + igc + N//2
+            j = (jc-jgc)*N + jgc + N//2
+
+            for jj in range(N):
+                for ii in range(N):
+                    print(i+ii, j+jj)
+                    fi = ii/N
+                    fj = jj/N
+                    a_new[j+jj, i+ii] += (1-fi)*(1-fj)*a[jc, ic] + fi*(1-fj)*a[jc, ic+1] + (1-fi)*fj*a[jc+1, ic] + fi*fj*a[jc+1, ic+1]
 
 
 ## Set up the grids
@@ -54,7 +57,7 @@ s_int = np.zeros((len(y_new), len(x_new)))
 
 ## U
 u = np.sin(2*(2*np.pi)/xsize * xh[None, :]) * 0.5*np.sin(5*(2*np.pi)/ysize * y[:, None])
-int_u(u_int, u, 0, len(xh)-1, 1, len(y)-1)
+# int_u(u_int, u, 0, len(xh)-1, 1, len(y)-1)
 
 xh_plot = np.array([ 0, *x[1:-1], xsize])
 y_plot = yh[1:]
@@ -71,16 +74,19 @@ plt.xlim(0, xsize)
 plt.ylim(0, ysize)
 
 
-"""
 ## C
 s = np.sin(2*(2*np.pi)/xsize * x[None, :]) * 0.5*np.sin(5*(2*np.pi)/ysize * y[:, None])
+# int_c(s_int, s, 1, len(x)-1, 1, len(y)-1)
+int_c(s_int, s, 0, len(x)-1, 0, len(y)-1, 1, 1)
+
+x_plot = xh[1:]
+x_new_plot = xh_new[1:]
 
 plt.figure()
 plt.subplot(121)
-plt.pcolormesh(s)
+plt.pcolormesh(x_plot, y_plot, s[1:-1, 1:-1])
 plt.subplot(122)
-plt.pcolormesh(s_int)
-"""
+plt.pcolormesh(x_new_plot, y_new_plot, s_int[1:-1, 1:-1])
 
 plt.show()
 
