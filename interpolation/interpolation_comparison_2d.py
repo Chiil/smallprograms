@@ -4,7 +4,7 @@ from numba import njit
 
 N = 3
 
-@njit
+# @njit
 def int_u(a_new, a, istart, iend, jstart, jend, igc, jgc):
     for jc in range(jstart, jend):
         for ic in range(istart, iend):
@@ -18,7 +18,7 @@ def int_u(a_new, a, istart, iend, jstart, jend, igc, jgc):
                     a_new[j+jj, i+ii] = (1-fi)*(1-fj)*a[jc, ic] + fi*(1-fj)*a[jc, ic+1] + (1-fi)*fj*a[jc+1, ic] + fi*fj*a[jc+1, ic+1]
 
 
-@njit
+# @njit
 def int_c(a_new, a, istart, iend, jstart, jend, igc, jgc):
     for jc in range(jstart, jend):
         for ic in range(istart, iend):
@@ -56,7 +56,7 @@ s_int = np.zeros((len(y_new), len(x_new)))
 
 ## U
 u = np.sin(2*(2*np.pi)/xsize * xh[None, :]) * 0.5*np.sin(5*(2*np.pi)/ysize * y[:, None])
-# int_u(u_int, u, 0, len(xh)-1, 1, len(y)-1)
+int_u(u_int, u, 1, len(xh)-1, 1, len(y)-1, 1, 1)
 
 xh_plot = np.array([ 0, *x[1:-1], xsize])
 y_plot = yh[1:]
@@ -72,6 +72,13 @@ plt.pcolormesh(xh_new_plot, y_new_plot, u_int[1:-1, 1:])
 plt.xlim(0, xsize)
 plt.ylim(0, ysize)
 
+plt.figure()
+plt.plot(xh_new, u_int[1+N//2, :])
+plt.plot(xh, u[1, :], 'k:')
+plt.plot(y_new, u_int[:, 1+N])
+plt.plot(y, u[:, 2], 'k:')
+
+
 
 ## C
 s = np.sin(2*(2*np.pi)/xsize * x[None, :]) * 0.5*np.sin(5*(2*np.pi)/ysize * y[:, None])
@@ -86,9 +93,10 @@ plt.pcolormesh(x_plot, y_plot, s[1:-1, 1:-1])
 plt.subplot(122)
 plt.pcolormesh(x_new_plot, y_new_plot, s_int[1:-1, 1:-1])
 
-print(y[1], y_new[1+N//2])
 plt.figure()
 plt.plot(x_new, s_int[1+N//2, :])
 plt.plot(x, s[1, :], 'k:')
+plt.plot(y_new, s_int[:, 1+N//2])
+plt.plot(y, s[:, 1], 'k:')
 
 plt.show()
