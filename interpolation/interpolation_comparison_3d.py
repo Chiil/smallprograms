@@ -3,8 +3,9 @@ import numpy as np
 from numba import njit
 
 
-N = 3
-Ns = N // 2
+Ni = 3
+Nj = 3
+Nk = 3
 
 
 @njit
@@ -16,94 +17,94 @@ def interpolate(
         igc, jgc, kgc,
         T_is_u, T_is_v, T_is_w):
 
-    Ni = 0 if T_is_u else Ns
-    Nj = 0 if T_is_v else Ns
-    Nk = 0 if T_is_w else Ns
+    Nsi = 0 if T_is_u else Ni // 2
+    Nsj = 0 if T_is_v else Nj // 2
+    Nsk = 0 if T_is_w else Nk // 2
 
     for kc in range(kstart, kend):
         for jc in range(jstart, jend):
             for ic in range(istart, iend):
-                i = (ic-igc)*N + igc + Ni
-                j = (jc-jgc)*N + jgc + Nj
-                k = (kc-kgc)*N + kgc + Nk
+                i = (ic-igc)*Ni + igc + Nsi
+                j = (jc-jgc)*Nj + jgc + Nsj
+                k = (kc-kgc)*Nk + kgc + Nsk
 
-                for kk in range(-Nk, 0):
-                    for jj in range(-Nj, 0):
-                        for ii in range(-Ni, 0):
-                            fi = 1 + ii/N
-                            fj = 1 + jj/N
-                            fk = 1 + kk/N
+                for kk in range(-Nsk, 0):
+                    for jj in range(-Nsj, 0):
+                        for ii in range(-Nsi, 0):
+                            fi = 1 + ii/Ni
+                            fj = 1 + jj/Nj
+                            fk = 1 + kk/Nk
                             a_new[k+kk, j+jj, i+ii] = (
                                     (1-fi)*(1-fj)*(1-fk)*a[kc-1, jc-1, ic-1] + fi*(1-fj)*(1-fk)*a[kc-1, jc-1, ic] + (1-fi)*fj*(1-fk)*a[kc-1, jc, ic-1] + fi*fj*(1-fk)*a[kc-1, jc, ic]
                                     + (1-fi)*(1-fj)*fk*a[kc, jc-1, ic-1] + fi*(1-fj)*fk*a[kc, jc-1, ic] + (1-fi)*fj*fk*a[kc, jc, ic-1] + fi*fj*fk*a[kc, jc, ic] )
 
-                for kk in range(-Nk, 0):
-                    for jj in range(-Nj, 0):
-                        for ii in range(0, N-Ni):
-                            fi = 1 - ii/N
-                            fj = 1 + jj/N
-                            fk = 1 + kk/N
+                for kk in range(-Nsk, 0):
+                    for jj in range(-Nsj, 0):
+                        for ii in range(0, Ni-Nsi):
+                            fi = 1 - ii/Ni
+                            fj = 1 + jj/Nj
+                            fk = 1 + kk/Nk
                             a_new[k+kk, j+jj, i+ii] = (
                                     fi*(1-fj)*(1-fk)*a[kc-1, jc-1, ic] + (1-fi)*(1-fj)*(1-fk)*a[kc-1, jc-1, ic+1] + fi*fj*(1-fk)*a[kc-1, jc, ic] + (1-fi)*fj*(1-fk)*a[kc-1, jc, ic+1]
                                     + fi*(1-fj)*fk*a[kc, jc-1, ic] + (1-fi)*(1-fj)*fk*a[kc, jc-1, ic+1] + fi*fj*fk*a[kc, jc, ic] + (1-fi)*fj*fk*a[kc, jc, ic+1] )
 
-                for kk in range(-Nk, 0):
-                    for jj in range(0, N-Nj):
-                        for ii in range(-Ni, 0):
-                            fi = 1 + ii/N
-                            fj = 1 - jj/N
-                            fk = 1 + kk/N
+                for kk in range(-Nsk, 0):
+                    for jj in range(0, Nj-Nsj):
+                        for ii in range(-Nsi, 0):
+                            fi = 1 + ii/Ni
+                            fj = 1 - jj/Nj
+                            fk = 1 + kk/Nk
                             a_new[k+kk, j+jj, i+ii] = (
                                     (1-fi)*fj*(1-fk)*a[kc-1, jc, ic-1] + fi*fj*(1-fk)*a[kc-1, jc, ic] + (1-fi)*(1-fj)*(1-fk)*a[kc-1, jc+1, ic-1] + fi*(1-fj)*(1-fk)*a[kc-1, jc+1, ic]
                                     + (1-fi)*fj*fk*a[kc, jc, ic-1] + fi*fj*fk*a[kc, jc, ic] + (1-fi)*(1-fj)*fk*a[kc, jc+1, ic-1] + fi*(1-fj)*fk*a[kc, jc+1, ic] )
 
-                for kk in range(-Nk, 0):
-                    for jj in range(0, N-Nj):
-                        for ii in range(0, N-Ni):
-                            fi = 1 - ii/N
-                            fj = 1 - jj/N
-                            fk = 1 + kk/N
+                for kk in range(-Nsk, 0):
+                    for jj in range(0, Nj-Nsj):
+                        for ii in range(0, Ni-Nsi):
+                            fi = 1 - ii/Ni
+                            fj = 1 - jj/Nj
+                            fk = 1 + kk/Nk
                             a_new[k+kk, j+jj, i+ii] = (
                                     fi*fj*(1-fk)*a[kc-1, jc, ic] + (1-fi)*fj*(1-fk)*a[kc-1, jc, ic+1] + fi*(1-fj)*(1-fk)*a[kc-1, jc+1, ic] + (1-fi)*(1-fj)*(1-fk)*a[kc-1, jc+1, ic+1]
                                     + fi*fj*fk*a[kc, jc, ic] + (1-fi)*fj*fk*a[kc, jc, ic+1] + fi*(1-fj)*fk*a[kc, jc+1, ic] + (1-fi)*(1-fj)*fk*a[kc, jc+1, ic+1] )
 
                 # Next step in k
-                for kk in range(0, N-Nk):
-                    for jj in range(-Nj, 0):
-                        for ii in range(-Ni, 0):
-                            fi = 1 + ii/N
-                            fj = 1 + jj/N
-                            fk = 1 - kk/N
+                for kk in range(0, Nk-Nsk):
+                    for jj in range(-Nsj, 0):
+                        for ii in range(-Nsi, 0):
+                            fi = 1 + ii/Ni
+                            fj = 1 + jj/Nj
+                            fk = 1 - kk/Nk
                             a_new[k+kk, j+jj, i+ii] = (
                                     (1-fi)*(1-fj)*fk*a[kc, jc-1, ic-1] + fi*(1-fj)*fk*a[kc, jc-1, ic] + (1-fi)*fj*fk*a[kc, jc, ic-1] + fi*fj*fk*a[kc, jc, ic]
                                     + (1-fi)*(1-fj)*(1-fk)*a[kc+1, jc-1, ic-1] + fi*(1-fj)*(1-fk)*a[kc+1, jc-1, ic] + (1-fi)*fj*(1-fk)*a[kc+1, jc, ic-1] + fi*fj*(1-fk)*a[kc+1, jc, ic] )
 
-                for kk in range(0, N-Nk):
-                    for jj in range(-Nj, 0):
-                        for ii in range(0, N-Ni):
-                            fi = 1 - ii/N
-                            fj = 1 + jj/N
-                            fk = 1 - kk/N
+                for kk in range(0, Nk-Nsk):
+                    for jj in range(-Nsj, 0):
+                        for ii in range(0, Ni-Nsi):
+                            fi = 1 - ii/Ni
+                            fj = 1 + jj/Nj
+                            fk = 1 - kk/Nk
                             a_new[k+kk, j+jj, i+ii] = (
                                     fi*(1-fj)*fk*a[kc, jc-1, ic] + (1-fi)*(1-fj)*fk*a[kc, jc-1, ic+1] + fi*fj*fk*a[kc, jc, ic] + (1-fi)*fj*fk*a[kc, jc, ic+1]
                                     + fi*(1-fj)*(1-fk)*a[kc+1, jc-1, ic] + (1-fi)*(1-fj)*(1-fk)*a[kc+1, jc-1, ic+1] + fi*fj*(1-fk)*a[kc+1, jc, ic] + (1-fi)*fj*(1-fk)*a[kc+1, jc, ic+1] )
 
-                for kk in range(0, N-Nk):
-                    for jj in range(0, N-Nj):
-                        for ii in range(-Ni, 0):
-                            fi = 1 + ii/N
-                            fj = 1 - jj/N
-                            fk = 1 - kk/N
+                for kk in range(0, Nk-Nsk):
+                    for jj in range(0, Nj-Nsj):
+                        for ii in range(-Nsi, 0):
+                            fi = 1 + ii/Ni
+                            fj = 1 - jj/Nj
+                            fk = 1 - kk/Nk
                             a_new[k+kk, j+jj, i+ii] = (
                                     (1-fi)*fj*fk*a[kc, jc, ic-1] + fi*fj*fk*a[kc, jc, ic] + (1-fi)*(1-fj)*fk*a[kc, jc+1, ic-1] + fi*(1-fj)*fk*a[kc, jc+1, ic]
                                     + (1-fi)*fj*(1-fk)*a[kc+1, jc, ic-1] + fi*fj*(1-fk)*a[kc+1, jc, ic] + (1-fi)*(1-fj)*(1-fk)*a[kc+1, jc+1, ic-1] + fi*(1-fj)*(1-fk)*a[kc+1, jc+1, ic] )
 
-                for kk in range(0, N-Nk):
-                    for jj in range(0, N-Nj):
-                        for ii in range(0, N-Ni):
-                            fi = 1 - ii/N
-                            fj = 1 - jj/N
-                            fk = 1 - kk/N
+                for kk in range(0, Nk-Nsk):
+                    for jj in range(0, Nj-Nsj):
+                        for ii in range(0, Ni-Nsi):
+                            fi = 1 - ii/Ni
+                            fj = 1 - jj/Nj
+                            fk = 1 - kk/Nk
                             a_new[k+kk, j+jj, i+ii] = (
                                     + fi*fj*fk*a[kc, jc, ic] + (1-fi)*fj*fk*a[kc, jc, ic+1] + fi*(1-fj)*fk*a[kc, jc+1, ic] + (1-fi)*(1-fj)*fk*a[kc, jc+1, ic+1]
                                     + fi*fj*(1-fk)*a[kc+1, jc, ic] + (1-fi)*fj*(1-fk)*a[kc+1, jc, ic+1] + fi*(1-fj)*(1-fk)*a[kc+1, jc+1, ic] + (1-fi)*(1-fj)*(1-fk)*a[kc+1, jc+1, ic+1] )
@@ -135,7 +136,7 @@ xh = np.arange(-dx, xsize+dx/2, dx)
 yh = np.arange(-dy, ysize+dy/2, dy)
 zh = np.arange(-dz, zsize+dz/2, dz)
 
-dx_new, dy_new, dz_new = dx/N, dy/N, dz/N
+dx_new, dy_new, dz_new = dx/Ni, dy/Nj, dz/Nk
 
 x_new = np.arange(-dx_new/2, xsize+dx_new, dx_new)
 y_new = np.arange(-dy_new/2, ysize+dy_new, dy_new)
@@ -166,14 +167,14 @@ plt.figure()
 plt.subplot(121)
 plt.pcolormesh(xh_plot, y_plot, u[1, 1:-1, 1:])
 plt.subplot(122)
-plt.pcolormesh(xh_new_plot, y_new_plot, u_new[1+N//2, 1:-1, 1:])
+plt.pcolormesh(xh_new_plot, y_new_plot, u_new[1+Nk//2, 1:-1, 1:])
 plt.xlim(0, xsize)
 plt.ylim(0, ysize)
 
 plt.figure()
-plt.plot(xh_new, u_new[1+N//2, 1+N//2, :])
+plt.plot(xh_new, u_new[1+Nk//2, 1+Ni//2, :])
 plt.plot(xh, u[1, 1, :], 'k:')
-plt.plot(y_new, u_new[1+N//2, :, 1+N])
+plt.plot(y_new, u_new[1+Nk//2, :, 1+Ni])
 plt.plot(y, u[1, :, 2], 'k:') # We plot the second index as the first is zero.
 
 
@@ -188,14 +189,14 @@ plt.figure()
 plt.subplot(121)
 plt.pcolormesh(x_plot, y_plot, s[1, 1:-1, 1:-1])
 plt.subplot(122)
-plt.pcolormesh(x_new_plot, y_new_plot, s_new[1+N//2, 1:-1, 1:-1])
+plt.pcolormesh(x_new_plot, y_new_plot, s_new[1+Nk//2, 1:-1, 1:-1])
 
 plt.figure()
-plt.plot(x_new, s_new[1+N//2, 1+N//2, :])
+plt.plot(x_new, s_new[1+Nk//2, 1+Nj//2, :])
 plt.plot(x, s[1, 1, :], 'k:')
-plt.plot(y_new, s_new[1+N//2, :, 1+N//2])
+plt.plot(y_new, s_new[1+Nk//2, :, 1+Ni//2])
 plt.plot(y, s[1, :, 1], 'k:')
-plt.plot(z_new, s_new[:, 1+N+N//2, 1+N+N//2])
+plt.plot(z_new, s_new[:, 1+Nj+Nj//2, 1+Ni+Ni//2])
 plt.plot(z, s[:, 2, 2], 'k:')
 
 
