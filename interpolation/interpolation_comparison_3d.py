@@ -3,9 +3,9 @@ import numpy as np
 from numba import njit
 
 
-Ni = 3
+Ni = 5
 Nj = 3
-Nk = 3
+Nk = 1
 
 
 @njit
@@ -68,7 +68,6 @@ def interpolate(
                                     fi*fj*(1-fk)*a[kc-1, jc, ic] + (1-fi)*fj*(1-fk)*a[kc-1, jc, ic+1] + fi*(1-fj)*(1-fk)*a[kc-1, jc+1, ic] + (1-fi)*(1-fj)*(1-fk)*a[kc-1, jc+1, ic+1]
                                     + fi*fj*fk*a[kc, jc, ic] + (1-fi)*fj*fk*a[kc, jc, ic+1] + fi*(1-fj)*fk*a[kc, jc+1, ic] + (1-fi)*(1-fj)*fk*a[kc, jc+1, ic+1] )
 
-                # Next step in k
                 for kk in range(0, Nk-Nsk):
                     for jj in range(-Nsj, 0):
                         for ii in range(-Nsi, 0):
@@ -172,7 +171,7 @@ plt.xlim(0, xsize)
 plt.ylim(0, ysize)
 
 plt.figure()
-plt.plot(xh_new, u_new[1+Nk//2, 1+Ni//2, :])
+plt.plot(xh_new, u_new[1+Nk//2, 1+Nj//2, :])
 plt.plot(xh, u[1, 1, :], 'k:')
 plt.plot(y_new, u_new[1+Nk//2, :, 1+Ni])
 plt.plot(y, u[1, :, 2], 'k:') # We plot the second index as the first is zero.

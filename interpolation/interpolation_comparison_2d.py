@@ -2,47 +2,48 @@ import matplotlib.pyplot as plt
 import numpy as np
 from numba import njit
 
-N = 9
-Ns = N // 2
+Ni = 1
+Nj = 9
 
 @njit
 def interpolate(a_new, a, istart, iend, jstart, jend, igc, jgc, T_is_u, T_is_v):
-    Ni = 0 if T_is_u else Ns
-    Nj = 0 if T_is_v else Ns
+    Nsi = 0 if T_is_u else Ni // 2
+    Nsj = 0 if T_is_v else Nj // 2
 
     for jc in range(jstart, jend):
         for ic in range(istart, iend):
-            i = (ic-igc)*N + igc + Ni
-            j = (jc-jgc)*N + jgc + Nj
+            i = (ic-igc)*Ni + igc + Nsi
+            j = (jc-jgc)*Nj + jgc + Nsj
 
-            for jj in range(-Nj, 0):
-                for ii in range(-Ni, 0):
-                    fi = 1 + ii/N
-                    fj = 1 + jj/N
+            for jj in range(-Nsj, 0):
+                for ii in range(-Nsi, 0):
+                    fi = 1 + ii/Ni
+                    fj = 1 + jj/Nj
                     a_new[j+jj, i+ii] = (1-fi)*(1-fj)*a[jc-1, ic-1] + fi*(1-fj)*a[jc-1, ic] + (1-fi)*fj*a[jc, ic-1] + fi*fj*a[jc, ic]
 
-            for jj in range(-Nj, 0):
-                for ii in range(0, N-Ni):
-                    fi = 1 - ii/N
-                    fj = 1 + jj/N
+            for jj in range(-Nsj, 0):
+                for ii in range(0, Ni-Nsi):
+                    fi = 1 - ii/Ni
+                    fj = 1 + jj/Nj
                     a_new[j+jj, i+ii] = fi*(1-fj)*a[jc-1, ic] + (1-fi)*(1-fj)*a[jc-1, ic+1] + fi*fj*a[jc, ic] + (1-fi)*fj*a[jc, ic+1]
 
-            for jj in range(0, N-Nj):
-                for ii in range(-Ni, 0):
-                    fi = 1 + ii/N
-                    fj = 1 - jj/N
+            for jj in range(0, Nj-Nsj):
+                for ii in range(-Nsi, 0):
+                    fi = 1 + ii/Ni
+                    fj = 1 - jj/Nj
                     a_new[j+jj, i+ii] = (1-fi)*fj*a[jc, ic-1] + fi*fj*a[jc, ic] + (1-fi)*(1-fj)*a[jc+1, ic-1] + fi*(1-fj)*a[jc+1, ic]
 
-            for jj in range(0, N-Nj):
-                for ii in range(0, N-Ni):
-                    fi = 1 - ii/N
-                    fj = 1 - jj/N
+            for jj in range(0, Nj-Nsj):
+                for ii in range(0, Ni-Nsi):
+                    fi = 1 - ii/Ni
+                    fj = 1 - jj/Nj
                     a_new[j+jj, i+ii] = fi*fj*a[jc, ic] + (1-fi)*fj*a[jc, ic+1] + fi*(1-fj)*a[jc+1, ic] + (1-fi)*(1-fj)*a[jc+1, ic+1]
 
 
 ## Set up the grids
-dx, dy = 200, 200
 xsize, ysize = 3200, 3200
+
+dx, dy = 200, 200
 
 xh = np.arange(-dx, xsize+dx/2, dx)
 x = np.arange(-dx/2, xsize+dx, dx)
@@ -50,7 +51,7 @@ x = np.arange(-dx/2, xsize+dx, dx)
 yh = np.arange(-dy, ysize+dy/2, dy)
 y = np.arange(-dy/2, ysize+dy, dy)
 
-dx_new, dy_new = dx/N, dy/N
+dx_new, dy_new = dx/Ni, dy/Nj
 
 xh_new = np.arange(-dx_new, xsize+dx_new/2, dx_new)
 x_new = np.arange(-dx_new/2, xsize+dx_new, dx_new)
@@ -84,9 +85,9 @@ plt.xlim(0, xsize)
 plt.ylim(0, ysize)
 
 plt.figure()
-plt.plot(xh_new, u_new[1+N//2, :])
+plt.plot(xh_new, u_new[1+Nj//2, :])
 plt.plot(xh, u[1, :], 'k:')
-plt.plot(y_new, u_new[:, 1+N])
+plt.plot(y_new, u_new[:, 1+Ni])
 plt.plot(y, u[:, 2], 'k:')
 
 
@@ -104,9 +105,9 @@ plt.subplot(122)
 plt.pcolormesh(x_new_plot, y_new_plot, s_new[1:-1, 1:-1])
 
 plt.figure()
-plt.plot(x_new, s_new[1+N//2, :])
+plt.plot(x_new, s_new[1+Nj//2, :])
 plt.plot(x, s[1, :], 'k:')
-plt.plot(y_new, s_new[:, 1+N//2])
+plt.plot(y_new, s_new[:, 1+Ni//2])
 plt.plot(y, s[:, 1], 'k:')
 
 plt.show()
