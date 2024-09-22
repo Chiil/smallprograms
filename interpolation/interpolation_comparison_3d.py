@@ -2,8 +2,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 from numba import njit
 
+
 N = 3
 Ns = N // 2
+
 
 @njit
 def interpolate(
@@ -107,6 +109,19 @@ def interpolate(
                                     + fi*fj*(1-fk)*a[kc+1, jc, ic] + (1-fi)*fj*(1-fk)*a[kc+1, jc, ic+1] + fi*(1-fj)*(1-fk)*a[kc+1, jc+1, ic] + (1-fi)*(1-fj)*(1-fk)*a[kc+1, jc+1, ic+1] )
 
 
+# def interpolate_xy(
+#         a_new, a,
+#         istart, iend,
+#         jstart, jend,
+#         igc, jgc,
+#         T_is_u, T_is_v, T_is_w):
+# 
+#     a_new_3d = a_new.reshape(a_new.shape[0], 1, a_new.shape[1])
+#     a_3d = a.reshape(a.shape[0], 1, a.shape[1])
+# 
+#     interpolate(a_new_3d, a_3d, istart, iend, jstart, jend, 0, 1, igc, jgc, 0, T_is_u, T_is_v, T_is_w)
+
+
 ## Set up the grids
 xsize, ysize, zsize = 6400, 6400, 3200
 
@@ -180,7 +195,28 @@ plt.plot(x_new, s_new[1+N//2, 1+N//2, :])
 plt.plot(x, s[1, 1, :], 'k:')
 plt.plot(y_new, s_new[1+N//2, :, 1+N//2])
 plt.plot(y, s[1, :, 1], 'k:')
-plt.plot(z_new, s_new[:, 1+N//2, 1+N//2])
-plt.plot(z, s[:, 1, 1], 'k:')
+plt.plot(z_new, s_new[:, 1+N+N//2, 1+N+N//2])
+plt.plot(z, s[:, 2, 2], 'k:')
+
+
+## Test a 2D interpolation
+# s_bot = np.sin(2*(2*np.pi)/xsize * x[None, :]) * 0.5*np.sin(5*(2*np.pi)/ysize * y[:, None])
+# 
+# s_bot_new = np.empty((len(y_new), len(x_new)))
+# s_bot_new[:] = np.nan
+# 
+# interpolate_xy(s_bot_new, s_bot, 1, len(x)-1, 1, len(y)-1, 1, 1, False, False, False)
+# 
+# plt.figure()
+# plt.subplot(121)
+# plt.pcolormesh(x_plot, y_plot, s_bot[1:-1, 1:-1])
+# plt.subplot(122)
+# plt.pcolormesh(x_new_plot, y_new_plot, s_bot_new[1:-1, 1:-1])
+# 
+# plt.figure()
+# plt.plot(x_new, s_bot_new[1+N//2, :])
+# plt.plot(x, s_bot[1, :], 'k:')
+# plt.plot(y_new, s_bot_new[:, 1+N//2])
+# plt.plot(y, s_bot[:, 1], 'k:')
 
 plt.show()
