@@ -1,47 +1,59 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from numba import njit
+from enum import Enum
 
-Ni = 3
-Nj = 3
+Ni = 2
+Nj = 2
+
+Loc = Enum('Loc', ['C', 'U', 'V', 'W'])
+
 
 @njit
-def interpolate(a_new, a, istart, iend, jstart, jend, igc, jgc, T_is_u, T_is_v):
-    Nsi = Ni // 2 if T_is_u else 0
-    Nsj = Nj // 2 if T_is_v else 0
+def interpolate(a_new, a, istart, iend, jstart, jend, igc, jgc, loc):
+    Nsi = Ni // 2 if loc == Loc.U else 0
+    Nsj = Nj // 2 if loc == Loc.V else 0
 
     for jc in range(jstart, jend):
         for ic in range(istart, iend):
             i = (ic-igc)*Ni + igc
             j = (jc-jgc)*Nj + jgc
 
-            for jj in range(0, Nj-Nsj):
-                for ii in range(0, Ni-Nsi):
-                    a_new[j+jj, i+ii] = a[jc, ic]
+            if loc == Loc.C or loc == Loc.W:
+                for jj in range(0, Nj):
+                    for ii in range(0, Ni):
+                        a_new[j+jj, i+ii] = a[jc, ic]
 
-            for jj in range(0, Nj-Nsj):
-                ii = Ni-Nsi
-                if Ni%2 == 0:
-                    a_new[j+jj, i+ii] = 0.5*(a[jc, ic] + a[jc, ic+1])
-                else:
-                    a_new[j+jj, i+ii] = a[jc, ic+1]
+            elif loc == Loc.U:
+                for jj in range(0, Nj-Nsj):
+                    for ii in range(0, Ni-Nsi):
+                        a_new[j+jj, i+ii] = a[jc, ic]
 
-                for ii in range(Ni-Nsi+1, Ni):
-                    a_new[j+jj, i+ii] = a[jc, ic+1]
+                    for jj in range(0, Nj-Nsj):
+                        ii = Ni-Nsi
+                        if Ni%2 == 0:
+                            a_new[j+jj, i+ii] = 0.5*(a[jc, ic] + a[jc, ic+1])
+                        else:
+                            a_new[j+jj, i+ii] = a[jc, ic+1]
 
-            for jj in range(Nj-Nsj, Nj):
-                for ii in range(0, Ni-Nsi):
-                    a_new[j+jj, i+ii] = a[jc+1, ic]
+                        for ii in range(Ni-Nsi+1, Ni):
+                            a_new[j+jj, i+ii] = a[jc, ic+1]
 
-            for jj in range(Nj-Nsj, Nj):
-                ii = Ni-Nsi
-                if Ni%2 == 0:
-                    a_new[j+jj, i+ii] = 0.5*(a[jc+1, ic] + a[jc+1, ic+1])
-                else:
-                    a_new[j+jj, i+ii] = a[jc, ic+1]
-                for ii in range(Ni-Nsi+1, Ni):
-                    a_new[j+jj, i+ii] = a[jc+1, ic+1]
+                    for jj in range(Nj-Nsj, Nj):
+                        for ii in range(0, Ni-Nsi):
+                            a_new[j+jj, i+ii] = a[jc+1, ic]
 
+                    for jj in range(Nj-Nsj, Nj):
+                        ii = Ni-Nsi
+                        if Ni%2 == 0:
+                            a_new[j+jj, i+ii] = 0.5*(a[jc+1, ic] + a[jc+1, ic+1])
+                        else:
+                            a_new[j+jj, i+ii] = a[jc, ic+1]
+                        for ii in range(Ni-Nsi+1, Ni):
+                            a_new[j+jj, i+ii] = a[jc+1, ic+1]
+
+            elif loc == Loc.V:
+                pass
 
 ## Set up the grids
 xsize, ysize = 3200, 3200
@@ -71,7 +83,7 @@ s_new[:] = np.nan
 
 ## U
 u = np.sin(2*(2*np.pi)/xsize * xh[None, :]) * 0.5*np.sin(5*(2*np.pi)/ysize * y[:, None])
-interpolate(u_new, u, 1, len(xh)-1, 1, len(y)-1, 1, 1, True, False)
+interpolate(u_new, u, 1, len(xh)-1, 1, len(y)-1, 1, 1, Loc.U)
 
 xh_plot = np.array([ 0, *x[1:-1], xsize])
 y_plot = yh[1:]
@@ -96,7 +108,7 @@ plt.plot(y, u[:, 2], 'k:')
 
 ## C
 s = np.sin(2*(2*np.pi)/xsize * x[None, :]) * 0.5*np.sin(5*(2*np.pi)/ysize * y[:, None])
-interpolate(s_new, s, 1, len(x)-1, 1, len(y)-1, 1, 1, False, False)
+interpolate(s_new, s, 1, len(x)-1, 1, len(y)-1, 1, 1, Loc.C)
 
 x_plot = xh[1:]
 x_new_plot = xh_new[1:]
