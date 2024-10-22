@@ -3,18 +3,21 @@ import numpy as np
 from numba import njit
 
 
-N = 6
+N = 11
 
 
-# @njit
+@njit
 def int_c(a_new, a, istart, iend):
     for ic in range(istart, iend):
         if N%2 == 0:
             i = (ic-istart)*N + istart + N//2
 
+            for ii in range(-N//2, 0):
+                fac = 1 + (ii/N) + 1/(2*N)
+                a_new[i+ii] = fac*a[ic] + (1-fac)*a[ic-1]
+
             for ii in range(1, N//2+1):
                 fac = 1 - (ii/N) + 1/(2*N)
-                a_new[i-ii  ] = fac*a[ic] + (1-fac)*a[ic-1]
                 a_new[i+ii-1] = fac*a[ic] + (1-fac)*a[ic+1]
 
         else:
@@ -27,7 +30,7 @@ def int_c(a_new, a, istart, iend):
                 a_new[i+ii] = fac*a[ic] + (1-fac)*a[ic+1]
 
 
-# @njit
+@njit
 def int_u(a_new, a, istart, iend):
     for ic in range(istart, iend):
         i = (ic-istart)*N + istart
