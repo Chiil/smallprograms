@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
+## SIMULATION SETTINGS AND GRID GENERATION
 # Initializing space
 n_photons = 2**18
 x_range = 10
@@ -17,13 +19,17 @@ arr_pos = np.random.rand(n_photons)*x_range
 # RTE properties
 # dI = -kext*I*dn + kext*B*dn
 kext = 1.0*np.ones_like(arr_x)
-B = 1.0*np.ones_like(arr_x)
+# B = 1.0*np.ones_like(arr_x)
+B = 1.0*arr_x/x_range
 
-# Creating analytical solution
+
+## REFERENCE SOLUTION
 arr_I = np.zeros_like(arr_xh)
 for i in range(1, len(arr_I)):
-    arr_I[i] = arr_I[i-1] + -kext[i-1]*arr_I[i-1]*dn + kext[i-1]*B[i-1]*dn
+    arr_I[i] = arr_I[i-1] - kext[i-1]*arr_I[i-1]*dn + kext[i-1]*B[i-1]*dn
 
+
+## MONTE CARLO SOLUTION
 # Photon travel distance and next position
 arr_dn = arr_tau / kext[0]
 arr_pos_next = arr_pos + arr_dn
@@ -32,7 +38,7 @@ arr_pos_next = arr_pos + arr_dn
 phi_tot = kext[0] * B[0] * (x_range*1*1)
 phi_per_phot = phi_tot/n_photons
 
-# Checking flux at flux points
+# Check the flux to the cell edges
 arr_flux = np.zeros_like(arr_xh)
 for i, flux_point in enumerate(arr_xh):
     arr_through_cell_edge = (arr_pos < flux_point) & (arr_pos_next > flux_point)
