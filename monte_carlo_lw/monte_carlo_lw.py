@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.optimize import fsolve
 
 
 ## SIMULATION SETTINGS AND GRID GENERATION
@@ -15,15 +16,17 @@ arr_x = np.arange(dn/2, x_range, dn) # cell centers
 # RTE properties: dI = -kext*I*dn + kext*B*dn
 
 def calc_kext(x):
-    return 1.0
-    # return 1.0 + 1.0*x/x_range
+    return 2.0
+    # return 1.0 + 1.0/x_range*x
 
 def calc_kext_int(x):
-    return 1.0*x
-    # return 1.0*x + 1.0 * x/x_range
+    return 2.0*x
+    # return 1.0*x + 0.5/x_range*x**2
 
 def calc_pos_next(pos, tau):
-    return pos + tau / 1.0
+    kext_int_start = calc_kext_int(pos)
+    pos_next = fsolve(lambda x: calc_kext_int(x) - kext_int_start - tau, 0)
+    return pos_next[0]
 
 def calc_B(x):
     # return 1.0
