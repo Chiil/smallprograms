@@ -35,7 +35,7 @@ arr_dn = arr_tau / kext[0]
 arr_pos_next = arr_pos + arr_dn
 
 # Calculating power
-phi_tot = kext[0] * B[0] * (x_range*1*1)
+phi_tot = dn * np.sum(kext[:] * B[:])
 phi_per_phot = phi_tot/n_photons
 
 # Check the flux to the cell edges
