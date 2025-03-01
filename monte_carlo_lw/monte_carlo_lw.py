@@ -17,11 +17,13 @@ arr_x = np.arange(dn/2, x_range, dn) # cell centers
 
 def calc_kext(x):
     # return 1.0
-    return 0.1 + 1.0/x_range*x
+    # return 0.1 + 1.0/x_range*x
+    return 2.0 + np.sin(2.0*np.pi*x/x_range)
 
 def calc_kext_int(x):
     # return 1.0*x
-    return 0.1*x + 0.5/x_range*x**2
+    # return 0.1*x + 0.5/x_range*x**2
+    return 2.0*x - x_range/(2.0*np.pi)*np.cos(2.0*np.pi*x/x_range)
 
 def calc_pos_next(pos, tau):
     kext_int_start = calc_kext_int(pos)
@@ -31,8 +33,8 @@ def calc_pos_next(pos, tau):
 def calc_B(x):
     # return 1.0
     # return 1.0*x/x_range
-    # return 1.0*(x/x_range)**2
-    return 1.0 + np.sin(2.0*np.pi*x/x_range)
+    return 1.0*(x/x_range)**2
+    # return 1.0 + np.sin(2.0*np.pi*x/x_range)
 
 kext = np.array([ calc_kext(x) for x in arr_x ])
 B = np.array([ calc_B(x) for x in arr_x ])
@@ -51,16 +53,16 @@ arr_pos = np.random.rand(n_photons)*x_range
 arr_pos_next = np.array( [ calc_pos_next(pos, tau) for pos, tau in np.c_[arr_pos, arr_tau] ] )
 
 # B at pos location.
-arr_pos_B = np.array([ calc_kext(x)*calc_B(x) for x in arr_pos ])
+arr_pos_kextB = np.array([ calc_kext(x)*calc_B(x) for x in arr_pos ])
 
 # Calculating power
 phi_tot = dn * np.sum(kext[:] * B[:])
-phi_per_phot = phi_tot / np.sum(arr_pos_B)
+phi_per_phot = phi_tot / np.sum(arr_pos_kextB)
 
 # Check the flux to the cell edges
 arr_I_MC = np.zeros_like(arr_xh)
 for i, flux_point in enumerate(arr_xh):
-    arr_through_cell_edge = arr_pos_B[(arr_pos < flux_point) & (arr_pos_next > flux_point)]
+    arr_through_cell_edge = arr_pos_kextB[(arr_pos < flux_point) & (arr_pos_next > flux_point)]
     flux = np.sum(arr_through_cell_edge)
     arr_I_MC[i] = flux * phi_per_phot
 
