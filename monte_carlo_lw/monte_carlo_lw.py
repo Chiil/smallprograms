@@ -16,11 +16,19 @@ arr_x = np.arange(dn/2, x_range, dn) # cell centers
 
 def calc_kext(x):
     return 1.0
+    # return 1.0 + 1.0*x/x_range
+
+def calc_kext_int(x):
+    return 1.0*x
+    # return 1.0*x + 1.0 * x/x_range
+
+def calc_pos_next(pos, tau):
+    return pos + tau / 1.0
 
 def calc_B(x):
     # return 1.0
-    # return 1.0 * x/x_range
-    # return 1.0 * (x/x_range)**2
+    # return 1.0*x/x_range
+    # return 1.0*(x/x_range)**2
     return 1.0 + np.sin(2.0*np.pi*x/x_range)
 
 kext = np.array([ calc_kext(x) for x in arr_x ])
@@ -37,8 +45,7 @@ for i in range(1, len(arr_I)):
 # Creating photon position and travel distance
 arr_tau = - np.log(np.random.rand(n_photons))
 arr_pos = np.random.rand(n_photons)*x_range
-arr_dn = arr_tau / kext[0]
-arr_pos_next = arr_pos + arr_dn
+arr_pos_next = np.array( [ calc_pos_next(pos, tau) for pos, tau in np.c_[arr_pos, arr_tau] ] )
 
 # B at pos location.
 arr_pos_B = np.array([ calc_B(x) for x in arr_pos ])
