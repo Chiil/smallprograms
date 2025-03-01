@@ -38,6 +38,7 @@ def calc_B(x):
 
 kext = np.array([ calc_kext(x) for x in arr_x ])
 B = np.array([ calc_B(x) for x in arr_x ])
+phi_tot = dn * np.sum(kext[:] * B[:])
 
 
 ## REFERENCE SOLUTION
@@ -53,18 +54,14 @@ arr_pos = np.random.rand(n_photons)*x_range
 arr_pos_next = np.array( [ calc_pos_next(pos, tau) for pos, tau in np.c_[arr_pos, arr_tau] ] )
 
 # B at pos location.
-arr_pos_kextB = np.array([ calc_kext(x)*calc_B(x) for x in arr_pos ])
-
-# Calculating power
-phi_tot = dn * np.sum(kext[:] * B[:])
-phi_per_phot = phi_tot / np.sum(arr_pos_kextB)
+arr_phi = np.array([ calc_kext(x)*calc_B(x) for x in arr_pos ])
+arr_phi *= phi_tot / arr_phi.sum()
 
 # Check the flux to the cell edges
 arr_I_MC = np.zeros_like(arr_xh)
 for i, flux_point in enumerate(arr_xh):
-    arr_through_cell_edge = arr_pos_kextB[(arr_pos < flux_point) & (arr_pos_next > flux_point)]
-    flux = np.sum(arr_through_cell_edge)
-    arr_I_MC[i] = flux * phi_per_phot
+    phi_through_cell_edge = arr_phi[(arr_pos < flux_point) & (arr_pos_next > flux_point)]
+    arr_I_MC[i] = np.sum(phi_through_cell_edge)
 
 
 ## PLOTTING COMPARISON
