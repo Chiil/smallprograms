@@ -15,8 +15,8 @@ arr_x = np.arange(dn/2, x_range, dn) # cell centers
 # RTE properties
 # dI = -kext*I*dn + kext*B*dn
 kext = 1.0*np.ones_like(arr_x)
-B = 1.0*np.ones_like(arr_x)
-# B = 1.0*arr_x/x_range
+# B = 1.0*np.ones_like(arr_x)
+B = 1.0*arr_x/x_range
 
 
 ## REFERENCE SOLUTION
@@ -27,8 +27,11 @@ for i in range(1, len(arr_I)):
 
 ## MONTE CARLO SOLUTION
 # Creating photon position and travel distance
-arr_tau = -np.log(np.random.rand(n_photons))
+arr_tau = - np.log(np.random.rand(n_photons))
 arr_pos = np.random.rand(n_photons)*x_range
+
+# B at pos location.
+arr_pos_B = 1.0 * arr_pos / x_range
 
 # Photon travel distance and next position
 arr_dn = arr_tau / kext[0]
@@ -36,18 +39,15 @@ arr_pos_next = arr_pos + arr_dn
 
 # Calculating power
 phi_tot = dn * np.sum(kext[:] * B[:])
-phi_per_phot = phi_tot/n_photons
+phi_per_phot = phi_tot / np.sum(arr_pos_B)
 
 # Check the flux to the cell edges
-arr_flux = np.zeros_like(arr_xh)
+arr_I_MC = np.zeros_like(arr_xh)
 for i, flux_point in enumerate(arr_xh):
-    arr_through_cell_edge = (arr_pos < flux_point) & (arr_pos_next > flux_point)
+    arr_through_cell_edge = arr_pos_B[(arr_pos < flux_point) & (arr_pos_next > flux_point)]
     flux = np.sum(arr_through_cell_edge)
-    arr_flux[i] = flux
+    arr_I_MC[i] = flux * phi_per_phot
 
-# Converting MC weights to energy
-arr_I_MC = arr_flux*phi_per_phot
-    
 
 ## PLOTTING COMPARISON
 plt.figure()
