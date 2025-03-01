@@ -5,7 +5,7 @@ from scipy.optimize import fsolve
 
 ## SIMULATION SETTINGS AND GRID GENERATION
 # Initializing space
-n_photons = 2**16
+n_photons = 2**18
 x_range = 10
 
 # Checking flux at these points:
@@ -16,12 +16,12 @@ arr_x = np.arange(dn/2, x_range, dn) # cell centers
 # RTE properties: dI = -kext*I*dn + kext*B*dn
 
 def calc_kext(x):
-    return 2.0
-    # return 1.0 + 1.0/x_range*x
+    # return 1.0
+    return 0.1 + 1.0/x_range*x
 
 def calc_kext_int(x):
-    return 2.0*x
-    # return 1.0*x + 0.5/x_range*x**2
+    # return 1.0*x
+    return 0.1*x + 0.5/x_range*x**2
 
 def calc_pos_next(pos, tau):
     kext_int_start = calc_kext_int(pos)
@@ -51,7 +51,7 @@ arr_pos = np.random.rand(n_photons)*x_range
 arr_pos_next = np.array( [ calc_pos_next(pos, tau) for pos, tau in np.c_[arr_pos, arr_tau] ] )
 
 # B at pos location.
-arr_pos_B = np.array([ calc_B(x) for x in arr_pos ])
+arr_pos_B = np.array([ calc_kext(x)*calc_B(x) for x in arr_pos ])
 
 # Calculating power
 phi_tot = dn * np.sum(kext[:] * B[:])
