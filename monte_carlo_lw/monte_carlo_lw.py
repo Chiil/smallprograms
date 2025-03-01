@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 ## SIMULATION SETTINGS AND GRID GENERATION
 # Initializing space
-n_photons = 2**19
+n_photons = 2**16
 x_range = 10
 
 # Checking flux at these points:
@@ -12,8 +12,10 @@ dn = 0.01
 arr_xh = np.arange(0, x_range+dn/2, dn) # cell edges
 arr_x = np.arange(dn/2, x_range, dn) # cell centers
 
-# RTE properties
-# dI = -kext*I*dn + kext*B*dn
+# RTE properties: dI = -kext*I*dn + kext*B*dn
+
+def calc_kext(x):
+    return 1.0
 
 def calc_B(x):
     # return 1.0
@@ -21,7 +23,7 @@ def calc_B(x):
     # return 1.0 * (x/x_range)**2
     return 1.0 + np.sin(2.0*np.pi*x/x_range)
 
-kext = 1.0*np.ones_like(arr_x)
+kext = np.array([ calc_kext(x) for x in arr_x ])
 B = np.array([ calc_B(x) for x in arr_x ])
 
 
@@ -35,14 +37,11 @@ for i in range(1, len(arr_I)):
 # Creating photon position and travel distance
 arr_tau = - np.log(np.random.rand(n_photons))
 arr_pos = np.random.rand(n_photons)*x_range
+arr_dn = arr_tau / kext[0]
+arr_pos_next = arr_pos + arr_dn
 
 # B at pos location.
 arr_pos_B = np.array([ calc_B(x) for x in arr_pos ])
-print(arr_pos_B)
-
-# Photon travel distance and next position (this only works for constant kext)
-arr_dn = arr_tau / kext[0]
-arr_pos_next = arr_pos + arr_dn
 
 # Calculating power
 phi_tot = dn * np.sum(kext[:] * B[:])
