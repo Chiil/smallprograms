@@ -6,7 +6,7 @@ from scipy.stats import qmc
 
 ## SIMULATION SETTINGS AND GRID GENERATION
 # Initializing space
-n_photons_pow = 16
+n_photons_pow = 11
 n_photons = 2**n_photons_pow
 x_range = 10
 do_quasi_random = True
@@ -71,8 +71,9 @@ for i, flux_point in enumerate(arr_xh):
     phi_through_cell_edge = arr_phi[(arr_pos < flux_point) & (arr_pos_next > flux_point)]
     arr_I_MC[i] = np.sum(phi_through_cell_edge)
 
-arr_I_error = dn*np.sum((arr_I_MC - arr_I)**2)
-print('L2 error:', arr_I_error)
+arr_I_MSE = dn/x_range * np.sum((arr_I_MC - arr_I)**2)
+arr_I_ME = dn/x_range * np.sum(arr_I_MC - arr_I)
+print(f'MSE = {arr_I_MSE}, ME = {arr_I_ME}')
 
 
 ## PLOTTING COMPARISON
