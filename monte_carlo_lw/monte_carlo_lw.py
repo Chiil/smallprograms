@@ -1,12 +1,15 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import fsolve
+from scipy.stats import qmc
 
 
 ## SIMULATION SETTINGS AND GRID GENERATION
 # Initializing space
-n_photons = 2**18
+n_photons_pow = 16
+n_photons = 2**n_photons_pow
 x_range = 10
+do_quasi_random = True
 
 # Checking flux at these points:
 dn = 0.01
@@ -50,7 +53,12 @@ for i in range(1, len(arr_I)):
 ## MONTE CARLO SOLUTION
 # Creating photon position and travel distance
 arr_tau = - np.log(np.random.rand(n_photons))
-arr_pos = np.random.rand(n_photons)*x_range
+if do_quasi_random:
+    sampler = qmc.Sobol(d=1, scramble=True)
+    arr_pos = sampler.random_base2(m=n_photons_pow).flatten()*x_range
+else:
+    arr_pos = np.random.rand(n_photons)*x_range
+
 arr_pos_next = np.array( [ calc_pos_next(pos, tau) for pos, tau in np.c_[arr_pos, arr_tau] ] )
 
 # B at pos location.
@@ -63,6 +71,9 @@ for i, flux_point in enumerate(arr_xh):
     phi_through_cell_edge = arr_phi[(arr_pos < flux_point) & (arr_pos_next > flux_point)]
     arr_I_MC[i] = np.sum(phi_through_cell_edge)
 
+arr_I_error = dn*np.sum((arr_I_MC - arr_I)**2)
+print('L2 error:', arr_I_error)
+
 
 ## PLOTTING COMPARISON
 plt.figure()
@@ -73,6 +84,6 @@ plt.grid(which='major', alpha=0.5)
 plt.grid(which='minor', alpha=0.2)
 plt.minorticks_on()
 plt.legend()
-plt.title(f'1D MC longwave with {n_photons:,} samples')
+plt.title(f'1D MC longwave with {n_photons:,} samples, do_quasi_random = {do_quasi_random}')
 plt.show()
 
