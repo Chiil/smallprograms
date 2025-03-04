@@ -6,16 +6,22 @@ from scipy.stats import qmc
 
 ## SIMULATION SETTINGS AND GRID GENERATION
 # Initializing space
-n_photons_pow = 10
+n_photons_pow = 14
+n_photons_pow_surf = 10
+
 n_photons = 2**n_photons_pow
+n_photons_surf = 2**n_photons_pow_surf
 x_range = 10
 do_quasi_random = True
 
 # Checking flux at these points:
-dn = x_range / 1024
+n = 1024
+dn = x_range / n
 arr_xh = np.arange(0, x_range+dn/2, dn) # cell edges
 arr_x = np.arange(dn/2, x_range, dn) # cell centers
 
+
+## DESCRIPTON OF THE RT PROBLEM.
 # RTE properties: dI = -kext*I*dn + kext*B*dn
 
 def calc_kext(x):
@@ -43,7 +49,7 @@ kext = np.array([ calc_kext(x) for x in arr_x ])
 B = np.array([ calc_B(x) for x in arr_x ])
 phi_tot = dn * np.sum(kext[:] * B[:])
 
-I_surf = 0.2
+I_surf = 0.4
 
 
 ## REFERENCE SOLUTION
@@ -78,10 +84,10 @@ for i, flux_point in enumerate(arr_xh):
 
 
 # 2. SOLVE THE SURFACE
-arr_tau_surf = - np.log(np.random.rand(n_photons))
-arr_pos_surf = np.zeros(n_photons)
+arr_tau_surf = - np.log(np.random.rand(n_photons_surf))
+arr_pos_surf = np.zeros(n_photons_surf)
 arr_pos_next_surf = np.array( [ calc_pos_next(pos, tau) for pos, tau in np.c_[arr_pos_surf, arr_tau_surf] ] )
-arr_phi_surf = I_surf*np.ones(n_photons) / n_photons
+arr_phi_surf = I_surf*np.ones(n_photons_surf) / n_photons_surf
 
 arr_I_MC_surf = np.zeros_like(arr_xh)
 for i, flux_point in enumerate(arr_xh):
@@ -100,15 +106,15 @@ print(f'MSE = {arr_I_MSE}, ME = {arr_I_ME}')
 
 ## PLOTTING COMPARISON
 plt.figure()
+plt.plot(arr_xh, arr_I, 'C1-', label=r'dI = -k$\cdot$I$\cdot$B$\cdot$dn + k$\cdot$B$\cdot$dn', linewidth=2)
 plt.plot(arr_xh, arr_I_MC_atmos, 'k:', label='1D MC atmos')
 plt.plot(arr_xh, arr_I_MC_surf, 'k--', label='1D MC surf')
 plt.plot(arr_xh, arr_I_MC, 'k-', label='1D MC')
-plt.plot(arr_xh, arr_I, 'r-', label=r'dI = -k$\cdot$I$\cdot$B$\cdot$dn + k$\cdot$B$\cdot$dn')
 # plt.plot(arr_xh, arr_I_MC - arr_I, 'k:', label='1D MC error')
 plt.grid(which='major', alpha=0.5)
 plt.grid(which='minor', alpha=0.2)
 plt.minorticks_on()
 plt.legend()
-plt.title(f'1D MC longwave with {n_photons:,} samples, do_quasi_random = {do_quasi_random}')
+plt.title(f'1D MC longwave with {n_photons/n} spp (atmos) and {n_photons_surf} spp (surf)')
 plt.show()
 
