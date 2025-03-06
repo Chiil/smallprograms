@@ -1,7 +1,5 @@
 import numpy as np
-from scipy.fftpack import dct
-from numba import njit
-import matplotlib.pyplot as plt
+from scipy.fftpack import idct, dct
 
 
 def dct_fft(a):
@@ -35,9 +33,29 @@ def dct_rfft(a):
     return aa_fft
 
 
-L = 1000
-N = 8
+def idct_rfft(a_rfft):
+    len_fft = len(a_rfft)//2+1
 
+    k = np.arange(len_fft)
+    W = 0.5*np.exp(1j*2.*np.pi*k/(4*N))
+
+    a_fft = np.zeros(len_fft, dtype=np.complex64)
+    a_fft[0] = W[0]*(a_rfft[0])
+    for i in range(1, len_fft):
+        a_fft[i] = W[i]*(a_rfft[i] - 1j*a_rfft[N-i])
+
+    aa = np.fft.irfft(a_fft)
+
+    a = np.empty_like(aa)
+
+    a[::2] = aa[:(N-1)//2+1]
+    a[::-2] = aa[(N-1)//2+1:]
+
+    return a
+
+
+L = 1000
+N = 16
 dx = L / N
 
 x = np.arange(dx/2, L, dx)
@@ -52,7 +70,9 @@ a_dct_rfft = dct_rfft(a)
 print(abs(a_dct_fft - a_dct_ref).max())
 print(abs(a_dct_rfft - a_dct_ref).max())
 
-# plt.figure()
-# plt.plot(x, a)
-# plt.show()
+a_inv_ref = idct(a_dct_ref) / (2*N)
+a_inv_rfft = idct_rfft(a_dct_rfft)
 
+print(a)
+print(a_inv_ref)
+print(a_inv_rfft)
