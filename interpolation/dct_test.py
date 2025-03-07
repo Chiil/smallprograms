@@ -60,6 +60,5 @@ print(abs(a_dct_rfft - a_dct_ref).max())
 a_inv_ref = idct(a_dct_ref) / (2*N)
 a_inv_rfft = idct_rfft(a_dct_rfft)
 
-print(a)
-print(a_inv_ref)
-print(a_inv_rfft)
+print(abs(a_inv_ref - a).max())
+print(abs(a_inv_rfft - a).max())
