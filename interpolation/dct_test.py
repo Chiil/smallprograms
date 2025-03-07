@@ -2,19 +2,6 @@ import numpy as np
 from scipy.fftpack import idct, dct
 
 
-def dct_fft(a):
-    aa = np.empty_like(a)
-    aa[:(N-1)//2+1] = a[::2]
-
-    aa[(N-1)//2+1:] = a[::-2]
-    aa_fft = np.fft.fft(aa)
-
-    k = np.arange(len(a))
-    aa_fft *= 2 * np.exp(-1j*np.pi*k/(2*N))
-
-    return aa_fft.real
-
-
 def dct_rfft(a):
     aa = np.empty_like(a)
     aa_fft = np.empty_like(a)
@@ -63,7 +50,6 @@ N = 16
 dx = L / N
 
 x = np.arange(dx/2, L, dx)
-# a = 0.3*np.cos( (2*np.pi)/L*x ) + np.cos(5*(2*np.pi)/L*x )
 a = np.random.rand(len(x))
 
 
