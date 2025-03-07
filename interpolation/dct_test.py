@@ -40,7 +40,8 @@ def idct_rfft(a_rfft):
     len_fft = len(a_rfft)//2+1
 
     k = np.arange(len_fft)
-    W = 0.5*np.exp(1j*2.*np.pi*k/(4*N))
+    # W = 0.5*np.exp(1j*2.*np.pi*k/(4*N))
+    W = 0.5*np.cos(2.*np.pi*k/(4*N)) + 0.5*1j*np.sin(2.*np.pi*k/(4*N))
 
     a_fft = np.zeros(len_fft, dtype=np.complex64)
     a_fft[0] = W[0]*(a_rfft[0])
