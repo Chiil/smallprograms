@@ -25,11 +25,13 @@ def dct_rfft(a):
     aa_fft_tmp = np.fft.rfft(aa)
 
     k = np.arange(len(a)//2+1)
-    # aa_fft_tmp *= 2 * np.exp(-1j*np.pi*k/(2*N))
-    aa_fft_tmp *= 2*np.cos(-np.pi*k/(2*N)) + 2*1j*np.sin(-np.pi*k/(2*N))
 
-    aa_fft[:len(a)//2+1] = aa_fft_tmp.real
-    aa_fft[len(a)//2+1:] = - aa_fft_tmp.imag[-2:0:-1]
+    # aa_fft_tmp *= 2 * np.exp(-1j*np.pi*k/(2*N))
+    # aa_fft_tmp *= 2*np.cos(-np.pi*k/(2*N)) + 2*1j*np.sin(-np.pi*k/(2*N))
+    # aa_fft[len(a)//2+1:] = - aa_fft_tmp.imag[-2:0:-1]
+
+    aa_fft[:len(a)//2+1] = aa_fft_tmp.real * 2*np.cos(-np.pi*k/(2*N)) - aa_fft_tmp.imag * 2*np.sin(-np.pi*k/(2*N))
+    aa_fft[len(a)//2+1:] = - (aa_fft_tmp.real * 2*np.sin(-np.pi*k/(2*N)) + aa_fft_tmp.imag * 2*np.cos(-np.pi*k/(2*N)))[-2:0:-1]
 
     return aa_fft
 
