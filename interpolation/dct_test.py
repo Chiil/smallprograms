@@ -52,12 +52,9 @@ dx = L / N
 x = np.arange(dx/2, L, dx)
 a = np.random.rand(len(x))
 
-
 a_dct_ref = dct(a)
-a_dct_fft = dct_fft(a)
 a_dct_rfft = dct_rfft(a)
 
-print(abs(a_dct_fft - a_dct_ref).max())
 print(abs(a_dct_rfft - a_dct_ref).max())
 
 a_inv_ref = idct(a_dct_ref) / (2*N)
