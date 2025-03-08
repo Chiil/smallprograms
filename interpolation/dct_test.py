@@ -6,8 +6,15 @@ def dct_rfft(a):
     aa = np.empty_like(a)
     aa_fft = np.empty_like(a)
 
-    aa[:(N-1)//2+1] = a[::2]
-    aa[(N-1)//2+1:] = a[::-2]
+    # aa[:(N-1)//2+1] = a[::2]
+    # aa[(N-1)//2+1:] = a[::-2]
+
+    for i in range(0, (N-1)//2+1):
+        aa[i] = a[2*i]
+
+    for i in range((N-1)//2+1, N):
+        ii = i - ( (N-1)//2+1 )
+        aa[i] = a[N-1-2*ii]
 
     aa_fft_tmp = np.fft.rfft(aa)
 
@@ -44,14 +51,21 @@ def idct_rfft(a_rfft):
 
     a = np.empty_like(aa)
 
-    a[::2] = aa[:(N-1)//2+1]
-    a[::-2] = aa[(N-1)//2+1:]
+    # a[::2] = aa[:(N-1)//2+1]
+    # a[::-2] = aa[(N-1)//2+1:]
+
+    for i in range(0, (N-1)//2+1):
+        a[2*i] = aa[i]
+
+    for i in range((N-1)//2+1, N):
+        ii = i - ( (N-1)//2+1 )
+        a[N-1-2*ii] = aa[i]
 
     return a
 
 
 L = 1000
-N = 16
+N = 8
 dx = L / N
 
 x = np.arange(dx/2, L, dx)
