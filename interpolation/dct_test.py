@@ -32,16 +32,14 @@ def idct_rfft(a_rfft):
 
     a_fft = np.zeros(len_fft, dtype=np.complex64)
     a_fft[0] = W[0]*(a_rfft[0])
+
     for i in range(1, len_fft):
         # a_fft[i] = W[i]*(a_rfft[i] - 1j*a_rfft[N-i])
         # a_fft[i] = (0.5*np.cos(2.*np.pi*k[i]/(4*N)) + 0.5*1j*np.sin(2.*np.pi*k[i]/(4*N)))*(a_rfft[i] - 1j*a_rfft[N-i])
         a_fft[i] = (
-                + (0.5*np.cos(2.*np.pi*k[i]/(4*N))) * (a_rfft[i])
-                + (0.5*np.sin(2.*np.pi*k[i]/(4*N))) * (a_rfft[N-i])
-                - 1j * (0.5*np.cos(2.*np.pi*k[i]/(4*N))) * (a_rfft[N-i])
-                + 1j * (0.5*np.sin(2.*np.pi*k[i]/(4*N))) * (a_rfft[i])
+                + (0.5*np.cos(2.*np.pi*k[i]/(4*N))) * (a_rfft[i]) + (0.5*np.sin(2.*np.pi*k[i]/(4*N))) * (a_rfft[N-i])
+                - 1j * ( (0.5*np.cos(2.*np.pi*k[i]/(4*N))) * (a_rfft[N-i]) - (0.5*np.sin(2.*np.pi*k[i]/(4*N))) * (a_rfft[i]) )
                 )
-
     aa = np.fft.irfft(a_fft)
 
     a = np.empty_like(aa)
