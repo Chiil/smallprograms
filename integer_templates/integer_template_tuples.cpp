@@ -30,6 +30,7 @@ constexpr std::array tuples =
     std::make_tuple(2, 2, 1), std::make_tuple(3, 3, 1), // Horizontal nesting, 3D run
     std::make_tuple(2, 1, 2), std::make_tuple(3, 1, 3), // Equal refinement, 2D run
     std::make_tuple(2, 1, 1), std::make_tuple(3, 1, 1), // Horizontal nesting, 2D run
+    std::make_tuple(2, 7, 4), // Some weird config
 };
 
 
@@ -44,6 +45,9 @@ void run_tuples(int i, int j, int k, Args&&... args)
 template<class F, class... Args>
 void call(int i, int j, int k, Args&&... args)
 {
+    if (std::count(tuples.begin(), tuples.end(), std::make_tuple(i, j, k)) != 1)
+        std::cerr << "Chosen refinement ratio (" << i << ", " << j << ", " << k << ") has no compiled function." << std::endl;
+
     auto loop_over_tuples = [i, j, k, args...]<std::size_t... Is>(std::index_sequence<Is...>)
     {
         (run_tuples<F, std::get<0>(tuples[Is]), std::get<1>(tuples[Is]), std::get<2>(tuples[Is])>(i, j, k, args...), ...);
@@ -57,6 +61,8 @@ int main()
 {
     call<Func1>(1, 1, 1, 33.0);
     call<Func2>(2, 1, 1, 55, 66);
+
+    call<Func1>(1, 2, 4, 12.0);
 
     return 0;
 }
