@@ -32,14 +32,13 @@ constexpr std::array tuples =
 
 
 constexpr int max_i = 5;
-using FuncType = void(*)();
 
 
 template<class F, std::size_t N, std::size_t... Is>
 constexpr auto make_ijk_array(
         std::array<std::tuple<int, int, int>, N> tuple, std::index_sequence<Is...>)
 {
-    return std::array<FuncType, sizeof...(Is)>{
+    return std::array {
         F::template run<std::get<0>(tuples[Is]), std::get<1>(tuples[Is]), std::get<2>(tuples[Is])>... };
 }
 
