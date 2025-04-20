@@ -26,12 +26,9 @@ struct Func2
 constexpr std::array tuples =
 {
     std::make_tuple(1, 1, 1),
-    std::make_tuple(2, 3, 4),
-    std::make_tuple(3, 4, 5),
+    std::make_tuple(2, 2, 2),
+    std::make_tuple(3, 3, 3),
 };
-
-
-constexpr int max_i = 5;
 
 
 template<class F, std::size_t N, std::size_t... Is>
@@ -57,8 +54,8 @@ constexpr auto func_table = make_array<F>(tuples);
 template<class F>
 void call_func(int i, int j, int k)
 {
-    if (i >= 0 && i < max_i)
-        func_table<F>[i]();
+    if (i == j && i == k && i >= 1 && i <= tuples.size())
+        func_table<F>[i-1]();
     else
         std::cerr << "Invalid combination\n";
 }
@@ -68,9 +65,10 @@ int main()
 {
     call_func<Func>(1, 1, 1);
     call_func<Func>(2, 2, 2);
+    call_func<Func>(2, 2, 3);
 
-    call_func<Func2>(1, 1, 1);
-    call_func<Func2>(2, 2, 2);
+    call_func<Func2>(3, 3, 3);
+    call_func<Func2>(2, 2, 1);
 
     return 0;
 }
