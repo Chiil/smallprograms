@@ -44,10 +44,12 @@ void run_tuples(int i, int j, int k)
 template<class F>
 void call(int i, int j, int k)
 {
-    [&]<std::size_t... Is>(std::index_sequence<Is...>)
+    auto loop_over_tuples = [i, j, k]<std::size_t... Is>(std::index_sequence<Is...>)
     {
         (run_tuples<F, std::get<0>(tuples[Is]), std::get<1>(tuples[Is]), std::get<2>(tuples[Is])>(i, j, k), ...);
-    }(std::make_index_sequence<tuples.size()>());
+    };
+
+    loop_over_tuples(std::make_index_sequence<tuples.size()>());
 }
 
 
