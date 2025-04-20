@@ -15,14 +15,14 @@ using FuncType = void(*)();
 
 
 // Build 1D array for k
-template<std::size_t... Ks>
-constexpr auto make_array(std::index_sequence<Ks...>) {
+template<int... Ks>
+constexpr auto make_array(std::integer_sequence<int, Ks...>) {
     return std::array<FuncType, sizeof...(Ks)>{ &func<Ks>... };
 }
 
 
 // Generate the full table
-constexpr auto func_table = make_array(std::make_index_sequence<max_i>{});
+constexpr auto func_table = make_array(std::make_integer_sequence<int, max_i>{});
 
 
 void call_func(int i, int j, int k)
