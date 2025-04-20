@@ -6,9 +6,9 @@
 struct Func1
 {
     template<int I, int J, int K>
-    static void run()
+    static void run(double d)
     {
-        std::cout << "func<" << I << ", " << J << ", " << K << ">()\n";
+        std::cout << "func<" << I << ", " << J << ", " << K << ">(" << d << ")\n";
     }
 };
 
@@ -16,9 +16,9 @@ struct Func1
 struct Func2
 {
     template<int I, int J, int K>
-    static void run()
+    static void run(const int a, const int b)
     {
-        std::cout << "func2<" << I << ", " << J << ", " << K << ">()\n";
+        std::cout << "func2<" << I << ", " << J << ", " << K << ">(" << a << ", " << b << ")\n";
     }
 };
 
@@ -33,20 +33,20 @@ constexpr std::array tuples =
 };
 
 
-template<class F, int I, int J, int K>
-void run_tuples(int i, int j, int k)
+template<class F, int I, int J, int K, class... Args>
+void run_tuples(int i, int j, int k, Args&&... args)
 {
     if (i == I && j == J && k == K)
-        F::template run<I, J, K>();
+        F::template run<I, J, K>(args ...);
 }
 
 
-template<class F>
-void call(int i, int j, int k)
+template<class F, class... Args>
+void call(int i, int j, int k, Args&&... args)
 {
-    auto loop_over_tuples = [i, j, k]<std::size_t... Is>(std::index_sequence<Is...>)
+    auto loop_over_tuples = [i, j, k, args...]<std::size_t... Is>(std::index_sequence<Is...>)
     {
-        (run_tuples<F, std::get<0>(tuples[Is]), std::get<1>(tuples[Is]), std::get<2>(tuples[Is])>(i, j, k), ...);
+        (run_tuples<F, std::get<0>(tuples[Is]), std::get<1>(tuples[Is]), std::get<2>(tuples[Is])>(i, j, k, args...), ...);
     };
 
     loop_over_tuples(std::make_index_sequence<tuples.size()>());
@@ -55,8 +55,8 @@ void call(int i, int j, int k)
 
 int main()
 {
-    call<Func1>(1, 1, 1);
-    call<Func2>(2, 1, 1);
+    call<Func1>(1, 1, 1, 33.0);
+    call<Func2>(2, 1, 1, 55, 66);
 
     return 0;
 }
