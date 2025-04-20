@@ -22,12 +22,12 @@ constexpr int max_i = 5;
 using FuncType = void(*)();
 
 
-// Build 1D array for k
-template<std::size_t N, std::size_t... Ks>
+template<std::size_t N, std::size_t... Is>
 constexpr auto make_ijk_array(
-        std::array<std::tuple<int, int, int>, N> tuple, std::index_sequence<Ks...>)
+        std::array<std::tuple<int, int, int>, N> tuple, std::index_sequence<Is...>)
 {
-    return std::array<FuncType, sizeof...(Ks)>{ &func<static_cast<int>(Ks), static_cast<int>(Ks), static_cast<int>(Ks)>... };
+    return std::array<FuncType, sizeof...(Is)>{
+        &func<std::get<0>(tuples[Is]), std::get<1>(tuples[Is]), std::get<2>(tuples[Is])>... };
 }
 
 
