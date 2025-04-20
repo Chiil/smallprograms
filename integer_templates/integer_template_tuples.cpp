@@ -25,7 +25,7 @@ struct Func2
 
 constexpr std::array tuples =
 {
-    std::make_tuple(1, 1, 1),
+    std::make_tuple(1, 1, 1), // No refinement
     std::make_tuple(2, 2, 2), std::make_tuple(3, 3, 3), // Equal refinement, 3D run
     std::make_tuple(2, 2, 1), std::make_tuple(3, 3, 1), // Horizontal nesting, 3D run
     std::make_tuple(2, 1, 2), std::make_tuple(3, 1, 3), // Equal refinement, 2D run
@@ -41,17 +41,20 @@ void run_tuples(int i, int j, int k)
 }
 
 
-template<class F, std::size_t... Is>
-void call(int i, int j, int k, std::index_sequence<Is...> is)
+template<class F>
+void call(int i, int j, int k)
 {
-    (run_tuples<F, std::get<0>(tuples[Is]), std::get<1>(tuples[Is]), std::get<2>(tuples[Is])>(i, j, k), ...);
+    [&]<std::size_t... Is>(std::index_sequence<Is...>)
+    {
+        (run_tuples<F, std::get<0>(tuples[Is]), std::get<1>(tuples[Is]), std::get<2>(tuples[Is])>(i, j, k), ...);
+    }(std::make_index_sequence<tuples.size()>());
 }
 
 
 int main()
 {
-    call<Func1>(1, 1, 1, std::make_index_sequence<tuples.size()>());
-    call<Func2>(2, 1, 1, std::make_index_sequence<tuples.size()>());
+    call<Func1>(1, 1, 1);
+    call<Func2>(2, 1, 1);
 
     return 0;
 }
