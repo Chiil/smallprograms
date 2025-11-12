@@ -104,6 +104,20 @@ arr_I_ME = dn/x_range * np.sum(arr_I_MC - arr_I)
 print(f'MSE = {arr_I_MSE}, ME = {arr_I_ME}')
 
 
+# 4. COMPUTE THE ENERGY BALANCE
+surface_source = arr_I[0]
+atmos_source = np.sum(kext*B)*dn
+toa_sink = arr_I[-1]
+atmos_sink = surface_source + atmos_source + toa_sink
+print(f'(ref) surface source = {surface_source}, atmos source = {atmos_source}, toa_sink = {toa_sink}, atmos sink = {atmos_sink}')
+
+surface_source = arr_I_MC[0]
+atmos_source = phi_tot
+toa_sink = arr_I_MC[-1]
+atmos_sink = surface_source + atmos_source + toa_sink
+print(f'(MC ) surface source = {surface_source}, atmos source = {atmos_source}, toa_sink = {toa_sink}, atmos sink = {atmos_sink}')
+
+
 ## PLOTTING COMPARISON
 plt.figure()
 plt.plot(arr_xh, arr_I, 'C1-', label=r'dI = -k$\cdot$I$\cdot$B$\cdot$dn + k$\cdot$B$\cdot$dn', linewidth=2)
