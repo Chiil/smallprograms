@@ -30,7 +30,7 @@ yh = np.arange(0, Ly+dy/2, dy) - Ly/2
 z = np.arange(dz/2, Lz, dz) - Lz/2
 zh = np.arange(0, Lz+dz/2, dz) - Lz/2
 
-theta_sample = np.random.uniform(0, np.pi, size=n_samples)
+theta_sample = np.arccos(1.0 - 2.0*np.random.uniform(size=n_samples))
 phi_sample = np.random.uniform(0.0, 2.0*np.pi, size=n_samples)
 pos_sample_x = np.random.uniform(-dx/2, dx/2, size=n_samples)
 pos_sample_y = np.random.uniform(-dy/2, dy/2, size=n_samples)
