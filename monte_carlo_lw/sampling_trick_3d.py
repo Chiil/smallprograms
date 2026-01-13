@@ -16,7 +16,7 @@ Lx = itot*dx
 Ly = jtot*dy
 Lz = ktot*dz
 
-n_samples = 2**20
+n_samples = 2**24
 
 k_ext = 0.02
 
@@ -30,7 +30,7 @@ yh = np.arange(0, Ly+dy/2, dy) - Ly/2
 z = np.arange(dz/2, Lz, dz) - Lz/2
 zh = np.arange(0, Lz+dz/2, dz) - Lz/2
 
-theta_sample = np.random.uniform(-np.pi, np.pi, size=n_samples)
+theta_sample = np.random.uniform(0, np.pi, size=n_samples)
 phi_sample = np.random.uniform(0.0, 2.0*np.pi, size=n_samples)
 pos_sample_x = np.random.uniform(-dx/2, dx/2, size=n_samples)
 pos_sample_y = np.random.uniform(-dy/2, dy/2, size=n_samples)
@@ -65,6 +65,7 @@ abs_new = count_abs(pos_new)
 
 print(abs_ref[ktot//2, jtot//2, itot//2])
 print(abs_new[ktot//2, jtot//2, itot//2])
+print(abs_ref.sum(), abs_new.sum())
 
 """
 plt.figure(figsize=(12, 4), constrained_layout=True)
@@ -85,14 +86,20 @@ plt.title('yz')
 plt.figure(figsize=(12, 4), constrained_layout=True)
 plt.subplot(131)
 plt.pcolormesh(xh, yh, abs_new[ktot//2, :, :], cmap=cmaps.WhiteBlueGreenYellowRed)
+plt.xlabel('x')
+plt.xlabel('y')
 plt.gca().add_patch(Rectangle((-dx/2, -dy/2), dx, dy, linestyle=':', fill=False))
 plt.title('xy')
 plt.subplot(132)
 plt.pcolormesh(xh, zh, abs_new[:, jtot//2, :], cmap=cmaps.WhiteBlueGreenYellowRed)
+plt.xlabel('x')
+plt.xlabel('z')
 plt.gca().add_patch(Rectangle((-dx/2, -dz/2), dx, dz, linestyle=':', fill=False))
 plt.title('xz')
 plt.subplot(133)
 plt.pcolormesh(yh, zh, abs_new[:, :, itot//2], cmap=cmaps.WhiteBlueGreenYellowRed)
+plt.xlabel('y')
+plt.xlabel('z')
 plt.gca().add_patch(Rectangle((-dy/2, -dz/2), dy, dz, linestyle=':', fill=False))
 plt.title('yz')
 
